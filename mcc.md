@@ -3668,7 +3668,26 @@ yes , this is too ambitious to build in few years,let alone quickly,  however if
 
 
 
+--- 
+the Colon D language:
 
+a scripting language with a garbage collector,   designed  for fast development,  also for easy debugging, tooling and prototyping.
+there are some restrictions on what a  colon D type can do ,  the arguments are implicitly `inout` ,
+however the type may remain opaque ( if an explicit type is specified then its a violation for a non value type to be passed)
+ colon D also doesn't have refrences similar to E colon , for compatibility and ease of use,  
+a value is always  of type  `stdd::any`, 
+therfore value must always be trivially relocatable,
+must either copy , move  or do contract violation if these are not defined but required.
+the value also would need to be destructable.
+all functions in colon D are implicitly dynamically exported on definition,  and imported on declaration, 
+all functions in colon D  are of type `stdd::function` ,
+the `stdd::function`  is the way to manage the code ,
+also  colon D is executed concurrency( but not in parallel, only via asynchronous concurrency, in a single thread, therefor no atomic or mutex nee) in the `stdd::interpreter`( a drivitive of the standard scheduler ) and the functions  have `stdd::interpreter_context_t` ( a drivitive of the `std::async_context_t`)
+if a function qualifier  is lang(stdd::lang), the reflection functions make sure it has the appropriate context type.
+the D garbage collector is executed in the implicit contract context code.
+its similar to java script,  however with less explicit type conversion.
+colon D  scripting can be easily used in E colon and  E colon functions can be easily injected into colon D. 
+this language can be used in the web , similar to E colon ,via wasm
 
 
 
