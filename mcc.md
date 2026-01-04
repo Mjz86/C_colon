@@ -481,7 +481,7 @@ a value declared `constexpr` is known at compile time.
 
 
 
-`no_dll_comparable_address`/`interpositioned`/`dll_comparable_address`(default)(dynamic loader used Function and variable ( any symbol) qualifier):
+`no_dll_comparable_address`/`dll_comparable_address`(default)(dynamic loader used Function and variable ( any symbol) qualifier):
  this qualifier is not a contributer to the abi hash or the name mangle,
  a function,  variable or storage space,  used in the dynamic shared  library, may have a different address to the static function, a `dll_comparable_address` mandates that the storage address is unique,
 
@@ -497,6 +497,9 @@ the program  will pick the highest priority between these , and also ,
 no inlining is allowed for any function called with this qualifier , except when `dllhidden`.
 the addresses of these variables is overridden at load time , and the memory  section is set to read execute for the duration of the program. 
  
+ 
+ `interpositioned`: 
+ this is a contributer to the name mangle, and if not `dllhidden`, has the overhead of both an atomic load and no inlining  is allowed at all.
 there is an `unsafe(interpositioned)` qualifier that can use `set_interposition(fn,address)` to store ( memory  order release) function address on a global atomic static , using  the address-of on this symbol will load by a memory order of acquire,
 therefore the address  is controlled by developers.
 also , an `interpositioned` function  when exported can be set to null, `...f(...)...=0;`.
@@ -3150,6 +3153,8 @@ gets the ABI hash off the inner expression.
 
 
 
+* note :
+the abi hash of a function ( not a type)  does NOT depend on the function's  code ( the function inner scope)
 
 
 - note :
