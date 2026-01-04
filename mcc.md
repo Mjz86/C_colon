@@ -3686,7 +3686,7 @@ all functions in colon D  are of type `stdd::function` ( all colon D functions a
 the `stdd::function`  is the way to manage the code ,
 also  colon D is executed concurrency( but not in parallel, only via asynchronous concurrency, in a single thread, therefor no atomic or mutex nee) in the `stdd::interpreter`( a drivitive of the standard scheduler ) and the functions  have `stdd::interpreter_context_t` ( a drivitive of the `std::async_context_t`)
 if a function qualifier  is lang(stdd::lang), the reflection functions make sure it has the appropriate context type.
-the D garbage collector is executed in the implicit contract context code.
+the D garbage collector is executed in the implicit  context-type operator code.
 its similar to java script,  however with less explicit type conversion.
 colon D  scripting can be easily used in E colon and  E colon functions can be easily injected into colon D. 
 this language can be used in the web , similar to E colon ,via wasm
