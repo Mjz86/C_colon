@@ -3675,14 +3675,14 @@ a scripting language with a garbage collector,   designed  for fast development,
 there are some restrictions on what a  colon D type can do ,  the arguments are implicitly `inout` ,
 however the type may remain opaque ( if an explicit type is specified then its a violation for a non value type to be passed)
  colon D also doesn't have refrences similar to E colon, however using `rc(obj)` on them will make the object reference counted ( no atomic required because of the nature of concurrency, for ease of use,  )
-a value is always  of type  `stdd::any`, also , 
+a value is always  of type  `stdd::any` ( can be thought of as an index-into-interpreter/value) , also , 
 the type can be used within a context with `stdd::interpreter_context_t` , its a violation if the interpreter doesn't match the one that manages the lifetime.
 the any type in E colon facing code has set , get , cast, info , name, clear and other functions to be able to be usable.
 therfore value must always be trivially relocatable,
 must either copy , move  or do contract violation if these are not defined but required.
 the value also would need to be destructable.
 all functions in colon D are implicitly dynamically exported on definition,  and imported on declaration, 
-all functions in colon D  are of type `stdd::function` ,
+all functions in colon D  are of type `stdd::function` ( all colon D functions are implicitly asynchronous ) ,
 the `stdd::function`  is the way to manage the code ,
 also  colon D is executed concurrency( but not in parallel, only via asynchronous concurrency, in a single thread, therefor no atomic or mutex nee) in the `stdd::interpreter`( a drivitive of the standard scheduler ) and the functions  have `stdd::interpreter_context_t` ( a drivitive of the `std::async_context_t`)
 if a function qualifier  is lang(stdd::lang), the reflection functions make sure it has the appropriate context type.
