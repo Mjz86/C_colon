@@ -3669,7 +3669,7 @@ yes , this is too ambitious to build in few years,let alone quickly,  however if
 
 
 --- 
-the Colon D language:
+the colon dynamic or Colon D language:
 
 a scripting language with a garbage collector,   designed  for fast development,  also for easy debugging, tooling and prototyping.
 there are some restrictions on what a  colon D type can do ,  the arguments are implicitly `inout` ,
