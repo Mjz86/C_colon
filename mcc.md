@@ -3685,7 +3685,7 @@ the value also would need to be destructable.
 all functions in colon D are implicitly dynamically exported on definition,  and imported on declaration, 
 all functions in colon D  are of type `stdd::function` ( all colon D functions are implicitly asynchronous ) ,
 the `stdd::function`  is the way to manage the code ,
-also  colon D is executed concurrency( but not in parallel, only via asynchronous concurrency, in a single thread, therefor no atomic or mutex nee) in the `stdd::interpreter`( a drivitive of the standard scheduler ) and the functions  have `stdd::interpreter_context_t` ( a drivitive of the `std::async_context_t`)
+also  colon D is executed concurrency( but not in parallel, only via asynchronous concurrency, in a single thread, therefor no atomic or mutex nee) in the `stdd::interpreter`( a drivitive of the standard scheduler, using an interpreter object directly is unsafe) and the functions  have `stdd::interpreter_context_t` ( a drivitive of the `std::async_context_t`)
 if a function qualifier  is lang(stdd::lang), the reflection functions make sure it has the appropriate context type.
 the D garbage collector is executed in the implicit  context-type operator code.
 its similar to java script,  however with less explicit type conversion.
