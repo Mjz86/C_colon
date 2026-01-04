@@ -2685,16 +2685,42 @@ in a debugging environment,  this can have conditional trap instructions.
  * note: caller and callee are both protective in the caller and callee respectively.
  
  
- - operator  caller (   argument-sttack-size( optional),stack-pointer( optional), instruction-pointer( optional), callee-pointer or backend-hash  (depending on  dynamic call vs static call) ( optional) )callee-context-type :
+ - operator  caller (   argument-stack-size( optional),stack-pointer( optional), instruction-pointer( optional), callee-pointer or backend-hash  (depending on  dynamic call vs static call) ( optional) )callee-context-type :
 in the caller , before the call , the context-type gets a chance to caputure the protection information of the function if it wants to, to protect against stack overflow, and a minimalistic debug info for the stack trace.
 note that caputure of backend-hash makes compilation slower because of non elided hash  
 in a debugging environment,  this can have conditional trap instructions. 
 
- 
 - operator  callee  (  stack-size( optional),stack-pointer( optional), instruction-pointer ( optional),backend-hash ( optional) )callee-context-type :
 in the callee , before the callee code and stack get initialized, the context-type gets a chance to caputure the protection information of the function if it wants to, to protect against stack overflow, and a minimalistic debug info for the stack trace.
 note that caputure of backend-hash makes compilation slower because of non elided hash  
 in a debugging environment,  this can have conditional trap instructions. 
+
+
+- contract-in-val  type is defined to be used in  the `dyncontract`  dynamic  contract code , or the static non inlined contract checked code,
+if the contract is not executed then this argument and all post and pre logic  is allowed  to be elided.
+
+
+
+- operator  pre(contract-in-val, contract-stack-size( optional),stack-pointer( optional), instruction-pointer( optional))callee-context-type ->bool-convertible-type:
+ the return value indicates if the contract pre condition should execute.
+this function is executed before the contract.
+in a debugging environment,  this can have conditional trap instructions. 
+
+- operator  ~pre(contract-in-val  ,...)callee-context-type :
+this function is executed after the contract pre condition, even if the contract throws an exception.
+in a debugging environment,  this can have conditional trap instructions. 
+
+- operator  post(contract-in-val , contract-stack-size( optional),stack-pointer( optional), instruction-pointer( optional) )callee-context-type  -> bool-convertible-type:
+the return value indicates if the contract post condition should execute.
+this function is executed before the contract.
+in a debugging environment,  this can have conditional trap instructions. 
+
+- operator  ~post(contract-in-val  )callee-context-type :
+this function is executed after the contract post condition, even if the contract throws an exception.
+ in a debugging environment,  this can have conditional trap instructions. 
+ 
+
+* note that the pre and post operators will always be executed after the caller operator, and before the callee operator.
 
 - `operator make_meta ( inout std::meta )->meta-input `, `operator make_meta ( inout std::debug_meta )->meta-input`:
 a `constexpr` function that makes the meta type based on static reflection information, 
