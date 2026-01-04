@@ -3674,8 +3674,10 @@ the Colon D language:
 a scripting language with a garbage collector,   designed  for fast development,  also for easy debugging, tooling and prototyping.
 there are some restrictions on what a  colon D type can do ,  the arguments are implicitly `inout` ,
 however the type may remain opaque ( if an explicit type is specified then its a violation for a non value type to be passed)
- colon D also doesn't have refrences similar to E colon , for compatibility and ease of use,  
-a value is always  of type  `stdd::any`, 
+ colon D also doesn't have refrences similar to E colon, however using `rc(obj)` on them will make the object reference counted ( no atomic required because of the nature of concurrency, for ease of use,  )
+a value is always  of type  `stdd::any`, also , 
+the type can be used within a context with `stdd::interpreter_context_t` , its a violation if the interpreter doesn't match the one that manages the lifetime.
+the any type in E colon facing code has set , get , cast, info , name, clear and other functions to be able to be usable.
 therfore value must always be trivially relocatable,
 must either copy , move  or do contract violation if these are not defined but required.
 the value also would need to be destructable.
