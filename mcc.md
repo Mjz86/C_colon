@@ -2393,6 +2393,8 @@ uint32_t priority(*)[total_symbol_count];
 
 
 
+//  PLT style lazy loading is highly discouraged and frankly very hard to implement under mcc , if we lazy load we will get O(n²) because a trigger of the loader is O(n) and we do it for every symbol on load,  so batch loading makes it better if we stay in the mcc loader, however a represent_cxx loader is not in scope of this abi.
+
 ```
 
 
