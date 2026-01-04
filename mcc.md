@@ -2939,7 +2939,8 @@ fundemental types
 
  N  goes from 1 ( fractional alignment, with math similar to c bit feilds) , 2 , 4, 8 ( byte aligned) , 16,....up to at least 1024 ( the 11 power of 2 starting feom the 0th power)  , while unnecessary, its better to have reliable deafults, especially  because  modorn cpus have massive registers.
 
- 
+ however if N is not a power of two , N must be between 1 and 64 
+ with its bit alignment being the  prime factor of powers of 2
 
  1. nothing:
 
