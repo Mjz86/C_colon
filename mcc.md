@@ -505,7 +505,7 @@ therefore the address  is controlled by developers.
 also , an `interpositioned` function  when exported can be set to null, `...f(...)...=0;`.
 also , inlining is not allowed for these functions.
  note that  paring both  `unsafe(no_dll_comparable_address,interpositioned)` , is doubly unsafe, and no inlining allowed. 
-
+if a call to an interpositioned function aquires a null , an implicit contract violation is made.
 
  `dllhidden(default)/dllexport/dllimport`( only on static symbols,  like functions or static variables): 
 this qualifier is not a contributer to the abi hash or the name mangle,
