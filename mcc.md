@@ -1,4 +1,5 @@
 
+
 c colon lang , its brothers and the mcc ABI 
 
 
@@ -2321,6 +2322,7 @@ size_t  symbol_count;
  // write only once in initilization, then make readonly section: 
 
 global_loader_t*const global_loader;
+uint32_t dll_priority;
 const fn**const  imported_interposition_fnptr_ptrs[....]; // the pointers to the interpositioned function pointers.
 const fn* const imported_non_interposition_fnptrs[....];// the pointer to the imported function.
 const fn**const  exported_interposition_dll_comp_address_fnptrs[....];// the pointer to the imported function, first having the offset to the current pointer .
@@ -2356,7 +2358,7 @@ uint32_t priority_and_mask(*)[total_symbol_count];// the 3 low bits are  for the
 2. allocate at least the size of all given symbols and ptr-masks.
 3. merge all sorted arrays of symbols in all the given binaries  into the region while also turning offsets into absolute values and assigning priorities( also sort based on the  priorities as if  the least significant sorting indicator, and because each binary is sorted and its indicator is constant, we can just do O(n) merge with this via a stable sort merge step).( either via  merge step or radix sort based on the appropriate heuristics) and while doing so , for all duplicate regions ( next to each other symbols of equal value)  do the duplication region check function and fail if it fails.
 4. if checks were not successful , then fail.
-5. assign all given libraries loader pointer to the address of global loader.
+5. assign all given libraries loader pointer to the address of global loader, and set dll_priority es appropriately. 
 6. do a scan to find  duplicate regions , then for each do the duplicate resolution function.
 7. freeze  the "write only once in initilization" section to readonly 
 8. return successfully ( and unlock)
@@ -2385,7 +2387,7 @@ uint32_t priority_and_mask(*)[total_symbol_count];// the 3 low bits are  for the
 // this is done after the module deinitilization O(total_symbol_count) time complexity 
 - dynamic unload ( unchecked)
 0.make  lockgard mutex.
-1. do steps 1 ,2,3  in `dynamic load` to create  the sorted remove symbol table. O(total_symbol_count) memory amd time.
+1. do steps 1 ,2,3  in `dynamic load`( dll_priority is passed ) to create  the sorted remove symbol table. O(total_symbol_count) memory amd time.
 2. search  the first element of remove table  in the sorted_symbols ( binary/linear search) , and remove it  with std::remove_if style algorithm on all tables, and then search for the next one ( skipping all of the ones that were before us), do this intil the remote table is empty.  
 3. update total_symbol_count and return successfully ( and unlock)
 
