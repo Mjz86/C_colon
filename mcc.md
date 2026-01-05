@@ -1,5 +1,4 @@
 
-
 c colon lang , its brothers and the mcc ABI 
 
 
@@ -2296,6 +2295,7 @@ read only dynamic  symbol table layout:
 ```
 // constant read only global section.
 // at offset  0 
+needed-linker-abi256-hash;
  global_loader_ptr_offset;
 size_t  symbol_count;
 // padding
@@ -2354,7 +2354,7 @@ uint32_t priority_and_mask(*)[total_symbol_count];// the 3 low bits are  for the
 // this is done before the module initilization, O(total_symbol_count)time complexity 
 - dynamic load :
 0.make  lockgard mutex.
-1. inspect the list of given binaries meta datas and their priorities.
+1. inspect the list of given binaries meta datas and their priorities and make sure needed-linker-abi256-hash is compatible with the current version.
 2. allocate at least the size of all given symbols and ptr-masks.
 3. merge all sorted arrays of symbols in all the given binaries  into the region while also turning offsets into absolute values and assigning priorities( also sort based on the  priorities as if  the least significant sorting indicator, and because each binary is sorted and its indicator is constant, we can just do O(n) merge with this via a stable sort merge step).( either via  merge step or radix sort based on the appropriate heuristics) and while doing so , for all duplicate regions ( next to each other symbols of equal value)  do the duplication region check function and fail if it fails.
 4. if checks were not successful , then fail.
