@@ -2714,17 +2714,6 @@ in a debugging environment,  this can have conditional trap instructions.
 if the contract is not executed then this argument and all post and pre logic  is allowed  to be elided.
 
 
-- `operator (explicit/implicit)_contract(contract-in-val, instruction-pointer( optional))context-type ->bool-convertible-type:`
- the return value indicates if the contract  condition should execute.
-this function is executed before the contract.
-in a debugging environment,  this can have conditional trap instructions. 
-
-
-- `operator ~(explicit/implicit)_contract(contract-in-val)context-type `:
-this function is executed after the contract  condition, even if the contract throws an exception.
-in a debugging environment,  this can have conditional trap instructions. 
-
-
 
 - operator  pre(contract-in-val, contract-stack-size( optional),stack-pointer( optional), instruction-pointer( optional))callee-context-type ->bool-convertible-type:
  the return value indicates if the contract pre condition should execute.
@@ -3910,5 +3899,4 @@ memory order:
 
 
 ---
-
 
