@@ -2303,7 +2303,8 @@ size_t  symbol_count;
 // this is the corresponding symbol data to the symbol mangle.
  uintptr_t symbol_ptr_offset_and_mask[symbol_count]
  ...
- //the symbol_ptr_offset_and_mask's value is defined  with (uintptr_t(pointer)<<3) | viability,
+ // arch is 3-log2(alignof(void*)), and note that if the offset  overflows the program is ill-formed ,however on 32-bit or 16 bit systems this is not really a concern.
+ //the symbol_ptr_offset_and_mask's value is defined  with (uintptr_t(offset)<<(arch)) | viability,
  // the viability mask only can use 3 bits :
  // 1 : dll_comparable_address vs no_dll_comparable_address 
  // 2 : interpositioned vs no-interposition
@@ -2340,14 +2341,15 @@ void* exported_interposition_fnptrs[....]; // initilized  with the function defi
 // read write section global loader :
 mutex/ atomic flag ;
 size_t total_symbol_count;
-uint256_t  sorted_symbol_fragments(*)[total_symbol_count];
-uintptr_t   symbol_ptr_and_mask(*)[total_symbol_count];
-uint32_t priority(*)[total_symbol_count];
-// symbol_ptr_and_mask is just like symbol_ptr_offset_and_mask, but it has absolute addresses calculated from those offsets.
+uint256_t  sorted_symbols(*)[total_symbol_count];
+uintptr_t   symbol_ptr(*)[total_symbol_count];// symbol_ptr is just like symbol_ptr_offset_and_mask, but it has absolute addresses calculated from those offsets.
+uint32_t priority_and_mask(*)[total_symbol_count];// the 3 low bits are  for the viability mask , the high bits are more than enough  to indicate dll function overloadding priority.
 
 
 
-// this is done before the module initilization 
+
+
+// this is done before the module initilization, O(total_symbol_count)time complexity 
 - dynamic load :
 0.make  lockgard mutex.
 1. inspect the list of given binaries meta datas and their priorities.
@@ -2370,26 +2372,34 @@ uint32_t priority(*)[total_symbol_count];
 
 
 // if the start  up loader failed in a duplication region check, the program is ill-formed  .
+// however if the hot loading loader failed , its a contract violation. 
 
 
-
-- duplicate resolution :
-0. find the highest priority export adress .O(M).
+- duplicate resolution : 
+0. find the highest priority export adress .
 1. assign all the other adresss to this address.
 3 . return successfully 
 
 
 
-// this is done after the module deinitilization 
-- dynamic unload :
+// this is done after the module deinitilization O(total_symbol_count) time complexity 
+- dynamic unload ( unchecked)
 0.make  lockgard mutex.
-1. get the beginning and end pointers for each binary that needs unloading.
-2. for all elements in symbol_ptr_and_mask:
+1. do steps 1 ,2,3  in `dynamic load` to create  the sorted remove symbol table. O(total_symbol_count) memory amd time.
+2. search  the first element of remove table  in the sorted_symbols ( binary/linear search) , and remove it  with std::remove_if style algorithm on all tables, and then search for the next one ( skipping all of the ones that were before us), do this intil the remote table is empty.  
+3. update total_symbol_count and return successfully ( and unlock)
+
+
+// safer but O(total_symbol_count*log(#binaries)) time complexity 
+- dynamic unload ( with use after free check, but a bit slower) :
+0.make  lockgard mutex.
+1. get the beginning and end pointers for each binary that needs unloading,  and sort theses  via radix sort to allowe for binary search  for range check. 
+2. for all elements in symbol_ptr:
 3. if element and its internal function and storage being pointed to  is not in range of any of the binary pointers , we continue  to next.
 4. if the element itself was not in binary unload range we fail  by termination ( try to unload symbol while its used ,obvious and easy to check use after free).
 5. remove this element  from the array ( std:: remove_if style removal over the entire loop) 
 6. continue till all are done.
-8. return successfully ( and unlock)
+8. update total_symbol_count and return successfully ( and unlock)
 
 
 
