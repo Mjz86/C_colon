@@ -1,5 +1,4 @@
 
-
 c colon lang , its brothers and the mcc ABI 
 
 
@@ -3343,6 +3342,9 @@ the first and foremost goal is simplicity,  in contrast to c colon.
 the second goal is being exceptionally safe ( pun intended).
 
 the third goal is being blazingly fast ( lower priority than simplicity though).
+
+by banning unsafe , all the complaints of complexity only fall on c colon. While e colon users complain about how boring it is.
+
 
  i categorize them , and show what is needed to achieve these :
 
