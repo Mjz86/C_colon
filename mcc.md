@@ -1,4 +1,5 @@
 
+
 c colon lang , its brothers and the mcc ABI 
 
 
@@ -3577,9 +3578,10 @@ return...;
 
 
 
+// a lambda  can only do copies in its caputure,   like [=](){} in c++, however with fn before it, but with fn(){}, the caputure( after fn using [...] cannot be specified under E colon ).
 
-
-
+// the implicit lambda for iteration-primitive is the only place where caputure is by reference in E colon , and this is also heavily restricted under the iteration-primitive rules
+// also because the scope begins and ends predictably,  and the caller is conceptually paused until the end of the iteration,  this refrences caputure is almost always a pass under implicit borrow rules. 
 
 
 
@@ -3589,27 +3591,8 @@ return...;
 
 
 
-10. multi paradigm:
 
-
-
- while  more restricted values would result OOP virtual inheritance  being more heap and mutext based use because of the referenced ban ( or completely disallowed because of the `abi=` ban) .
-
- however rust-like `enum` types with pattern matching  are still very performant and value oriented .
-
- and object oriented ( without inheritance) would still be whidly used ,
-
- for example constructors would output the self object to  out prameters,
-
- copy would use the in parameter and moving/ relocation would be automatically generated(  not using any references would make types trivial to automatically relocate if inner c colon types are trivial) . 
-
- the destructor would also use in-val ( no specifier) to relocate the object for final destruction. 
-
-  these aren't just safe , these are also fast , because trivial values are passed by registers , and this language mostly operates on trivial values 
-
-
-
-11. easy errors:
+10. easy errors:
 
 
 
@@ -3629,9 +3612,11 @@ however E colon still recognizes these C colon constructs , allowing custom type
 
  similarly, common pitfalls like cyclic object hash dependency chains have relatively good information on their errors " it seems that your building a graph like structure within your types , however types dependent on themselves tend to be error prone , firstly,  use `abi=` operators to resolve the cyclic hash , secondly,  if dynamic referencing is involved,  consider using weak pointers as well, because it would help avoid leaks".
 
- 
 
-12. exception safety:
+
+
+ 
+11. exception safety:
 
 
 
@@ -3654,6 +3639,24 @@ however E colon still recognizes these C colon constructs , allowing custom type
   i think that terminations is very brutal , because of this exception handling mechanism , i think all violations are represented by an exception, 
 
   this is fast and effective , violations *can* be terminations,  and violation catching is unsafe , but generally program will be fine and exception would be lead to a  terminate in main with very sane stack trace and debug info ( if we choose).
+
+12. value and data oriented code :
+having rust-like `enum` types with pattern matching  are still very performant and value oriented alternatives to inheritance.
+
+ and object oriented ( without inheritance) would still be whidly used ,
+
+ for example constructors would output the self object to  out prameters,
+
+ copy would use the in parameter and moving/ relocation would be automatically generated(  not using any references would make types trivial to automatically relocate if inner c colon types are trivial) . 
+
+ the destructor would also use in-val ( no specifier) to relocate the object for final destruction. 
+
+  these aren't just safe , these are also fast , because trivial values are passed by registers , and this language mostly operates on trivial values 
+however,  because of unsafty of non trivial type erasure,  and refrences caputure.  lambda  ,
+it also leans to functional programming,  even tho its imperative 
+
+ 
+
 
 
 
