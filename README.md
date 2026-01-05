@@ -53,11 +53,10 @@ the third goal is being blazingly fast ( lower priority than simplicity though).
 6. easy to use package management with abi stability.
 7. safe with rare  borrowing errors.
 8. fast enough application logic.
-  9.  elegant parallel programming with safety and structured concurrency.
-10. multi paradigm.
-11. easy errors.
-12. exception safety: with the unique and fast with result like speeds exception system,  and the integrated contact system,  developers can do fast and easy at once.
-
+9.  elegant parallel programming with safety and structured concurrency.
+10. easy errors.
+11. exception safety: with the unique and fast with result like speeds exception system,  and the integrated contact system,  developers can do fast and easy at once.
+12. value and data oriented code .
 
 
 
