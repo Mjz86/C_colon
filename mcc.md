@@ -3614,8 +3614,9 @@ however E colon still recognizes these C colon constructs , allowing custom type
 
  similarly, common pitfalls like cyclic object hash dependency chains have relatively good information on their errors " it seems that your building a graph like structure within your types , however types dependent on themselves tend to be error prone , firstly,  use `abi=` operators to resolve the cyclic hash , secondly,  if dynamic referencing is involved,  consider using weak pointers as well, because it would help avoid leaks".
 
-
-
+ note that definition of a destructor, makes it so that a drop on member  is ill formed in many cases ( because the destructor needs a full object,  but one part is uninitilized, especially on the throw path) , this would make it so that using an inout would be incorrect, and would also encourage the use of setters and getters for correct logic ,  but using an in , and a separate out would be correct,  but would result in a copy in the callee because the callee can't change the in pram directly.
+ 
+ there is a similar restriction in c colon , but c colon can just use non dropped references,  however in E colon that is disallowed for exception safety, note that these rules are a combination of borrow checker and qualifiers rules , done in a double entry book keeping style in the compiler. 
 
  
 11. exception safety:
@@ -3918,7 +3919,7 @@ memory order:
 
 
 Balancing the Books,Access Right Tracking for C++ - Lisa Lippincott - C++Now 2025 :
-[link](https://youtube.com/watch?v=wQQP_si_VR8&si=XH8nkbikyv8XUX5m)
+[link](https://youtube.com/watch?v=wQQP_si_VR8)
 
 
 
