@@ -3917,10 +3917,13 @@ memory order:
 
 
 
+Balancing the Books,Access Right Tracking for C++ - Lisa Lippincott - C++Now 2025 :
+[link](https://youtube.com/watch?v=wQQP_si_VR8&si=XH8nkbikyv8XUX5m)
 
 
 
 
 ---
+
 
 
