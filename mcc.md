@@ -3771,8 +3771,7 @@ this language can be used in the web , similar to E colon ,via wasm
  
 
  5. rich aliasing info , and function purity metrics:
-
- for example stable values dont need to be loaded two times in registers to be captured! , they can be loaded only one time
+ my philosophy is , Every immutability comes with a disability,in e colon , progrmmers are forced with a disability to gain safety and immutability ,  and even boring simplicity. the c colon programmers however should be allowed to declarar the disability to get the performance from the  immutability, for example stable values dont need to be loaded two times in registers to be captured! , they can be loaded only one time only because of their stability ,  the lack of others to change its value is the disability. 
 
 
 6. layout optimizations :
@@ -3780,8 +3779,8 @@ this language can be used in the web , similar to E colon ,via wasm
   for example  if i have an array of offset independent members,  and reference a member,  i can just only use the memory of that member and other members may not be in ajason stack memory , also it might help in making array of structures to structure of array
   on the stack ,  reflection also can help with this
   
- 7. allocation Ellison :
- its similar to how cxx does coroutine frame Ellison.
+ 7. heap allocation Ellison :
+ its similar to how cxx does coroutine frame Ellison but with std::allocator or custom allocators that satisfy the allocator concept.
 
  8.  less interposition depending dynamic dispatch  :
    when code is similar and linked together, it can be sometimes de duplicated,
