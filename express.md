@@ -12,7 +12,7 @@
  
  thats where c colon , the co language that has all the complexity come in , 
  this language is intended for low level code , and can do very powerful things like what c++ does .
- but this comes at a cost of immense complexity, and to shield everyone , the first language can only interface this language in safe sns sinple ways.
+ but this comes at a cost of immense complexity, and to shield everyone , the first language can only interface this language in safe and sinple ways.
  
  
  lets view the goals of express colon :
