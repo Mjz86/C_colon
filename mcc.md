@@ -769,6 +769,23 @@ we can now declare a qualiexpr(bool sorted_flag=false) , (the empty qualiexpr be
 
  
 
+- dyn :
+dyn is more of a prefix on key words.
+
+- dyn(vals...) struct/union/enum...:
+a structure that will have a dynamic memory layout based on  specific vals ( vals are of type `size_t`),
+based on the alignment, which can used by (bit) alignof ,  its size can only be known  on an object that has been created in the sizeof or bit sizeof.
+a dyn type can have other dyn types within it via specifying the val arguments, 
+however a non dyn type cannot have dyn objects within it ( refrences to dynamic objects dont count)
+either on the definition of a dyn object or on its declaration we need to specify the vals it uses,
+if a dyn type has all values statically known it is considered a static type again,
+however if the dyn type info is stored in a variable not known  at compile time or cannot be elided , 
+the dynamic object creation might need to store it in the heap .
+
+
+-dyn this: in a dyn struct , either only one member can have this , or its implicitly the same as the staric structures,
+by specifing a dyn this on a member you can set the address of that member as the address of that structure.
+
 
 
 
@@ -3085,7 +3102,7 @@ the special byte type with the alias set of all types (with non fractional align
 
 
 
-0. c colon typical pointers( default ) : 
+1. c colon typical pointers( default ) : 
 
  these point to types with non fractional alignments
 
@@ -3097,6 +3114,7 @@ the special byte type with the alias set of all types (with non fractional align
 note that almost all pointer used to store data are non fractional, heap allocators or stack allocators or coroutine  frame or static symbol allocator are all non fractional,
 using fractional types in some contexts  adds padding to the end of them to align them to at least a byte.
  
+
 
  2.   c colon fractional pointers: 
 
@@ -3431,7 +3449,11 @@ by banning unsafe , all the complaints of complexity only fall on c colon. While
  the standard node's internal implementation  can be a just pointer , an array , or a vector, however because the only way a to access it is using `graph[node]` we ensure that the lifetime is valid because the graph is alive , the check is also a fast range check in the graph's allocated region, also this gives the graph very fast locality because its region is continuous,
 the library implementation may use a bit allocator to see which chunks in the region are empty , to not have to use memory movement.
  or the implementation may choose an actual graph implementation,  and have a root node for checks
-
+  
+ there are type/lambda erasure primitives that ensure the type within them is recursively  const stable (via reflection, for example a mutex or a non immutable refrence counted object cannot be this way),
+ this is because  if the data graph doesn't freeze at creation,  it might make a memory leak when the function calls itself with itself as its prameter and stores it in itself, 
+ thats why type erasure is highly restricted in Express colon. 
+ 
 4. speed :
 
 
