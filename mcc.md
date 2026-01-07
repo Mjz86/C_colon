@@ -3300,11 +3300,11 @@ the mcc toolchain and ABI outside of c colon:
 
   1. the mcc-CPP transpiler: 
 
-      a rust compiler that compiles c++ into mcc-ir.
+      a  compiler that compiles c++ into mcc-ir.
 
   2. mcc-rust:
 
-      a rust compiler that compiles rust into mcc-ir.
+     a compiler that compiles rust into mcc-ir.
 
   3.  functional colon ( F colon) ( complete  the CDEF  eco system):
      a functional language that compiles into c colon  or mcc-ir which most functions are implicitly purely functional in thr c colon code.
