@@ -158,9 +158,9 @@ although  a rare occurrence might be that  the f() , `abi=(f())`  when calling t
 also , using `abi=` on a member doesn't change the members real type and hash , and even if in some cases it  does, its still possible  to `unsafe(abi-cast)` the hash to the original type's hash ( variable definition having the type be type1 `abi=(abiof(type2))` or at most an unsafe `reinterpret_cast` known as pointer-cast or a bit cast)
  
  there's also an optimization i call hash Ellison,  under the as if rule ( as if the hash was calculated even if the calculation didn't happen) ,
- note that the visibles symbols in the binary are  all fixed size 256bit backend hashes 
+ note that the visible symbols in the binary are  all fixed size 256bit backend hashes 
 
-also for common graphs where the dependancy chain of the abi can be resolved without using max evaluation,  the compiler gives the heuristically best point in the cycle to do the breaking , also patterns prone to hit the max evaluation ( doing a complex calculation to get the value of `abi=`) generate a warning.
+also for common graphs where the dependency  chain of the ABI can be resolved without using max evaluation,  the compiler gives the heuristically best point in the cycle to do the breaking , also patterns prone to hit the max evaluation ( doing a complex calculation to get the value of `abi=`) generate a warning.
 
 
  * as a gist :
@@ -386,7 +386,16 @@ mut / const
 
 
 a change, read or write in a mutable region of memory is allowed
+const unstable is not a truthful constant,  similar to c++ that defines const cast ,
+i want the const correct code to benefit from optimizations,
+but code that is not truthfully const correct cannot assume stability,  and therfore can exist in the unstable region, allowing  the ability to express what a c++ constant is(all neccecery for `represent_cxx`  to say the correct story ).
+however stable const must not be casted away , and is a truthful statement of constness.
 
+
+
+
+
+ 
 
 
 
@@ -411,15 +420,32 @@ for a pointer p declared within its lifetime L ,   to an stable const region of 
 
  2. its dangerous ( unsafe(unrestricted-stable)) for stable values to be declared unrestricted, it is as if a c restrict isn't proven to not alias.
 
+ 
+
+  `stabilized` (deafult)/ `unstabilized`:
+  stabilized is  a recursive qualifier,
+  meaning that all subobjects must be either stabilized or casted as stabilized via unsafe(stabilized-cast),
+  and if pointers , pointing to other stabilized types.
+  having a stabilized object means that  the object and all its sub-objects are stable ,
+  and all regions pointed to by the objects are stable as well.
+  note that stabilized is a very strict stability grantee, a gold mine for the optimizer,
+  for example an stabilized const bit pointer freezes all memory that it aliases, 
+  and any pointer read from it is also freezed.
+  however we recognize that not all objects can be stabilized.
+   an example of an unstabilized `thread_safe`  stable object is the `arc_t<mutex<T>>`.
+  however  `std::rc_t` is `thread_unsafe` stable unstabilized.
+   note that a cast that disregards stabilized is unsafe,  and may lead to undefined behaviour.
+  
+
 
 
 `thread_safe` / `thread_unsafe`:
-
- these qualifiers are typically used as indicators of whether or not something is safe to pass and use between threads , the default is , any stable variable is thread safe and otherwise  unsafe, the stable mut is exclusively owned , and so safe to pass around, however,  `std::rc_t<T>` overrides that , so in any async boundaries the c colon libraries can notice via reflection that a mutable thread unsafe variable is used, so they can disallow it.
-
- also , if a member  is thread unsafe in E: ( not C:) , because of the qualifier visibility ban , that qualifier cannot be overridden by using a thread safe type with an `aliasset`.
-
-
+`thread_safe`  is  a recursive qualifier, we can think of it as a weak version of the stabilized qualifier. 
+ these qualifiers are typically used as indicators of whether or not something is safe to pass and use between threads , the default is , 
+any stabilized variable is thread safe and otherwise  unsafe, the stable mut is exclusively owned , and so safe to pass around, however, if it is not stabilized its not thread safe , so in any async boundaries the c colon libraries can notice via reflection that a mutable thread unsafe variable is used, so they can disallow it.
+ also , if a member  is thread unsafe in E: ( not C:) , because of the qualifier visibility ban and the unsafe ban , that qualifier cannot be overridden by using a thread safe type with an `aliasset`.
+`unsafe(thread_safe-cast)`  can also be used to cast the qualifier back ( for example the std mutex internals  are not safe , but yhe mutex itself is)
+ note that , unlike the stronger `stabilized` grantee , `thread_safe` is not a compiler truth, its a developer promise.
 
 uninitialized /initialized
 
@@ -455,7 +481,7 @@ these types must be representable under the Itanium spec, for example virtual cl
 this deep divide between these two ecosystem's ABI is limiting performance for mixed language code ,
 however , if we did use cxx, cxx did use lib unwind , so we paid for cxx and lib unwind and the whole std cxx lib. 
 using cxx FFI is already unsafe , however mixing cxx and c colon types is highly discouraged.
-and needs `unsafe(represent_cxx)`,  another thing is that the `abiof` operator cannot work on these types , the inclusion of these types in a non `represent_cxx` abi dependancy  mandates the use of `abi=`
+and needs `unsafe(represent_cxx)`,  another thing is that the `abiof` operator cannot work on these types , the inclusion of these types in a non `represent_cxx` ABI dependency  mandates the use of `abi=`
 
 
 
@@ -482,12 +508,12 @@ a value declared `constexpr` is known at compile time.
 
 
 `no_dll_comparable_address`/`dll_comparable_address`(default)(dynamic loader used Function and variable ( any symbol) qualifier):
- this qualifier is not a contributer to the abi hash or the name mangle,
+ this qualifier is not a contributor to the ABI hash or the name mangle,
  a function,  variable or storage space,  used in the dynamic shared  library, may have a different address to the static function, a `dll_comparable_address` mandates that the storage address is unique,
 
  comparing two variables with  `no_dll_comparable_address` 
  is dependent on dynamic execution order of the loader and its given priorities,
- in a binary with  `dllexport` we will get that export's  address when we store it and  it can also be inlined freely ( because of modular builds with a single parallel translation unit we dont really have static linking odr violations in mcc because they are ill-formed).
+ in a binary with  `dllexport` we will get that export's  address when we store it and  it can also be inlined freely ( because of modular builds within a single parallel translation unit we don't really have static linking ODR violations in mcc because they are ill-formed , but multiple translation units can benefit from the abi operators. ).
  however in a  build with `dllimport`   , we get the `dllexport` address with highest priority at dll initialization ,
 when using this qualifier ,  we must use `unsafe(no_dll_comparable_address)` .
 
@@ -499,23 +525,132 @@ the addresses of these variables is overridden at load time , and the memory  se
  
  
  `interpositioned`: 
- this is a contributer to the name mangle, and if not `dllhidden`, has the overhead of both an atomic load and no inlining  is allowed at all.
+ this is a contributor to the name mangle, and if not `dllhidden`, has the overhead of both an atomic load and no inlining  is allowed at all.
 there is an `unsafe(interpositioned)` qualifier that can use `set_interposition(fn,address)` to store ( memory  order release) function address on a global atomic static , using  the address-of on this symbol will load by a memory order of acquire,
+or `atomic_interposition(fn)` which gives an `fn**` to manage the atomic by hand.
 therefore the address  is controlled by developers.
 also , an `interpositioned` function  when exported can be set to null, `...f(...)...=0;`.
 also , inlining is not allowed for these functions.
  note that  paring both  `unsafe(no_dll_comparable_address,interpositioned)` , is doubly unsafe, and no inlining allowed. 
 if a call to an interpositioned function aquires a null , an implicit contract violation is made.
 
+
+
+
  `dllhidden(default)/dllexport/dllimport`( only on static symbols,  like functions or static variables): 
-this qualifier is not a contributer to the abi hash or the name mangle,
+this qualifier is not a contributor to the ABI hash or the name mangle,
    makes the symbol an export/import for DLL linking by providing a symbol hash.
 
    also `dllhidden` is the default and removes the symbol  hash in the binary .
    
 
 
+- non trivial construction or destruction of static symbols:
+while most symbols i mentioned are functions, static variables and other stuff can have symbols as well , and these may not be trivially destructable or trivially bit copyable.
+if inlining  or  knowing the address is permitted,  we just act as if we own the symbol with the highest priority so its lifetime is similar to hidden symbols.
+on module load , the symbols is constructed if the address of module storage matches the address of the static.
+on module unload , the symbol is destructed if the address of module storage matches the address of the static.
+this has the effect that , a dllexport static symbol  loses the predictability of static order , and is dependent on priorities in dll startup.
+the case for construction or destruction of interpositioned symbols is however  harder, because it must be safe, and the symbol must be unique, ,
 
+ we have an interpositioned symbol  S  that has initilization,
+ and an atomic pointer PS  for   symbol S,
+ and the pointer  pointer  PP.
+  init flag  F.// doesn't need to be atomic.
+ 
+ PS is initialized  with the address of PS ( technically the offset, but then converted into the pointer after load )
+PP is initialized with the address of the highest priority symbol S'es pointer. (&SP)
+
+
+on module load , we do(pudo code):
+if(PP->compare exchange strong(expect=&myPS,value=nullptr,aquire release)) {
+ init myS
+  F=1;
+ // now and only after now PP represents something other than a nullptr.
+ PP-> store ( &myS, release );
+}
+
+
+and for destruction its :
+if(F){ 
+PP->compare exchange strong(expect=&myS,value=nullptr,aquire release);
+deinit myS;
+
+}
+ 
+ // now we're good.
+
+and for getting the value :
+p= PP->load(aquire);
+// the second representable nullptr is the one that is not constructed.
+if(p==p)return nullptr;
+return p;
+
+
+although,  a warning will be omitted if the interpositioned symbol needs to be non trivial.
+because the overhead is more , and it's also not immediately available after load time.
+ think about it , you initilized an static dllexport  by calling f , now , f is not called , but g instead.
+ this is rather unintuitive,  but thats dll interposition in a nutshell.
+ ( this is also true for functions,  a `dll_comparable_address` function may do something like print yes , but if we override it by higher priority,  we can make it print no , even tho the source  says its yes),
+ and this makes us have the last dll qualifiers :
+ 
+ `dllinline`/ `dllinited`:
+ this qualifier is not a contributor to the ABI hash or the name mangle,
+ these two are the defualt when dllhidden,  or dll_comparable_address.
+ but  ill-formed   in dllimport .
+ - `dllinline` on function :
+ the function is assumed to have the highest priority ,and therfore is inlined.
+ however if the function address  is anything other than the right one during a call or a caputure of its address, its an implicit violation of contract.
+ similarly,  the interposition load  occurs to check the contract, and conceptually if the contract failed  we would have just used a dynamic call  , but the important distinction is that we didn't  , because  of the violation ending the control flow through that path.
+  - `dllinline` on  objects : 
+  the object is assumed to be have the highest priority.
+  however if the address observed is different, its an implicit violation of contract. 
+
+- `dllinited` on  objects : 
+ the object static (de)initilization sequence happens unconditionally ,
+ but the object  is unused if its priority is not the highest.
+ 
+ 
+ 
+ 
+
+
+
+- static linking qualifiers ( between modules and between translation units):  
+   these qualifiers are not a contributor to the ABI hash or the name mangle.
+   
+-  `moinline`:
+   a definition is processed with the root module in the tree in mind, meaning that until a static declaration uses it , it is not evaluated.
+   for example,  a template specilization in the root can be used.
+   this is deferred evaluation of the code graph.
+  
+  
+ - `mostatic`:
+  a static definition is one that only depends on the pervious definitions in the module tree.
+  any  declaration  until  this point that is used within this scope is pinned as the only  declaration .
+  if a code section after the original modified this declaration ,  its an ODR violation, and the program is ill-formed.
+  however there is a nuance that if the abi hashes don't conflict,  its not counted as the same declaration, and that dllexport  symbols with diffrent priorities dont count as the same symbol.
+  the reason for this is that in c we have header file and c files,
+  header files compile dependent on the translation unit.
+  but c files compile independently of each other.
+  so , we need a way to combine this without the hassle of definition duplications (  least the duplication being optional insteadof mandatory),
+  in c++ the inline , template and constexpr keywords allow this ,
+  but at the cost of   duplication of symbol before the linker,
+  we can mitigate this by using a more selective approach.
+  a static code section is defined independent of   the whole translation unit,
+  making a translation sub unit.
+  
+  - `mohidden`:
+this , means that a symbol is only visible inside of this module.
+this is not the default.
+
+- `tuexport`( deafult):
+this , means that a symbol is exported by the module,  but is be provided during link time of the translation units ( static linking)
+- `tuimport`:
+this , means that a symbol is imported by the module,  but must be provided during link time of the translation units  ( static linking)
+- `tuhidden`:
+this , means that a symbol is only visible inside of this translation unit.
+this is not the default, because it may lead to symbol duplications in an static binary.
 
 
 storage qualifiers
@@ -632,6 +767,18 @@ a value modifier that makes usage of this value an unsafe operation.
 
 
 
+ `no_virtual_rtti`(default)/`virtual_rtti`:
+determine if rtti is emitted for the class, 
+the v table  pointer has a flag in the alignment bits that can indicate if the v table only consists of functions or is more than that,
+if no rtti is emitted,  dynamic cast will return nullptr on all cases ( even on cast to void pointer).
+this means that the class is purely using inheritance for function calls.
+the root is the one determining if rtti is enabled or not.
+if the most derived class has `no_virtual_rtti` but a base class has `virtual_rtti`, the program is ill-formed.
+ this binary choice is a bit irritating because sometimes we need only down cast , but we can just do that by using a member function, 
+ for example: `virtual  my_down_cast( ...desttypeid...)`
+ 
+
+
 
 
 interface / final / virtual / nonvirtual
@@ -672,10 +819,34 @@ interface / final / virtual / nonvirtual
 
 for example `intn_t` can alias the `uintn_t` and `mintn_t` types , but `noaliasset intn_t` cannot.
 
+there's also a similar usage not for static types but for identifiers , of dclaration of two unstable memory regions of having noaliasset on each other, that is , saying that they will not alias one another.
+
+theres also entangled stable pointers, note that the cast to stable can introduce UB if not used carefully , this is why unsafe(ptr-cast) is almost always necessary in "valid"( as in borderline not UB) usage of entangled pointers, meaning that we cast two unstable pointers as stable , but entangle them , to satisfy the stable definition ,
+an example may be that :
+
+a , b   are overlapping regions but independent of other regions.
+ c , d , e may overlap in some way but independent of other regions.
+
+we entangle a and b together. 
+we also entangle c , d and e together.
+
+we do a loop on a , b , c , d and e.
+the compiler has some options:
+0. see that they are all overlapping ( all being unstable, because if a and b were not entangled and stable , it would be UB):
+ bad assumption,  less vectorized code.
+ 1. see that all regions are stable but ignore entanglement ( this is wrong and the program will be UB, but the standard  has defined this , so its not a valid compilation):
+ invalid compilation.
+ 2. recognize that there are partially overlapping regions but some regions are not overlapping with others ( being able to make a ven diagram of overlap):
+ the best way , it can do vectorized instructions if appropriate,  but also recognizes that the stability grantee is not as strong as an independent region of memory.
+ 
+ 
 
 
 
-
+`mayelide` / `noelide`:
+a pointer to mayelide region of memory may have flag bits inside , its layout is implementation defined.
+conversion from a elidable pointer to a non elidable pointer loses information and is considered a pointer use ( the conversion back produces an  elided flag of true), 
+using the function `std::get_elided(p) ,std::set_elided(p,flag)`
 
 
 
@@ -783,12 +954,15 @@ however if the dyn type info is stored in a variable not known  at compile time 
 the dynamic object creation might need to store it in the heap .
 
 
--dyn this: in a dyn struct , either only one member can have this , or its implicitly the same as the staric structures,
+-dyn this: in a dyn struct , either only one member can have this , or its implicitly the same as the static structures,
 by specifing a dyn this on a member you can set the address of that member as the address of that structure.
 
-
-
-
+- `dyn (nullable) (cow) `:
+an object declared dyn is as if its allocated in the heap via implicit elidable calls to (re)new and delete of the context-type , note that compiler may insert bytes before or after the allocated object depending on its needs ,
+a dyn object member is a pointer to that member , if nullable it can be null , and access to it would result in an implicit  contract violation.
+the cow qualification can be used on this object, creating any mutable reference will make the cow copy a unique reference to that copy , creating a copy of the pointer does a shallow cow copy using an implicit atomic reference counter before or after the object( can be padded in the compiler if alignment requirements say so).
+the reason for this being a language construct instead of a library one is that the dyn(Q) purity qualification would be able to support trees with cow , this would help in making functional colon a viable pure language.
+note that the byte  value, or size of the dyn pointer is implemented defined , implementations are encouraged to use a bit in the pointer to indicate if the allocation is elided, similar to what the coroutine handle does.
 
 ---
 
@@ -803,11 +977,21 @@ these don't really mean anything to the compiler , the are not  relevant to ODR 
  for example  debug(std::debug::obfuscated) to do debugging in release or debug(std::debug::unwind) , to debug during unwind. 
  or lang(std::python) to make bindings.
 
+-target(deafult)/target(...):
+the target qualifier is a qualifier that allows a function to have implementation defined calling conventions, 
+this qualifier's prameter must satisfy the  constexpr architecture concept , however the deafult is the architecture dependent ( based on compiler flag) conversion of `std::targets::current`.
+the object specified in the target can do reflection on the function caller site and or callee site,  make a thunk, insert asm directives , ect. to achieve the specified convention.
+note that conventions may be implemented in terms of implementation defined compiler intrinsics.
+target is similar to `represent_cxx` , however,  if the c colon spec cannot be mapped well to the target , it requires `represent_cxx target(...)` to indicate that the target is not only architecture dependent,  but also outside of the mcc specification.
+for example  `represent_cxx target(std::targets::thiscall)`.
+
+
+
 - none(in terms of purity,default on dynamic calls or declared non visible symbols):
 not having anything fancy at all.
 
 - synth( the implicit is default on static definitions):
-only static definitions can have synth qualification , the synth qualification either is ill-formed or transformed into the appropriate qualification on the abi hash, after the compile , the synth engine also spits out an info dump on every explicit (not implicit) synth it made  ,
+only static definitions can have synth qualification , the synth qualification either is ill-formed or transformed into the appropriate qualification on the ABI hash, after the compile , the synth engine also spits out an info dump on every explicit (not implicit) synth it made  ,
 explicit synth puts more effort to synthesize the best it can , if the step limit is exceed the program is ill-formed, while implicit synth involves less trial and is more conservative if the heuristics show its not looking good.
 synth analyzes the function body and does the purity qualification automatically , however its purity is easily breakable if the developer just  does a single wrong thing,
 the explicit synth is more appropriate for formal proof engines or similar things,
@@ -817,7 +1001,7 @@ there can be a compiler flag to also info dump on implicit synth and that hits a
 - `effectless`:
 
 an evaluation of a function call is `effectless` if any store operation that is sequenced during the call is the modification of an object that synchronizes with the call; if additionally the operation is observable, all access to the object must be based on a unique pointer parameter of the function.
-an `effectless`  expression must be composed of only other `effectless`  expressions.
+an `effectless`  expression must be composed of only other `effectless`  expressions OR must be casted via `unsafe(as-effectless)` .
 
 
 - `weak_idempotent`:
@@ -837,15 +1021,15 @@ an `idempotent`  expression must be composed of only other `idempotent`  express
 
 - `viewstate`:
 
-a function f is stateless if any definition of an object of static or thread storage duration in f or in a function that is called by f is stable but not volatile qualified, 
+a function f is stateless if any definition of an object of static or thread storage duration in f or in a function that is called by f is stabilized but not volatile qualified, 
 no modifications to these values are allowed. 
-an `viewstate`  expression must be composed of only other `viewstate`  expressions.
+an `viewstate`  expression must be composed of only other `viewstate`  expressions OR must be casted via `unsafe(as-viewstate)` ..
 
 - stateless:
 
-a function f is stateless if any definition of an object of static or thread storage duration in f or in a function that is called by f is const+stable but not volatile qualified, and is `viewstate`.
+a function f is stateless if any definition of an object of static or thread storage duration in f or in a function that is called by f is const+stabilized but not volatile qualified, and is `viewstate`.
 
-an `stateless`  expression must be composed of only other `stateless`  expressions.
+an `stateless`  expression must be composed of only other `stateless`  expressions OR must be casted via `unsafe(as-stateless)` ..
 
 - independent:
 
@@ -865,13 +1049,15 @@ an `independent`  expression must be composed of only other `independent`  expre
 
 indicates that a function is `effectless`, idempotent, stateless, and independent.
 
-an `unsequenced`  expression must be composed of only other `unsequenced` expressions.
+an `unsequenced`  expression must be composed of only other `unsequenced` expressions OR must be casted via `unsafe(as-unsequenced)` ...
 
 - reproducible :
 
 indicates that a function is `effectless` and idempotent.
 
-an `reproducible`  expression must be composed of only other `reproducible` expressions.
+an `reproducible`  expression must be composed of only other `reproducible` expressions OR must be casted via `unsafe(as-reproducible)` .
+
+
 
 
 
@@ -882,14 +1068,14 @@ an `reproducible`  expression must be composed of only other `reproducible` expr
   f performs no write operations to any memory location visible outside its own activation record, including, global, static, or thread-local objects, Memory pointed to by its arguments (even if the arguments are non-const pointers), but excluding out and `inout` argument's value. 
   and f performs no write accesses to volatile-qualified objects.
   `viewstate` and idempotent .
-  a `mostly_functional`  expression must be composed of only other `mostly_functional`  expressions.
+  a `mostly_functional`  expression must be composed of only other `mostly_functional`  expressions OR must be casted via `unsafe(as-mostly_functional)` .
 ( basically gnu::pure if no `inout` is used) 
 
 
 
 - `purely_functional`: 
 
- a function f is purely functional if The  returned or output-ed value ( via  out) by a call to f depends exclusively on The values of its direct function arguments , and   The values of any non-volatile stable constant  global or static objects observed
+ a function f is purely functional if The  returned or output-ed value ( via  out) by a call to f depends exclusively on The values of its direct function arguments , and   The values of any non-volatile stabilized constant  global or static objects observed
 
  and   f performs no read operations from non-volatile global, static, or thread-local memory that is mutable
 
@@ -901,9 +1087,18 @@ an `reproducible`  expression must be composed of only other `reproducible` expr
 
  and f is `unsequenced`  .
 
-   a `purely_functional`  expression must be composed of only other `purely_functional`  expressions.
+   a `purely_functional`  expression must be composed of only other `purely_functional`  expressions OR must be casted via `unsafe(as-purely_functional)` .
 
  ( basically gnu::const if no `inout` is used) 
+
+
+-`dyn (Q)`:
+a dyn purity qualifier Q , can be declared on an expression,  this asserts the purity qualification Q , however,  the allocation and deallocation of dyn objects doesn't count in side effects of the program, 
+because the usage of dyn objects is exactly similar to stack objects,  but with the difference that the compiler implicitly manages the memory via operator (re)new and operator delete in the context-type, and knows the lifetimes,  we can use this qualifier to our advantage, 
+one reason being that F colon functions need dynamic arrays but still are pure. 
+
+
+
 
 
 * note: throwing a trivially relocatable throw-value via a special hand crafted functional supporting context-types can still allow the throw expression to be `purely_functional` if the function is not `represent_cxx`, 
@@ -1135,7 +1330,30 @@ exact mechanism of return pointers:
 
  the real way we store them is in 4 cases( 2 and 0 being the most common) :
 
- 
+ -  special cases:
+0. noexcept: 
+ enumcatch is irrelevant, and the caller doesn't generate a sad path.
+1. noreturn:
+enumret is irrelevant,and the caller doesn't generate a happy path.
+the end of the callee scope in the control flow ( return) is ill-formed,  it must be unreachable ( at most by calling std::unreachable and using unsafe(unreachable) ).
+2. only 1 path is expected by the caller (ie: only return, only throw, only one jump table entry ):
+the path's adress is given to `return_ptr`, and the `catching_return_ptr`register is treated as if it was not an special register.
+3. only two paths expected by the caller (ie: only 2 return entry, only 2 throw entry, only 2 jump table entry ):
+one path's adresss  is given in the `return_ptr`,
+and the other pathes offset from the  `return_ptr` is stored in the `catching_return_ptr`.
+4. noexcept and noreturn combined:
+mostly used in terminate like functions,  no return pointer is provided and the base pointer is also not provided. 
+only the stack pointer  and the instruction pointer are special registers, 
+the used set is irrelevant because the caller cannot continue its execution.
+a tail call is granteed.
+having any out or inout prameters in the function signature is ill-formed, 
+the context-type is an inval argument in such function signatures, and the callee is responsible for its destruction,
+although,  these types of functions are unsafe(longjump) to call because,  well , its a terminated program and no RAII unwind code was executed.
+
+
+
+
+
 
 0. no tables( `enum` ret) :
 
@@ -1188,6 +1406,8 @@ exact mechanism of return pointers:
   `{...(-n)th_catching_return_offset, nth_retuen_path_offset....}`.
 
     
+    
+
 
 --- 
 
@@ -1362,7 +1582,7 @@ the promise cache is an object only visible in the promise, with lifetime betwee
 
   context-type-coro-return (* resume_function ) ( frame* ptr, context-type-coro-input) context-type;// fastdyncaller , and  dyncontract  by default 
 
- intptr_t  program_switch_counter;// positive indexes show normal control flow, negative indexes show the same suspension's catching/cancelation control flow,  0 shows that the function and all of its variables will be destroyed on next suspension ( final suspend) .
+ intptr_t  program_switch_counter;// positive indexes show normal control flow, negative indexes show the same suspension's catching/cancelation control flow,  0 shows that the function and all of its variables will be destroyed on next resume ( final suspend) .
 
  // if the function's last destination ( the counter being set to zero) throws by exception, the resume pointer will be reassigned to soly point to the frame deallocation destructor,  the frame wouldn't be destroyed,  but rather,  the exception would  be caught in the catch and stored on the stack  then the frame will finally be destroyed by calling the resume pointer again. 
 
@@ -1379,6 +1599,13 @@ the promise cache is an object only visible in the promise, with lifetime betwee
 
 
   };
+  
+  
+  __raw_handle{ // pack.
+frame* ptr;// the alignment bits are used for the flags.
+flag_t elided;// elided flag is in the least significant bit.
+
+};
 
     
 
@@ -1387,6 +1614,9 @@ the promise cache is an object only visible in the promise, with lifetime betwee
   // all of these are unsafe(explicit-coroutine-handles) . 
 
 // bool    done() == (program_switch_counter==0 )
+
+// bool elided()== (ptr&1)
+
 
 //note that a cancelation of a function is only observable while it hasn't  reached final suspension,  in the final suspend it had done all of its work so even if the resume throws an exception,  it has already been a finished routine. 
 
@@ -1422,8 +1652,20 @@ the promise cache is an object only visible in the promise, with lifetime betwee
   thread-safe allocators are more expensive to use , although non thread-safe allocators can be used via channels , its still not a good choice.
  its similar to how cxx does coroutine frame Ellison, but this time the stack frame is also available. 
 
+ however,  this time , we have lifetime tokens in the language ,
+ so , an example may be:
+ for a memory region M allocated with lifetime L between calls to elidable (re)new and delete  calls ,
+ or a dynamic  object O that implicitly does allocate M ,
+the compiler is allowed to provide the region M with other means than new and is obligated to not call the corresponding delete if it does so.
+ analyzing the lifetime L , if L is within B , B being the lifetime of the stack frame or a region of memory R,  the compiler is allowed to expand R or the stack frame under the as-if rule.
+ note that , doing so correctly may need meta data.
+ 
+for example  a size typed capacity field behind the allocation region,
+or a high bit in a pointer reference to such region.
+or simply having a flag next to the reference that indicates Ellison.
+in my view,  using some bits in the pointer is superior to addling a capacity feild.
 
-
+there also might be ways to have a call to new or renew  produce a flag , and delete  to consume it.
 
 
 
@@ -1737,39 +1979,237 @@ virtual table layout contains:
 
   
 
-```
+``` 
 
+//https://github.com/Mjz86/String 
+using u256_t = mjz::uintN_t<version_v, 256>;
 
+// may be buggy,needs proof
+MJZ_CX_FN uintlen_t
+caclulate_truncated_hash_byte_count(std::span<u256_t> sorted_mangles) noexcept {
+  if (!sorted_mangles.size()) {
+    return 0;
+  }
+  uintlen_t similar_bit_max{};
+  u256_t prev{sorted_mangles[0]};
+  sorted_mangles = sorted_mangles.subspan(1);
+  for (u256_t current : sorted_mangles) {
+    uintlen_t similar_bit_cnt = countl_zero(current ^ prev);
+    prev = current;
+    uintlen_t similar_bit_cnt_without_equal = similar_bit_cnt & 255;
+    similar_bit_max = std::max(similar_bit_max, similar_bit_cnt_without_equal);
+  }
+  uintlen_t unique_bit_max = similar_bit_max + 1;
+  uintlen_t unique_byte_max = (unique_bit_max + 7) >> 3;
+  return unique_byte_max;
+}
+struct base_castation_table_t;
+union cast_visibility_t {
+  // sizeof(cast_visibility_t)*8 >= tatal_base_count_v
+  std::array<uint64_t, (sizeof(u256_t) - sizeof(void *) * 2) / 8> inline_bits;
+  // sizeof(cast_visibility_t)*8 < tatal_base_count_v, this is a bit pointer ,
+  // pointing to the beggining of the cast visibility bit array, the bit shift
+  // stored plus the pointer to u64 holding it.
+  std::pair<const uint64_t *, uint8_t> outline_bits;
+};
+struct castation_table_ref_t {
+  u256_t hash_current;
+  // O(#tatal_base_count_v/8) , note that we store visibility in bits , because
+  // the O(#tatal_base_count_v) per base factor must be negligible.
+  //  if tatal_base_count_v is less than or equal to bit sizeof buffer use
+  //  the inline one
 
-struct {
+  cast_visibility_t cast_visibility;
 
+  // the constructor initilizes this either on dll load or on the static
+  // initilization phase , note that dllimport vtable layouts are partially
+  // known, but their content this is used to access the cast table
+  const base_castation_table_t *castation_ptr;
+  // reletive  to most derived, used in cast to void/byte/bit pointer or access
+  // a virtual base class by subtraction of these offsets
+  intptr_t object_offset_current;
+};
 
+struct base_castation_table_t {
+  // this  can be used to access the most derived type info in the node ,note
+  // that c colon std::type_info_t (given by typeid(expr)) is just the 256 bit
+  // backend mangle , not even a pointer.
+  const castation_table_ref_t *most_derived_table;
+  // tatal_base_cnt_and_trk_cnt= (tatal_base_count_v << 5) |
+  // (truncated_hash_byte_count - 1);
+  uintptr_t tatal_base_cnt_and_trk_cnt;
+};
 
-// the 256 bit hashes aren't 256 values , instead we have a martrix pointer , truncated-count ( max of 32) arrays of  big endian bytes , the reason for this is presented in the dynamic cast spec.
-
-(sorted-cryptographic-256bit-hash-of-dest-types-name-mangle-byte(*)[number-of-types])  [32/* hash bytes*/];// note , if the hashes are unique when truncated ( very often the case ) the least amount of bytes of hash is used while still keeping every hash's value in the table is unique 
- bit pack of <number-of-types, truncated-count>;// between 1 and 32 is truncated-count, as a 5 bit , and rest of the bits are for number-of-type
-type-v-table-of-dest-types* (*)[number-of-types]
-
-} 
-
-```
-
-  1. offset-of-most-drived-type.
-
-  2.  cryptographic-256bit-hash-of-current-types-name-mangle 
-
-  3. cryptographic-256bit-hash-of-most-drived-types-name-mangle 
-
-  4. function-pointers.
-
-  5. virtual-base-objects-offsets.
-
-  6. pointer-to-type-v-table-of-virtual-bases.
-
-  7. pointer-to-type-v-table-of-non-virtual-bases.
-
+template <size_t tatal_base_count_v, size_t truncated_hash_byte_count>
+struct castation_table_t {
   
+  // these are sorted in the order of the hashes.
+  std::array<const castation_table_ref_t *, tatal_base_count_v> node_ptrs;
+  // between 1 and 32 is truncated-count, as a 5 bit , and rest of the bits are
+  // for number-of-type
+  static_assert(size_t(truncated_hash_byte_count - 1) < 32);
+    // the negative offsets are the first members. 
+  base_castation_table_t base;
+  // the 256 bit hashes aren't 256 values , instead we have a martrix pointer ,
+  // truncated-count ( max of 32) arrays of  big endian bytes , the reason for
+  // this is presented in the dynamic cast spec. note , if the hashes are unique
+  // when truncated ( very often the case ) the least amount of bytes of hash is
+  // used while still keeping every hash's value in the table is unique ,O(1+)
+  // Amortized.
+  std::array<std::array<uint8_t, tatal_base_count_v>, truncated_hash_byte_count>
+      sorted_big_endian_hashes;
+};
+// may be buggy,needs proof
+MJZ_NCX_FN const std::byte *mcc_dynamic_cast(const std::byte *This,
+                                             const std::byte *vtable,
+                                             u256_t dest_id) noexcept {
+  castation_table_ref_t ref =
+      *std::launder(reinterpret_cast<const castation_table_ref_t *>(
+          vtable - sizeof(castation_table_ref_t)));
+  This -= ref.object_offset_current;
+  // typeid of 0 is reserved for void casts.
+  if (!dest_id) {
+    return This;
+  }
+
+  if (ref.hash_current == dest_id) {
+    return ref.object_offset_current + This;
+  }
+  const uintptr_t tatal_base_cnt_and_trk_cnt =
+      ref.castation_ptr->tatal_base_cnt_and_trk_cnt;
+  const uintptr_t truncated_hash_byte_count = tatal_base_cnt_and_trk_cnt & 31;
+  const uintptr_t tatal_base_count_v = tatal_base_cnt_and_trk_cnt >> 5;
+  const uint8_t *const search_matrix_ptr =
+      reinterpret_cast<const uint8_t *>(ref.castation_ptr + 1);
+
+  const std::span<const castation_table_ref_t *const> search_tbls(
+      reinterpret_cast<const castation_table_ref_t *const *>(
+          ref.castation_ptr) -
+          tatal_base_count_v,
+      tatal_base_count_v);
+  std::array<uint8_t, 32> dest_raw =
+      std::bit_cast<std::array<uint8_t, 32>>(dest_id);
+  if constexpr (std::endian::big != std::endian::native) {
+    static_assert(std::endian::native == std::endian::little);
+    std::ranges::reverse(dest_raw);
+  }
+  uintlen_t start_index = 0;
+  uintlen_t count = tatal_base_count_v;
+  for (uintlen_t i{}; i < truncated_hash_byte_count; i++) {
+    const std::span<const uint8_t> search_space(
+        search_matrix_ptr + i * tatal_base_count_v + start_index, count);
+    const auto sub = std::ranges::equal_range(search_space, dest_raw[i]);
+    start_index =
+        uintlen_t(std::ranges::begin(sub) - std::ranges::begin(search_space));
+    count = std::ranges::size(sub);
+  }
+  if (!count) {
+    return nullptr;
+  }
+
+  mjz::uint_dyn_t<version_v, true> vis_map{};
+
+  uintlen_t vis_map_offset = 0;
+  if (sizeof(cast_visibility_t) < tatal_base_count_v) {
+    vis_map_offset = ref.cast_visibility.outline_bits.second;
+    vis_map.words = std::span(ref.cast_visibility.outline_bits.first,
+                              (count + vis_map_offset + 63) / 64);
+  } else {
+    static_assert(sizeof(cast_visibility_t) == sizeof(ref.cast_visibility));
+    vis_map.words = ref.cast_visibility.inline_bits;
+  }
+
+  uintlen_t count_invisble{};
+  if (count == 1) {
+    if(!vis_map.nth_bit(vis_map_offset + start_index)) return nullptr;
+  } else {
+    count_invisble = mjz::countr_zero(vis_map, vis_map_offset + start_index);
+  }
+  if (count <= count_invisble) {
+    return nullptr;
+  }
+  return search_tbls[start_index + count_invisble]->object_offset_current +
+         This;
+}
+ 
+// note that this is technically a tree , however most of its functions,offset,
+// and base vtable pointers storages are just spans into the tree  table array ,
+// O(#direct-virtual-bases) Amortized and O(#direct-virtual-function) Amortized.
+// note that all of this v-table structure is offset_dependant not_reorderable
+// refexpr.
+template <size_t tatal_base_count_v, size_t truncated_hash_byte_count,
+          class conceptual_most_drived_node>
+struct conceptual_root_data_t {
+  conceptual_most_drived_node node;
+  castation_table_t<tatal_base_count_v,truncated_hash_byte_count> castation_table;
+
+  // this is a conditional part of the castation table accessed using the
+  // outline_bits member only if the total base count is above the threashold,
+  // note that crossing this threashold will emit a warning of for example :
+  // "base count is more than 128 = (sizeof(inline_bits)*8),falling back to using
+  // O(n^2)=(... <vtable size in byte> ..) space storage, are you sure
+  // inheritance is the right way?  ".
+  std::conditional_t<
+      (sizeof(cast_visibility_t) * 8 < tatal_base_count_v),
+      std::array<uint64_t, (tatal_base_count_v * tatal_base_count_v + 63) / 64>,
+      void>
+      cast_visibility_bit_arrays;
+};
+
+
+ 
+
+template <size_t num_funcs, class... conceptual_base_nodes>
+struct conceptual_node_data_t {
+// the reason is that the root is  at the beginning,  and the castation-table is after the end ,so , for a down cast , we can simply do a range check.
+  castation_table_ref_t castation_table_ref;
+  // the v-table pointer points at &virt_func_table[0].
+  std::array<const void *, num_funcs> virt_func_table;
+  std::tuple<conceptual_base_nodes...> bases;
+}; 
+
+ // down_cast:
+ // we have the base vtable pointer , we know that if the cast was successful,  it would be that the drived table has the base table indide it at a known offset ,
+ // so , we first see if the space between  the root and the castation-table  can allow such a thing ,
+// if not , cast fails, if it can , we go at that offset , and get the castation_table_ref assuming its valid and see if the 256bit hash matches, 
+// if the hash matches we are in the correct place, if we are , we're done and successful , we just use the offsets.
+// so this is O(1) operation,  not even the search is necessary 
+//  note that this is a algorithm dependens on the assumption of unique hashes,  and the failure would be reading a memory that is exactly what the hash is , but not being the castation-table hash, this is astronomically unlikely because its 256 bits  that are needed to match and its  a cryptographic hash , so even more unlikely,  practically impossible.
+ 
+
+
+
+
+
+
+// dllhidden is deafult, however,  we can use :
+// virtual dllhidden/dllexport/dllimport ; in the definition of class.
+
+
+
+// the case of no_virtual_rtti:
+//vtable is :
+template <size_t num_funcs, class... conceptual_funcptrs>
+struct conceptual_funcptr_data_t {
+  // the v-table pointer points at &virt_func_table[0].
+  // note that nothing other than function pointers are stored... , dynamic cast  returns null on all cases if no rtti is enabled.
+ std::array<const void *, num_funcs> virt_func_table;
+  std::tuple<conceptual_funcptrs...> funcptrs_of_bases;
+}; 
+
+
+
+
+
+
+
+
+ 
+
+```
+
+ 
+ 
 
   
 
@@ -1805,11 +2245,11 @@ type pointer
 
     when we search , each time we do so , we search for the byte , and in each section,  the bytes are next to each other , so 64 bytes (64 bases) can be easily searched through without a cashe miss , and in most cases,  we have few bases , so , the first steps , which are the most likely to find the hash in ( cryptographic hashes are uniformly distributed, so in 256 bases ( which is a lot) we are likely to have 1 to 5 bases, so the next step will likely resolve the search ).
 
-    also ,either way we will need to access the offset anyway,  and because of the 32 byte alignment , we know that ( assuming 64 byte cache line) we only access one cache line to get both the offset , and the 256bit hash to check equality with to see if we have a match.
+    also ,either way we will need to access the offset anyway,  and because of the 32 byte alignment , we know that ( assuming 64 byte cache line) we only access one cache line to get both the offset , and the 256bit hash to check equality with to see if we have a match, also , the base-visibility-bit-flag at the index must be true for a successful  cast, because an inaccessibile base cast results in nullptr.
 
     this strategy helps mitigate the binary search cache miss penalty. 
 
-    if the number of bases are less than 64 , we most likely have only 3 cache lookups ( 1 for the first search step , and assume the first step is successful, another one for the  v table lockup  , and last one for check and pointer offset lookup)
+    if the number of bases are less than 64 , we most likely have only 4 cache lookups ( 1 is the baseline for v table access , 1 for the first search step , and assume the first step is successful, another one for the  v table lockup  , and last one for check and pointer offset lookup, but the visibleity is inlined)
     
     in practice most structures have less than astronomical base counts , truncated-count helps to reduce all that 256 of precision,  untill we reach a  sorted set that will lose uniqueness as soon as we truncade more , gaining  the same speed with  equivalent functionality and practically fewer bytes in the table.
 
@@ -2313,10 +2753,15 @@ read only dynamic  symbol table layout:
 // constant read only global section.
 // at offset  0 
 needed-linker-abi256-hash;
+dll-identifier-abi256-hash; // this is used in dllmap , not really useful otherwise.
+void (*mayde_initilization_fn_offset)(void* ptr0 , bool init);
  global_loader_ptr_offset;
 size_t  symbol_count;
+size_t dll_count;
+
+
 // padding
-// this is the sorted 256bit hash back-end mangle , stored in 32 byte arrays ( big endian  ):
+// this is the sorted 256bit hash back-end mangle :
  uint256_t  symbol_fragment[symbol_count];
 // this is the corresponding symbol data to the symbol mangle.
  uintptr_t symbol_ptr_offset_and_mask[symbol_count]
@@ -2356,13 +2801,19 @@ void* exported_interposition_fnptrs[....]; // initilized  with the function defi
 
 
 
+
 // if the binary definition has the mcc dynamic  loader.
 // read write section global loader :
 mutex/ atomic flag ;
 size_t total_symbol_count;
+size_t dll_count;
 uint256_t  sorted_symbols(*)[total_symbol_count];
 uintptr_t   symbol_ptr(*)[total_symbol_count];// symbol_ptr is just like symbol_ptr_offset_and_mask, but it has absolute addresses calculated from those offsets.
-uint32_t priority_and_mask(*)[total_symbol_count];// the 3 low bits are  for the viability mask , the high bits are more than enough  to indicate dll function overloadding priority.
+uintptr_t dll_info_index_and_mask(*)[total_symbol_count];// the 3 low bits are  for the viability mask , the high bits are more than enough  to indicate dll info index.
+ 
+// sorted infos based on dll info's dll-identifier-abi256-hash 
+dll_info dll_infoes(*)[dll_count];
+uint32_t dll_prioritis(*)[dll_count];
 
 
 // note that for security a sanity check for sorted ness van b done in O(total_symbol_count)time complexity 
@@ -2404,8 +2855,8 @@ uint32_t priority_and_mask(*)[total_symbol_count];// the 3 low bits are  for the
 // this is done after the module deinitilization O(total_symbol_count) time complexity 
 - dynamic unload ( unchecked)
 0.make  lockgard mutex.
-1. do steps 1 ,2,3  in `dynamic load`( dll_priority is passed ) to create  the sorted remove symbol table. O(total_symbol_count) memory amd time.
-2. search  the first element of remove table  in the sorted_symbols ( binary/linear search) , and remove it  with std::remove_if style algorithm on all tables, and then search for the next one ( skipping all of the ones that were before us), do this intil the remote table is empty.  
+1. put each dll info needing unload into an unload state ( via a flag) 
+2.  with std::remove_if style algorithm , remove any symbol that has a dll info needing unload at its dll info index.
 3. update total_symbol_count and return successfully ( and unlock)
 
 
@@ -2422,7 +2873,106 @@ uint32_t priority_and_mask(*)[total_symbol_count];// the 3 low bits are  for the
 
 
 
-//  PLT style lazy loading is highly discouraged and frankly very hard to implement under mcc , if we lazy load we will get O(n²) because a trigger of the loader is O(n) and we do it for every symbol on load,  so batch loading makes it better if we stay in the mcc loader, however a represent_cxx loader is not in scope of this abi.
+//  PLT style lazy loading is highly discouraged and frankly very hard to implement under mcc , if we lazy load we will get O(n²) because a trigger of the loader is O(n) and we do it for every symbol on load,  so batch loading makes it better if we stay in the mcc loader, however a represent_cxx loader is not in scope of thisABI .
+
+
+
+
+// high level overview of what radix sort means in this context( not the definitive way , just a way ):
+
+// first , we know that the merge sort algorithm heuristics told us that O(log(#binary)*n) was too big ,so  we have to make an algorithm that works for very large n , 
+// it probably has a million or more symbols.
+
+// we allocate  a buffer with 2 ^ 16   stacks
+// we sort the hashes based on their 32 most significant bits, by:
+// 1.  put elem in stack with index =  uint16_t(elem>> ( 256-   64)). pop the stacks according to the order of stable sort.
+// 2.  put elem in stack with index =  uint16_t(elem>> ( 256-    48)).pop the stacks according to the order of stable sort.
+// 3.  put elem in stack with index =  uint16_t(elem>> ( 256-    32)). same
+// 4.  put elem in stack with index =  uint16_t(elem>> ( 256-  16)). same
+// now , based on the knowledge that these are cryptographic hashes with uniform distribution, also considering that they even were sorted partitions at the beginning, 
+// we assume that we have  partitioned the memory on this distribution  and so on average  we say that each slot has  (N/ 2 ^  64) elements that are not sorted,   this means that for practical purposes,  we can say that most parts are sorted.
+// we do a scan of the regions , and for each part where it didn't have sorted order ,
+// we do  a similar algorithm for sorting on the sub regions or probably a merge sort , or just do a bubble sort if it was tiny , we say its O(m*logm) if we had an unluky hit
+// on average its O(4*O(1+)*n) + f(n) )
+// O(1+)= push back in stack O(1) Amortized. 
+//  so , we need to calculate why f(n) is O( n) on average.
+// f(n) =  O(n)+  (sum i=0 to 2 ^ 64  ,selecting for ies that existof  O(mlogm)* P( hash conflict that m  symbols with non equal least significant portions  has the same upper hash of I in a uniform distribution))
+// we can say that  the probability is very small and negligible that its close to 0.
+// this  btw is the reason that hash tables are considered fast.
+// lets say it more rigorously:
+// uniform distribution means on avrage (N/ 2 ^  64) symbols have the same hash per each part ,
+//  the probability of sameness of the upper 64 bits  for m symbols while having non equal  lower parts is :
+// ( 2 ^  -64)^ (m)  =2^(-64m)
+// for selecting in the summation , we observe that for  avr partion size of M , in N elements,  we have around N/M partions.
+
+// we multiply the time complexity and the selection sumation:
+//  O(n)+ O(n/avr(m))*O(mlogm)*(2^-64m) 
+// we say that  m is represented by its average.
+// O(n)+ O(n/m)*O(mlogm)*(2^(-64m)) =
+// O(n)+ O(n/m*mlogm*2^(-64m)) =
+// O(n)+  O(n*logm*2^(-64m)) =
+// O(n)+ O(n*2^O(-64m+loglogm)) = 
+//  note that the biggest factor of the exponential  is m , not loglogm , and its negative, so , we can just transform it into O(1)
+//  O(n) + O(n*O(1+))= O(n+) , amortized linear time.
+// so , it is 5n+O(n+) amortized 
+// note that a non probabilistic algorithms is also doable ,
+// to preform a sort using pure radix sort ,
+// it does 16 repetitions of the  put elem in stack  and pop from it steps.
+// so its  16n+O(n+) granteed,  however,  log(#binaries) is probably not going to be more than 16 ,
+ // who has 65536 dll files!?... and who expects these many files to load fast?!, even the operating system  has B trees of its files that give O(n*logn) time when accessing n files,  thats not really a CPU bound task   , it's  more  file storage speed bound.
+// i believe that practically  merge sort may be the only algorithm that is necessary to achieve max speed because of the nature of this operation.
+// however,  dllmap files are still the most significant contribution in binary  loading. 
+
+
+
+
+
+
+```
+
+
+ there's also a secondary tactic used to make dll loads faster after the first memorization in the program installation,  its called a dllmap, and the linker recognizes dllmaps by using the dll count of non 1.
+
+```
+// constant read only global section.
+// at offset  0 
+needed-linker-abi256-hash;
+dll-identifier-abi256-hash; 
+void (*mayde_initilization_fn_offset)(void* ptr0 , bool init);
+ global_loader_ptr_offset;
+size_t  symbol_count;
+size_t dll_count;
+// padding
+// this is the sorted 256bit hash back-end mangle :
+ uint256_t  symbol_fragment[symbol_count];
+// this is the corresponding symbol data to the symbol mangle.
+uintptr_t offset_and_mask[symbol_count];
+uintptr_t dll_info_index[symbol_count];
+
+
+// sorted infos based on dll info's dll-identifier-abi256-hash , this is because the loader may rearrange the given dll map paths if they are path independent( if  path dependent,  meaning that the dllmap has the reletive path of the dll it needs to load compared to its own path , it doesn't even need the dll arguments at all, in most cases a path dependent dll loader is enough for application installation.), also a mix of these can be used if the dynamic loader implementation supports it.
+dll_info dll_infoes[dll_count];
+uint32_t dll_prioritis[dll_count];
+
+
+ 
+ 
+ // the algorithm for this is kinda  just an extension to the base dll loader.
+ // first , all dll symbols with  known priorities and known dlls will get merged into this big sorted table for the creation  of dllmap, in an algorithm very similar to the dll loader ( dllmap loader is a variant of it).
+ // because the execution of  this dllmap creator algorithm is only done at the program installer, the cost of the symbol merge algorithms are payed omly once.
+ // a dllmap leader is given both the dll it mapped and the current program symbol table , and simply merges them similar  to a dll only loader , however because its a dllmap,  at the end of the merge operation it uses the dll_info data to identify the target dll ( for example this info can be an id , a path , a index , even file path independant dll-identifier-abi256-hash can be used, ect, based on the architecture and implementation), and uses the offset and priority , to set the dll data it needs to load , note that the dll table itself is not really used to lookup this operation, but the dllmap info is used instead,  each offset represents a pointer to the dll , and after the load( using dll_info) , its absolute address is calculated and is initialized as if it actually did the dll load.
+// note that dllmaps can also merge into bigger dllmaps.
+// the reason for the existence of dllmap is to not have the log(#binaries) factor grow , because a dllmap is a single binary that represents many binaries.
+// also , most needed dlls in the real world are known at the program installation phase,  and the ones that do not , they don't need dllmaps , but the ones that do can still benefit from more memorization.
+// we can think of a dllmap as a snapshot/save  of the dynamic state of the dll loader , but with non absolute addresses and reletive offseting, and using it is like restoring a snapshot, instead of building it up.
+
+// the c colon dynamic loader is consistent of the dll (un)loader , dll map (un)loader and the dll map linker( to make dllmaps).
+
+
+
+
+
+
 
 ```
 
@@ -2523,9 +3073,16 @@ in general, API objects defined as part of this ABI are assumed to be extern "c:
 
   lists all the dependancies that will be build for  the web C colon repository. 
 
- 
+  7. import and export  ajason:
+  an ajason module is a module that is defined in a different translation unit,
+  however we have a dependancy on this unit's executable,  but we dont import its content, 
+  note that we can define ajason units in a module just by making the    definition , and saying exactly what needs to export , and what part needs no symbol imported.
+  
+  note that scopes can either only depend on the dependancies or the wholw translation unit.
+  
+  
 
- 
+
 
  
 
@@ -2611,7 +3168,7 @@ compatibility
  
 
 -  trunks for dynamic calls with specific calling conventions:
- a non exhaustive list of common calling conventions that would  need this thunk 
+ a non exhaustive list of common calling conventions that would  need this thunk ( used in the target qualifier)
 ```
   cdecl
   stdcall
@@ -2715,6 +3272,7 @@ in a debugging environment,  this can have conditional trap instructions.
  
  * note: caller and callee are both protective in the caller and callee respectively.
  
+ * note: these operators themselves do not call to context operators , they are special member functions of the context-type,  and writing the definition of them requires unsafe(no-outer-context), similar to the `__mccabiv1::main` function , this is the actual entry point , similar  to the c maim function, can be overriden, however in the standard module main , this isdefined to call the global main function and provide a standard context type.
  
  - operator  caller (   argument-stack-size( optional),stack-pointer( optional), instruction-pointer( optional), callee-pointer or backend-hash  (depending on  dynamic call vs static call) ( optional) )callee-context-type :
 in the caller , before the call , the context-type gets a chance to caputure the protection information of the function if it wants to, to protect against stack overflow, and a minimalistic debug info for the stack trace.
@@ -2727,8 +3285,50 @@ note that caputure of backend-hash makes compilation slower because of non elide
 in a debugging environment,  this can have conditional trap instructions. 
 
 
+
+-operator ~throw(inout throw-value)context-type noexcept  noreturn(...):
+the last operation before the function finally returns the control flow to the caller catch path.
+this is a noexcept  operator
+if the function signature contains a noexcept, this  operator must  have noreturn  qualification.
+otherwise,  its optional.
+in a debugging environment,  this can have conditional trap instructions. 
+
+
+
+-operator return(args...)context-type->return-value :
+this operation happens on the return operator ,or implicit on void returns on function  scope end.
+this can control the return object before the destruction of the callee  scope ,its final result is given to `operator ~return` after the cleanup executes.
+
+-operator ~return(inout return-value)context-type :
+the last operation before the function finally returns the control flow to the caller happy path.
+in a debugging environment,  this can have conditional trap instructions. 
+
+
+
+- `operator new( in(out) size,in(out) alignment, out byte*)context-type`:
+ allocation  of a memory region with given size , if size is inout , it can be specified to minimum of the given size , 
+ the alignment of the output region must be correct.
+ in a debugging environment,  this can have conditional trap instructions. 
+
+
+ - `operator delete( in size,in alignment,  in byte*)context-type`:
+ deallocate the memory with the size and alignment and arguments matching the one that was outputed (or given, if specified in only) from (re)new,
+ the lifetime of the storage will end .
+ this operator must be noexcept.
+ in a debugging environment,  this can have conditional trap instructions. 
+
+- `operator  renew(in size, in alignment, inout byte*,in(out) after_size)context-type  `:
+ a combination of new and delete operator, similar to the semantic in cxx std realloc , 
+ this can be used for trivially relocatable types or storage that needs to expand or shrink. 
+ note that a failure  of expanding or shrinking the memory does not invalidate the previous region of memory, a success will end the lifetime of previous region and begins the new one's lifetime.
+in a debugging environment,  this can have conditional trap instructions. 
+
+
+ 
+
 - contract-in-val  type is defined to be used in  the `dyncontract`  dynamic  contract code , or the static non inlined contract checked code,
 if the contract is not executed then this argument and all post and pre logic  is allowed  to be elided.
+also , this can be used to check for specific types of contracts using contact categories. 
 
 
 - `operator  pass_contract()caller-context-type ->contract-in-val `:
@@ -2797,8 +3397,14 @@ executed after the block ends to destroy the block context ,even on throw paths
 to get the context type with an expression.
 
 
+- operator continue/break/~break/for/~for(...)lambda-context-type ...:
+used in an implicit for each loops lambda ,depending on the iteration primitive,  these control the loops control flow.
+note that in a for each loop using goto to an outer loop is ill-formed,  for that , one needs to use the for loop with explicit iterator or indexies and also unsafe(goto)/unsafe(dyn-goto).
+but , we can label the for loops using `for break(label)` , and by using `break label;` in an inner loop , the operator ~break will compare the equality of those lables ( the lables are given at runtime via adding offsets of the instruction pointer of the loop end) and if not equal,  perform a break , but if equal,  perform a last break of the loop and stop unwinding.
 
-
+-`operator co_yeild/ co_await/ co_return /co_break / co_continue(...)context-type ...`:
+used similarly to operator break and continue,  however they also return awaitables , to allow for suspension and resumption of the coroutine.
+note that while-loops and c-style for loops  do not have an implicit lambda , and cannot become a coroutine by using the co await operator.
 
 
 - throw-value:
@@ -2855,6 +3461,17 @@ the lower the level the more debugging friendly is it.
  the debugger may pause the execution of only this or all thread, to inspect the debug context,
  or if the debugging has specific conditions for triggering , overring this with the checker vs trigger  for those conditions is an excellent choice to not slow down all execution.
  
+
+ * note :
+   we do not say that  programming bugs should be throw, in fact , it might br better to have quick enforce semantics ,
+   but , the context type is the decider for this decision,  i would say that on non critical system code , it would be better to say that  no contract violation is  an exception.
+   but in an airplane or any critical system,  i would definitely say that  even stack overflows is a recoverable error, because human lives depend on it.
+   based on our definition of an recoverable error,  recoverable errors are exceptions.
+   and if the function cannot have a recoverable error, its a noexcept candidate.
+   but a  consideration should be that destruction or catch blocks should be made very carefully in a critical system because two exceptions can probably arise together but shouldn't lead to termination.
+   for this reason,  it should  be the default ( change  via compiler flag in   a critical system) that almost all contract violations should not throw anything but terminate.
+   because of that most code in the standard library can be noexcept even if allocation occurs.
+   " ~ 95% of functions are noexcept if...." -  Herb Sutter ,De-fragmenting C++.
 
 
 
@@ -2992,6 +3609,10 @@ fundemental types
  however if N is not a power of two , N must be between 1 and 64 
  with its bit alignment being the  prime factor of powers of 2
 
+note that by using qualiexpr tricks and the std bounded integral types , one can have a fundemental type that the compiler known its a violation if it goes outside of its range.
+these might be useful to help the compiler in optimizations of math , and maybe layout .
+
+
  1. nothing:
 
  overflow is a contract  violation, is a signed integral.
@@ -3015,7 +3636,10 @@ fundemental types
 floating point types with N bits.
 
  also , s stands for stable, as in , the floating point math is platform independent,  although slower.
-
+ however,  not having an s makes the float act as if it had the ffast math flag.
+ for a cxx like behaviour one can still use cxx compat types , but using them is not recommended, 
+ for cross platform and  multiplayer games using the s floating point is recommended to not have issues from incompatible math.
+ for single pc or performance critical code using s is optional.
 
 
 - `std::charN_t`:
@@ -3052,10 +3676,10 @@ the special bit type with special pointers and references , `sizeof(bit_t)` and 
 
 
 
-- `std::byte_t`:
+- `std::byte_t` / `void`:
 
 the special byte type with the alias set of all types (with non fractional alignment, although it can alias the memory holing it).
-
+also the special void type , with no layout,  although the size is not fractional
 
 
 - `std::abi_t`:
@@ -3073,6 +3697,29 @@ the special byte type with the alias set of all types (with non fractional align
    `namenangle__hexed-hash`. 
 
 
+-`std::debug_meta_t` /`std::meta_t` :
+reflection types , similar in spirit and usage to the c++ reflection system, 
+however,  these reflection types have  an important  but subtle   distinction, 
+its that  their usage  might happen  without sequencal orders, 
+ the compilers JIT  engine is responsible to provide language level tools through the standard to help developers making the compile time safer and faster.
+ although,  because of the drive for performance, the compiler gives trust to the c colon language more than the c++ compiler,  if an unsafe usage of the reflection meta ,  
+ or any  unsafe behavior in the constexpr execution executes UB , probably a violation was specified as unsafe contract ub ,  or a data race , although the implementations are encouraged to use sanitizers if the compiler flags are not set for max evaluation speed, the program is ill-formed no diagnostic required.
+ this is rather scary,  however,  because the build system already allows for running code, and almost all projects do custom build commands , 
+ this is already something that happens anyway.
+ however compilers are encouraged to give warnings when entering an unsafe block in the constexpr runtime.
+but , if implicit contract violation  during the constexpr runtime occurs the program is ill-formed, explicit ones are implementation defined if they will throw an exception or be ill-formed, however the deafult should be ill-formed.
+
+
+
+
+
+- `std::type_info_t`:
+the hash type that the  typeid operator gives.
+representative of the back end hash used in the linker or v table.
+
+
+ its a  256bit cryptographic hash, it doesn't support any operations outside of the compare or equal,  other than the usual load and store or casts.
+if the cryptographic hash is given to an implementation defined function  `__mccabiv1::demangle` , it either  gives the empty string or the true front-end name mangle that lead to this hash , this outcome depends on security and rtti flags during compilation.
 
 - `std::cxx_(wchar/...)_t`:
 
@@ -3098,6 +3745,7 @@ the special byte type with the alias set of all types (with non fractional align
 
 `(memcast<uintmax_t>(bit_ptr)&~7)==8*memcast<uintmax_t>(byte_ptr)`.
 
+ note that elidable  pointers have implementation defined layout and size.
  
 
 
@@ -3113,6 +3761,8 @@ the special byte type with the alias set of all types (with non fractional align
 
 note that almost all pointer used to store data are non fractional, heap allocators or stack allocators or coroutine  frame or static symbol allocator are all non fractional,
 using fractional types in some contexts  adds padding to the end of them to align them to at least a byte.
+ 
+ 
  
 
 
@@ -3229,10 +3879,10 @@ gets the ABI hash off the inner expression.
 
 13. lifetimes of  arguments or members and their dependancies ( the tokens and their hash in the definition of templates , lifetimes, contracts and requirements)
 
-
+14. architecture dependent version/hash ( for example , based on the amout and register priorities, the generic x86-64 win or generic  arm v7 ect....) , this can be specified  using the target qualifier  
 
 * note :
-the abi hash of a function ( not a type)  does NOT depend on the function's  code ( the function inner scope)
+the ABI hash of a function ( not a type)  does NOT depend on the function's  code ( the function inner scope)
 
 
 - note :
@@ -3325,7 +3975,7 @@ the mcc toolchain and ABI outside of c colon:
      a compiler that compiles rust into mcc-ir.
 
   3.  functional colon ( F colon) ( complete  the CDEF  eco system):
-     a functional language that compiles into c colon  or mcc-ir which most functions are implicitly purely functional in thr c colon code.
+     a functional language that compiles into c colon  or mcc-ir which most functions are implicitly dyn  purely functional  in  the c colon code.
 
   4.   express colon :
   a simple  language , a subset of c colon ,where only safe c colon code is valid ,most  qualifiers are invisible-implicit and inaccessibile.
@@ -3441,12 +4091,12 @@ by banning unsafe , all the complaints of complexity only fall on c colon. While
     for example , E colon can only do bitcast if and only if the type of source and dest are trivially relocatable and trivially destructable and have no pointer/references in their layouts ( to prevent memory leak via type erasure), but in C colon , we can do unsafe(bit-cast) to do any form of bit cast( or other casts) . also , beacuse making a thread is unsafe(threads) , the async scheduler is in c colon and E colon remains free of its compications.
     this makes E colon not need any garbage collector for leak prevention,  and because of the hidden thread safety qualifiers ,  e colon can use non atomic refrence counters and only use atomic ones when necessary 
     leak free graph and linked list support is also present in the library. 
- `std::graph_t<T> ,std::node_t<T> ,  std::node_t<T[n]> , std::node_t<T[]>`
- the standard node is a leak safe node , to be used instead of depending on unsafe abi operators, 
+ `std::graph_t<T> ,std::node_t<T> ,  std::node_t<T[n]> , std::node_t<T[]>`( note that T of void( type erased ) is still safe , because this is just an index and needs the graph at the end of the day to know the type)
+ the standard node is a leak safe node , to be used instead of depending on unsafe ABI operators, 
  the standard node can be thought of as an index into the standard graph ,
  the standard graph manages all lifetimes of all objects es in it ,
  a standard node's contract is violated if  used on a graph that is not the original owener.
- the standard node's internal implementation  can be a just pointer , an array , or a vector, however because the only way a to access it is using `graph[node]` we ensure that the lifetime is valid because the graph is alive , the check is also a fast range check in the graph's allocated region, also this gives the graph very fast locality because its region is continuous,
+ the standard node's internal implementation  can be just a  pointer, an index , an array , or a vector, however because the only way a to access it is using `graph[node]` we ensure that the lifetime is valid because the graph is alive , the check is also a fast range check in the graph's allocated region, also this gives the graph very fast locality because its region is continuous,
 the library implementation may use a bit allocator to see which chunks in the region are empty , to not have to use memory movement.
  or the implementation may choose an actual graph implementation,  and have a root node for checks
   
@@ -3576,7 +4226,7 @@ return...;
 
 // theres an implicit  transformation for these code , to make it able to do either a ,co await , co return or a throw or simply  continue execution .
 
- for co_await (auto [`inout` a, in b, out c, d ]: parallel-iteration-primitive){// the iteration primitives may restrict the lambda to only caputure stable and thread_safe constant state if it wants to do parallelization , a const unstable mutex<T> however has internal  unrestricted unstable qualification of its members, some even atomic, therefore  its valid for it to modify its members even tho it looks constant. 
+ for co_await (auto [`inout` a, in b, out c, d ]: parallel-iteration-primitive){// the iteration primitives may restrict the lambda to only caputure thread_safe constant state if it wants to do parallelization , a const unstable mutex<T> however has internal  unrestricted unstable qualification of its members, some even atomic, therefore  its valid for it to modify its members even tho it looks constant. 
 
 // can modify a c and d , but cannot modify other variables outside of the for loop , however mutexes can still be modified beacuse they can be modified when constant.
 
@@ -3713,7 +4363,7 @@ not in scope rn.
 4. ( dependent on 3) replacement or extension ( probably a fork ) of the llvm back-end, linker:
 
 not in scope rn, but the reason being is to be able to nativity support the mcc ABI in all platforms instead of piggybacking it on top of the c ABI .
-
+in this step , the license will become  more permissive ,  ( GPL removal)
 
 
 5. ( dependent on 4) rewriting the full toolchain in c colon:
@@ -3780,9 +4430,9 @@ this language can be used in the web , similar to E colon ,via wasm
  
 
 
- 3. dynamic cast:
+ 3. dynamic cast and smaller objects:
 
-   bigger v-table sizes but much faster cast with less cache miss.
+   a bit bigger v-table sizes but much faster cast with less cache miss.
    smaller object size because of the v-table pointer only being in the refrence type.
 
 
@@ -3927,7 +4577,11 @@ CppCon 2017： Michael Spencer “My Little Object File： How Linkers Implement
 [link](https://www.youtube.com/watch?v=a5L66zguFe4)
 
 
+Contracts, Safety, and the Art of Cat Herding - Timur Doumler - C++ on Sea 2025 :
+[link](https://www.youtube.com/watch?v=gtFFTjQ4eFU) 
 
+Understanding Compiler Optimization - Chandler Carruth - Opening Keynote Meeting C++ 2015 :
+[link](https://www.youtube.com/watch?v=FnGCDLhaxKU) 
 
 
 CppCon 2018： Matt Godbolt “The Bits Between the Bits： How We Get to main()” :
@@ -3942,6 +4596,9 @@ memory order:
 
 Balancing the Books,Access Right Tracking for C++ - Lisa Lippincott - C++Now 2025 :
 [link](https://youtube.com/watch?v=wQQP_si_VR8)
+
+De-fragmenting C++： Making Exceptions and RTTI More Affordable and Usable - Herb Sutter  CppCon 2019 :
+[link](https://youtube.com/watch?v=ARYP83yNAWk)
 
 
 
