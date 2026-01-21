@@ -936,7 +936,14 @@ we can now declare a qualiexpr(bool sorted_flag=false) , (the empty qualiexpr be
 
 
 
+
 ```
+
+
+- qualicast<Q>(identifier) :
+unsafe(qualicast), is used to cast qualifiers away or cast them to existence, 
+for example,  a logically  dropped value can be set as uninitialized without a destructor call.
+
 
  
 
@@ -4604,9 +4611,6 @@ De-fragmenting C++： Making Exceptions and RTTI More Affordable and Usable - He
 
 
 ---
-
-
-
 
 
 
