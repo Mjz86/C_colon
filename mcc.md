@@ -3890,7 +3890,7 @@ gets the ABI hash off the inner expression.
 
 * note :
 the ABI hash of a function ( not a type)  does NOT depend on the function's  code ( the function inner scope)
-
+the abi hash of a namespace depends on its   parent namespace  and its template arguments ( namespace templates are  possible) but it doesn't depend on the content. 
 
 - note :
 
