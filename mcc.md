@@ -1,5 +1,4 @@
 
-
 c colon lang , its brothers and the mcc ABI 
 
 
@@ -2210,6 +2209,7 @@ struct conceptual_node_data_t {
 //vtable is :
 template <size_t num_funcs, class... conceptual_funcptrs>
 struct conceptual_funcptr_data_t {
+  intptr_t  object_offset_current;
   // the v-table pointer points at &virt_func_table[0].
   // note that nothing other than function pointers are stored... , dynamic cast  returns null on all cases if no rtti is enabled.
  std::array<const void *, num_funcs> virt_func_table;
@@ -2217,6 +2217,9 @@ struct conceptual_funcptr_data_t {
 }; 
 
 
+//  role of object_offset_current:
+// the virtual pointer being a fat pointer to the current object  means that if we want to have the most derived pointer we need the offset
+// so we make it so that this is only stored for at least being able to call a base function with its pointer,  or have a virtual base class.
 
 
 
