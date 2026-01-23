@@ -2135,7 +2135,11 @@ MJZ_NCX_FN const std::byte *mcc_dynamic_cast(const std::byte *This,
   if (count <= count_invisble) {
     return nullptr;
   }
-  return search_tbls[start_index + count_invisble]->object_offset_current +
+  
+  auto desttbl=*search_tbls[start_index + count_invisble];
+  if (desttbl. hash_current!=== dest_id)  return  nullptr;
+   
+  return desttbl.object_offset_current +
          This;
 }
  
