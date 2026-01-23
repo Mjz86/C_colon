@@ -3318,9 +3318,10 @@ in a debugging environment,  this can have conditional trap instructions.
  in a debugging environment,  this can have conditional trap instructions. 
 
 
- - `operator delete( in size,in alignment,  in byte*)context-type`:
+ - `operator delete( in size,in alignment,  in uninitialized byte*)context-type`:
  deallocate the memory with the size and alignment and arguments matching the one that was outputed (or given, if specified in only) from (re)new,
  the lifetime of the storage will end .
+ also note that the storage must be uninitialized  because the destruction of bytes must be trivial in all code paths( also enables invariant optimizations).
  this operator must be noexcept.
  in a debugging environment,  this can have conditional trap instructions. 
 
