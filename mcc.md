@@ -777,7 +777,7 @@ a value modifier that makes usage of this value an unsafe operation.
  `no_virtual_rtti`(default)/`virtual_rtti`:
 determine if rtti is emitted for the class, 
 the v table  pointer has a flag in the alignment bits that can indicate if the v table only consists of functions or is more than that,
-if no rtti is emitted,  dynamic cast will return nullptr on all cases ( even on cast to void pointer).
+if no rtti is emitted,  dynamic cast will return nullptr on all cases ( but not on cast to byte/void pointer because the offset is available , and in cases where a base object is accessed it would need to be rewriten as a static cast anyway).
 this means that the class is purely using inheritance for function calls.
 the root is the one determining if rtti is enabled or not.
 if the most derived class has `no_virtual_rtti` but a base class has `virtual_rtti`, the program is ill-formed.
