@@ -1,4 +1,5 @@
 
+
 c colon lang , its brothers and the mcc ABI 
 
 
@@ -447,13 +448,20 @@ any stabilized variable is thread safe and otherwise  unsafe, the stable mut is 
 `unsafe(thread_safe-cast)`  can also be used to cast the qualifier back ( for example the std mutex internals  are not safe , but yhe mutex itself is)
  note that , unlike the stronger `stabilized` grantee , `thread_safe` is not a compiler truth, its a developer promise.
 
-uninitialized /initialized
+uninitialized /initialized/ intermediate/ erroneous
 
 
 
 a read from uninitialized valued via unsafe pointer  is undefined and without it  ill formed, but an store is valid, and will make  the qualifier go away.
-
-
+however,  while the initialized qualifier requires  that value is safety readable,  and uninitialized says that its not readable, 
+the inintimidates qualifier is more relaxed ,
+we can use pointer optimization fences to  allow code to work while not adhering to the one qualifier set per expression rule.
+ for example the new  and renew have an intimidate pointer parameter,
+ that doesn't mean that all bytes are uninitialized , it means that all bytes can be uninitialized, 
+ the c++ memory model like pointers are intermediate.
+erroneous is more of a relaxed form of uninitialized that has defined behavior when its read.
+only read of initialized and erroneous values is safe,
+however read of other intermediate is unsafe(intermediate).
 
 
 
@@ -3316,9 +3324,10 @@ in a debugging environment,  this can have conditional trap instructions.
 
 
 
-- `operator new( in(out) size,in(out) alignment, out byte*)context-type`:
+- `operator new( in(out) size,in(out) alignment, out intermediate byte*)context-type`:
  allocation  of a memory region with given size , if size is inout , it can be specified to minimum of the given size , 
  the alignment of the output region must be correct.
+ intermediate is used to let the operator new have implementation defined canaries if in debug mode that arent optimized out because of the value being not strictly readable 
  in a debugging environment,  this can have conditional trap instructions. 
 
 
@@ -3329,7 +3338,7 @@ in a debugging environment,  this can have conditional trap instructions.
  this operator must be noexcept.
  in a debugging environment,  this can have conditional trap instructions. 
 
-- `operator  renew(in size, in alignment, inout byte*,in(out) after_size)context-type  `:
+- `operator  renew(in size, in alignment, inout intermediate byte*,in(out) after_size)context-type  `:
  a combination of new and delete operator, similar to the semantic in cxx std realloc , 
  this can be used for trivially relocatable types or storage that needs to expand or shrink. 
  note that a failure  of expanding or shrinking the memory does not invalidate the previous region of memory, a success will end the lifetime of previous region and begins the new one's lifetime.
