@@ -3141,7 +3141,7 @@ in general, API objects defined as part of this ABI are assumed to be extern "c:
 
    this is repeated till we either reach max evaluation step or we resolve all identifiers to move to the next step.
 
-  
+
 
 ---
 
@@ -3597,6 +3597,28 @@ results in undefined behaviour on violation, but the benefit  is that the check 
 
 
 
+* contract speed in this language:
+theres a very clever way to both do range check  and have simd instructions,
+first we  assume that the iteration-primitive way is not used ( because that is just the better faster way ) and we need a range check because we use indexes.
+ 
+in  express colon  code if operator ~throw  is reached the array  is dropped ( uninitialized specified ) ,
+so it can have any value,   inside the loop we set the values , but we didn't really   load them, and  then they got uninitialized, 
+so under the as if rule we can just elide  the store operation in the violation path,
+so if we do this wr either have : 
+0. no violation all writes were preformed:
+simd used here
+1. one of   the checks failed :
+ uninitialized read is ill-formed so we just have no read , so we need no write, 
+ no operation. 
+ 
+-  how:
+ and in the loop   entry just preforms the superset of all range checks
+ and picks one.
+ 
+ 
+- conclusion:
+writing  exception safe code with small simple functions is faster than writing complex code with less  invariant grantees. 
+because the invariant is either true on initialized or not true on uninitialized,  we really can optimize based on the invariant and stay within as if rules.
 
 
 
@@ -4166,7 +4188,7 @@ the express colon language also tends to look more functional than its c colon c
  the in-val ( no specifier) does a copy or a drop/relocation  on most occasions .
 
  these are ideal for register usage ,  but they introduce more copying and occasionally the need for reference counting if dynamic  referencing is necessary, 
-
+ also because of the strict exception safety  that grantees invariants,  we can optimize on those invariants.
 although this is fast enough so its good enough,  if not , c colon can be used to optimize  it more.
 
 
@@ -4478,6 +4500,11 @@ while doing so , we can spot all duplicate symbols if any and do the appropriate
 10. more parrarelized code  and structured concurrency:
 by enabling cancelation in the ABI of coroutines we can swiftly do many structural concurrency patterns, 
 std primitives such as tasks , channels,schedulers,  promises etc help here .
+
+11. invariant based optimization:
+read the "contract speed in this language" section.
+allows transactional invariant preserving code to be very fast
+
 
 ---
 ```
