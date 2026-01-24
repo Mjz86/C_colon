@@ -4325,6 +4325,14 @@ for co_await (auto [`inout` a,  in b, out c, d ]:  asynchronous-single-threaded-
 
 
 
+// theres also transactional memory which  i will just point to the transaction TS in c++ , they are safe  simple and composable  , although they are more restricted on what is possible ( idempotent expression  only ) 
+
+// thers also  massage passing via channels,  for example multi consumer multi preduces queues
+
+
+
+
+
 ```
 
 
