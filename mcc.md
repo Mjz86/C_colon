@@ -4307,6 +4307,24 @@ return...;
 
 //... many other for variants to help build readable and reliable abstractions. 
 
+
+
+
+// also a special case  for example used in more relaxed async code,   this doesn't require  thread safe qualification but still requires const qualifier,  using a   non atomic  refrence counter however can allow for mutability , because it only allows a single thread to be scheduled , but the drawback is that the whole structured concurrency tree with this root has its scheduler changed to a single-threaded one,  however the mutex and atomic overhead is  unnecessary when  using this method.
+for co_await (auto [`inout` a,  in b, out c, d ]:  asynchronous-single-threaded-iteration-primitive){
+...
+}
+
+// we can do a combination of these , for example have multiple single-threaded workers that  each run  in parallel. 
+
+
+// also we have  lvl(rw)_mutex<level> ,
+// in the scheduler  each leveled mutex would be  recorded in a async local stack wait data structure, and if a new leveled mutex is used , then its a violation of the try precondition  if the level is higher or equal than the last level in the level stack.
+
+//  there are different compiler flags , however in a critical system,  using a mutex without a level would be unsafe(deadlock) while in a non critical system it would just be safe because we don't care about deadlock normally .
+
+
+
 ```
 
 
