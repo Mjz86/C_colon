@@ -1978,7 +1978,18 @@ note that a dynamic class cannot have fractional alignment  for its bases, if it
 
 
 virtual table layout contains:
+ 
+ - note for virtual base classes and virtual calls in the constructors : 
+ the  constructor of a virtual base class subobjects and the mimicking of the itanium virtual table table happens by changing the fat table pointer's vtable throughout the construction process.
+ also for each virtual base class we have a special implicit function pointer entry corresponding to that base,
+ the function pointer entry is more of a flag than a  code path, its  either 0 or -1,
+ if -1 we know that we need to call the virtual base class constructor, 
+ if 0 we know that the virtual base class is already constructed,
+ only one -1 entry can correspond to a specific virtual base.
+ if the construction is inlined and doesn't call virtual functions the constructor virtual tables can be elided.
+ 
 
+ 
 
 
 
