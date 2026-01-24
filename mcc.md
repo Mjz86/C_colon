@@ -348,7 +348,7 @@ considerations
 
 with these goals in mind , i aim to improve this spec , to make it practical, i often start with over engineering things , then chop unnecessary additions, to make it more practical, as of right now , were in over engineering phase.
 
-this ABI aims to have minimal compatibility with the Itanium ABI , such that an extern "c++" statement can make most code usable in a c++ platform,
+this ABI aims to have minimal compatibility with the Itanium ABI , such that an `extern "c++" represent_cxx` statement can make most code usable in a c++ platform,
 
  some concepts may be excluded from such inclusions , for instance , a c++ type's declaration must be expressible in c colon and vise versa .
 
@@ -368,7 +368,7 @@ value qualifiers
 
 
 
-volatile / nonvolatile
+volatile / nonvolatile( default)
 
 
 
@@ -381,7 +381,7 @@ a change, read or write in a volatile used region of memory may not be optimized
 
 
 
-mut / const
+mut / const( default)
 
 
 
@@ -400,7 +400,7 @@ however stable const must not be casted away , and is a truthful statement of co
 
 
 
-unstable / stable
+unstable / stable( default)
 
  the stable qualifier is statically proven when paired with restricted via the borrow checker , otherwise the program is ill-formed. 
 
@@ -464,7 +464,7 @@ however read of other intermediate is unsafe(intermediate).
 
 
 
-unrestricted / restricted
+unrestricted / restricted( default)
 
 
 
@@ -494,7 +494,7 @@ and needs `unsafe(represent_cxx)`,  another thing is that the `abiof` operator c
 
 
 
-`noaliastype` / `aliastype`
+`noaliastype`( default) / `aliastype`
 
 
 
@@ -700,7 +700,7 @@ no address is given for the value
 
 
 
-`refexpr` / `valexpr`
+`refexpr` / `valexpr`( default)
 
 
 
@@ -714,7 +714,11 @@ also if reorder is possible , any padding bytes or invalid state may be used to 
 
 if its a `std::flag_t` , even more possibilities are made , as long as other declared object's are preserved
 
+also a value expression function pointer can be the same as other    function pointers( de duplications) . 
+also a value expression string litteral  ( string litteral doesn't have null terminator in c colon unless explicitly using "\0" ) or trivialy relocatable and trivially destructable object can overlap with any static constant stable memory region.
 
+an array of empty value expression structures is itself an empty structure,
+subtraction  of two pointers of empty value expressions is ill-formed.
 
 `reorderable/not_reorderable`(struct/class qualifier )
 
@@ -735,6 +739,13 @@ a `not_offset_dependant` type is a type whose inner structs can be scattered in 
  but `offset_dependant` objects can use the offset to gain a pointer to the main object.
 
 `member_offset_dependant` objects are the ones that specifically can be used for casts by offset , base classes are `member_offset_dependant` by default.
+ 
+  `(bit_)offsetof` is ill-formed if a type is `not_offset_dependant/member_not_offset_dependant` , 
+   a member pointer `T::*` is also  ill-formed.
+   note that the value of the `T::*` is the same as the offset of value.
+   however a null member pointer is  same as   ( assuming non `represent_cxx`)   `~((~0)>>1)` ( the sign bit only being set , other bits being 0)
+   note that offsets can be negative in a virtual base class , 
+   a dyn member pointer ` T dyn(...)::*` layout is implementation defined.
 
 
 
@@ -743,8 +754,7 @@ a `not_offset_dependant` type is a type whose inner structs can be scattered in 
 
 
 
-
-`forceref` / `unforceref`
+`forceref` / `unforceref`( default)
 
 
 
@@ -756,17 +766,18 @@ a `not_offset_dependant` type is a type whose inner structs can be scattered in 
 
 
 
-unaligned / aligned
+unaligned / aligned( default)
 
 
 
-the alignment of this type might be neglected
+the alignment of this type might be as low as 1 byte,
+however if the type itself is fractionally aligned the alignment can be as low as 1 bit.
 
 
 
 
 
-unsafe / safe
+unsafe / safe( default)
 
 
 
@@ -788,7 +799,7 @@ if the most derived class has `no_virtual_rtti` but a base class has `virtual_rt
 
 
 
-interface / final / virtual / nonvirtual
+interface / final( default for types with a virtual table) / virtual / nonvirtual( default for other types)
 
 
 
@@ -808,7 +819,7 @@ interface / final / virtual / nonvirtual
 
 - interface:
 
- an empty type with a v-table and/or virtual bases
+ an empty type with a v-table and/or virtual bases, its ` object_offset_current` is removed and the dynamic cast entry  in the castation-table is removed 
 
 - final:
 
@@ -818,7 +829,7 @@ interface / final / virtual / nonvirtual
 
 
 
-`noaliasset`/ `usealiasset`
+`noaliasset`/ `usealiasset`(default)
 
 
 
@@ -850,7 +861,7 @@ the compiler has some options:
 
 
 
-`mayelide` / `noelide`:
+`mayelide` (default)/ `noelide`:
 a pointer to mayelide region of memory may have flag bits inside , its layout is implementation defined.
 conversion from a elidable pointer to a non elidable pointer loses information and is considered a pointer use ( the conversion back produces an  elided flag of true), 
 using the function `std::get_elided(p) ,std::set_elided(p,flag)`
@@ -1011,6 +1022,19 @@ synth analyzes the function body and does the purity qualification automatically
 the explicit synth is more appropriate for formal proof engines or similar things,
 there can be a compiler flag to also info dump on implicit synth and that hits at missed static optimizations opertonities.
 
+- `weak_predictable`( default): 
+a weak predictable call must not do a longjump or setjump ,  
+an `weak_predictable`  expression must be composed of only other `weak_predictable`  expressions OR must be casted via `unsafe(as-weak_predictable)` .
+the behaviour is undefined if the function  long jumps to non `weak_predictable` functions or is entered via a setjump or a computed goto.
+this is the deafult because RAII  clean up code must run.
+
+- `predictable`: 
+is  `weak_predictable`  and, a predictable call must not do a longjump , terminate,  or a dynamic call ( through a function pointer or dll), 
+an `predictable`  expression must be composed of only other `predictable`  expressions OR must be casted via `unsafe(as-predictable)` .
+the behaviour is undefined if a predictable function  jumps to non predictable functions.
+( this somewhat restricts our workload,  because we must either throw or return, and  terminate is ill-formed)
+a critical system might require all functions to be predictable.
+however,  for forcing an abrupt exit we can call std abort.
 
 - `effectless`:
 
@@ -1153,11 +1177,11 @@ this is because  throw is not unwind based and doesn't use globals at all , and 
 
 
 
-- `noexcept/throws`:
+- `noexcept(default in non critical system)/throws(default in critical system)`:
 
 `noexcept` means the behavior is undefined if the function returns to the caller using the catching return register.
 
--  `noreturn/mayreturn`:
+-  `noreturn/mayreturn(default)`:
 
 `noreturn` means the behavior is undefined if the function returns to the caller using the normal return register.
 
@@ -1165,39 +1189,74 @@ this is because  throw is not unwind based and doesn't use globals at all , and 
 
 
 
-- transactional memory ( optional to be implemented):
+- transactional memory:
+( read the c++ specification , its mostly that but a bit more restricted)
 
-0. `atomic_cancel`,
+the  atomic blocks have  a separate context-type that is created for the block and destroyed afterwards as if its a function call.
+the transaction context-type must be a special context type  that is transaction safe, 
+leaving an atomic block by any  means other than exception  commits the transaction.
 
-1. `atomic_commit`, 
+0. `atomic_cancel`:
+a transaction( its `transaction_safe` expression).
+ depending on the context-type and the exception its either canceled, aborted,  or committed on an exception.
 
-2. `atomic_noexcept`, 
+1. `atomic_commit`:
+a transaction( its `transaction_safe` expression).
+if an exception is thrown ,   the transaction is committed normally.
 
-3. synchronized, 
+2. `atomic_noexcept`: 
+a transaction( its `transaction_safe` expression).
+if an exception is thrown , std abort is called.
 
-4. `transaction_safe`, 
+3. synchronized:
+a synchronized block is a `weak_predictable` expression that executes the code block as if under a global lock, 
+all outermost synchronized blocks execute  in a single total order , the end of each synchronized block synchronizes with the beginning of the next block in that order,
+synchronized blocks that are nested within other synchronized blocks have no special effect .
+synchronized blocks are not transactions  and my call transaction unsafe functions. 
+leaving the synchronized block by any means exists the block ans synchronizes with the next block .
+the synchronized block has a separate context-type that is created for the block and destroyed afterwards as if its a function call.
 
-5. `transaction_safe_dynamic`
 
-6. transactional ( value qualifier)
+4. `transaction_safe`:
+a transaction safe expression is a `weak_predictable` expression that can only use  stabilized trivially relocatable  objects,  
+or if not stabilized,  the value must be transactional  nonvolatile qualified and be trivially relocatable .
+ a `transaction_safe`  expression must be composed of only other `transaction_safe`  expressions OR must be casted via `unsafe(as-transaction_safe)` .
+if a transaction safe function is idempotent,  it has better optimization capabilities.
+a transaction safe function has implementation defined calling conventions .
+
+
+5. `transaction_safe_dynamic`: 
+ a dynamic function  call ( call through the function pointer) that is `transaction_safe`
+
+6. transactional ( value qualifier):
+a transactional memory region can only be accessed inside a transaction.
+the layout of a transactional value  pointer is implementation defined, 
+the  object must be trivially relocatable  to be transactional.
+
+
+7. `optimize_for_synchronized`:
+indicates that a function definition is optimized for invocation inside a synchronized block.
+the optimization preformed is usually merge of smaller synchronized blocks into bigger ones.
 
 
 
 
 
-- `fastdyncaller/fastdyncallee`:
+
+- `fastdyncaller(default)/fastdyncallee`:
 
   functions are `fastdyncaller` by default, 
+ 
 
-  a `fastdyncaller` qualifier makes the dynamic call,  have no variables in the used set.
+  a `fastdyncaller` ( fast  caller site, callee save register) qualifier makes the dynamic call,  have no variables in the used set.
 
-  a `fastdyncallee` doesn't do much to the function's dynamic signature,  but  the registers in the used set increase a lot.
+  a `fastdyncallee` ( fast callee site, caller save register) doesn't do much to the function's dynamic signature,  but  the registers in the used set increase a lot.
 
  
 
- - `nodyncontract/dyncontract`:
+ - `nodyncontract/dyncontract( default)`:
 
- `dyncontract` ( default) allows a function's contract to execute in the call site based on the callers contract evaluation requirements. 
+ `dyncontract`  allows a function's contract to execute in the call site based on the callers contract evaluation requirements. 
  an `in-val` argument is implicitly passed to make contract violation controlled. 
 
 
@@ -3042,7 +3101,7 @@ these apis will be placed in a namespace `__mccabiv1`. the header file will also
 
 
 
-in general, API objects defined as part of this ABI are assumed to be extern "c:". however, some (many?) are specified to be extern "c" or extern "c++" if they:
+in general, API objects defined as part of this ABI are assumed to be extern "c:". however, some (many?) are specified to be extern "c" or extern "c++" ( and `represent_cxx`) if they:
 
 
 
@@ -3181,19 +3240,22 @@ compatibility
 
  the function has c colon ABI , no restrictions.
 
-- extern "c++" :
+- extern "c++"  (` represent_cxx`):
 
  the function signature, should have types that are not reorderable , templates that are valid in c++ , and structures consistent of only fundemental cxx types , this will be more exactly specified in next revisions,
 
  these functions have large thunks, although,  most of it is deterministic,  and the cxx throw and catch is already bloated anyway.
 
- - extern "c" :
+requirements  afterwards include having the OS loader step, lib unwind if  cxx exception is enabled and itanium symbol mangling.
+
+ - extern "c"   (` represent_cxx`):
 
  very bare bones , only fundemental types, trivial structures and pointers .
 
  these functions have large thunks, similar to the fastdyncaller transformation, because of unknown usage set,
 
  however c style function pointers ( similar to cxx ones) are mandatory fastdyncallee,  because  obviously we cannot assume anything about the assembly. 
+requirements  afterwards include having the OS loader step,  and  OS symbol mangling.
 
  
 - syscalls :
@@ -3322,9 +3384,10 @@ in a debugging environment,  this can have conditional trap instructions.
 -operator ~throw(inout throw-value)context-type noexcept  noreturn(...):
 the last operation before the function finally returns the control flow to the caller catch path.
 this is a noexcept  operator
-if the function signature contains a noexcept, this  operator must  have noreturn  qualification.
+if the function signature contains a noexcept, this  operator must  have noreturn  qualification (do some things or  make a stack trace  then call terminate  because unwinding is not possible).
 otherwise,  its optional.
 in a debugging environment,  this can have conditional trap instructions. 
+
 
 
 
@@ -3338,18 +3401,19 @@ in a debugging environment,  this can have conditional trap instructions.
 
 
 
-- `operator new( in(out) size,in(out) alignment, out intermediate byte*)context-type`:
+- `operator new( in(out) size,in(out) alignment, out uninitialized/intermediate byte*)context-type`:
  allocation  of a memory region with given size , if size is inout , it can be specified to minimum of the given size , 
  the alignment of the output region must be correct.
  intermediate is used to let the operator new have implementation defined canaries if in debug mode that arent optimized out because of the value being not strictly readable 
  in a debugging environment,  this can have conditional trap instructions. 
 
 
- - `operator delete( in size,in alignment,  in uninitialized byte*)context-type`:
+ - `operator delete( in size,in alignment,  in uninitialized/intermediate byte*)context-type`:
  deallocate the memory with the size and alignment and arguments matching the one that was outputed (or given, if specified in only) from (re)new,
  the lifetime of the storage will end .
  also note that the storage must be uninitialized  because the destruction of bytes must be trivial in all code paths( also enables invariant optimizations).
- this operator must be noexcept.
+ however if the new operator is intermediate ( insertion of canaries) the delete operator   can also be also intermediate ( check the canaries) , but if we do this we lose some invariant optimized code.
+this operator must be noexcept.
  in a debugging environment,  this can have conditional trap instructions. 
 
 - `operator  renew(in size, in alignment, inout intermediate byte*,in(out) after_size)context-type  `:
@@ -3358,7 +3422,10 @@ in a debugging environment,  this can have conditional trap instructions.
  note that a failure  of expanding or shrinking the memory does not invalidate the previous region of memory, a success will end the lifetime of previous region and begins the new one's lifetime.
 in a debugging environment,  this can have conditional trap instructions. 
 
-
+-`operator debug(instruction-pointer/expression-index)context-type`:
+ in a debugging context,  each expression that might involve a break point  will call this operator , in  optimized context this is just not defined.
+ this operator can have conditional trap instructions.
+ an implementation defined debugging thread might change a table ( atomic store )  ( the table's atomic pointer pointer can be caputured in the meta operator ) to indicate ( atomic load)   that this debug logic should trap or not.
  
 
 - contract-in-val  type is defined to be used in  the `dyncontract`  dynamic  contract code , or the static non inlined contract checked code,
@@ -3400,7 +3467,7 @@ this function is executed after the contract post condition, even if the contrac
  in a debugging environment,  this can have conditional trap instructions. 
  
 
-* note that the pre and post operators will always be executed after the caller operator, and before the callee operator.
+* note that the pre and post operators will always be executed after the caller operator, and before the callee operator if the function is not inlined , and the contract is not elided.
 
 - `operator make_meta ( inout std::meta )->meta-input `, `operator make_meta ( inout std::debug_meta )->meta-input`:
 a `constexpr` function that makes the meta type based on static reflection information, 
@@ -3657,9 +3724,16 @@ because the invariant is either true on initialized or not true on uninitialized
 
 fundemental types
 
+- note :  
+   a non binary endian architecture must emulate  a binary one , the existence of base 3  , analog and quantum computers must not interfere with declaration of a standard base 2 ABI.
+ - l: little endian 
+ - b: big endian 
+ - none: pick system endian.
 
 
-- `std::(m/u)intN_t`:
+
+
+- `std::(l/b) (m/u)intN_t`:
 
  N  goes from 1 ( fractional alignment, with math similar to c bit feilds) , 2 , 4, 8 ( byte aligned) , 16,....up to at least 1024 ( the 11 power of 2 starting feom the 0th power)  , while unnecessary, its better to have reliable deafults, especially  because  modorn cpus have massive registers.
 
@@ -3684,7 +3758,7 @@ these might be useful to help the compiler in optimizations of math , and maybe 
 
 
 
-- `std::(s)(b/eEmM)floatN_t`:
+- `std::(l/b)(s)(b/eEmM)floatN_t`:
 
 4, 8, 16,  32,64,80, 128
 
@@ -3697,13 +3771,15 @@ floating point types with N bits.
  for a cxx like behaviour one can still use cxx compat types , but using them is not recommended, 
  for cross platform and  multiplayer games using the s floating point is recommended to not have issues from incompatible math.
  for single pc or performance critical code using s is optional.
+also if the endian can change across  platforms, using both S and explicit endian is recommended.
 
+- `std::(l/b)charN_t`:
 
-- `std::charN_t`:
+N is one of 8,16,32
 
-N is one of 8,16,32,64
-
-charechter types with N bits.
+charechter types with N bits. 
+representative of UTF8, UTF-16 ( little endian  vs big endian) encoding ,UTF-32 ( little endian  vs big endian) encoding .
+ not using b and l (endian-ness) picks the default ( for utf8 is big endian, l for char8 is ill-formed, others is system endian)
 
 
 
@@ -3717,7 +3793,7 @@ type of a nullptr, its size is similar to a byte pointer.
 
   
 
-- `std::bool_t`(1 byte) ,`std::flag_t`(1 bit) :
+- `std::(l/b)bool_t`(1 byte) ,`std::flag_t`(1 bit) ( a single bit cant have endian-ness):
 
   the bolean types 
 
@@ -3733,13 +3809,13 @@ the special bit type with special pointers and references , `sizeof(bit_t)` and 
 
 
 
-- `std::byte_t` / `void`:
+- `std::(l/b)byte_t` / `void`:
 
 the special byte type with the alias set of all types (with non fractional alignment, although it can alias the memory holing it).
 also the special void type , with no layout,  although the size is not fractional
 
 
-- `std::abi_t`:
+- `std::abi_t` ( hash is endian agnostic):
 
 
 
@@ -3770,7 +3846,7 @@ but , if implicit contract violation  during the constexpr runtime occurs the pr
 
 
 
-- `std::type_info_t`:
+- `std::type_info_t`( hash is endian agnostic):
 the hash type that the  typeid operator gives.
 representative of the back end hash used in the linker or v table.
 
@@ -3778,11 +3854,18 @@ representative of the back end hash used in the linker or v table.
  its a  256bit cryptographic hash, it doesn't support any operations outside of the compare or equal,  other than the usual load and store or casts.
 if the cryptographic hash is given to an implementation defined function  `__mccabiv1::demangle` , it either  gives the empty string or the true front-end name mangle that lead to this hash , this outcome depends on security and rtti flags during compilation.
 
-- `std::cxx_(wchar/...)_t`:
+
+
+
+
+
+- `std::(l/b)cxx_(wchar/...)_t`:
 
 
 
  cxx compat types.
+ note that a both endians are mapping to the same itanium name
+ only the semantic logic  is preserved via the endian 
 
 
 
@@ -3796,7 +3879,7 @@ if the cryptographic hash is given to an implementation defined function  `__mcc
 
 
 
-* pointer types are different: 
+* pointer types are different( system endian): 
 
 
 
