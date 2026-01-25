@@ -3734,7 +3734,7 @@ fundemental types
 
 
 - `std::(l/b) (m/u)intN_t`:
-
+ two's compliment integral type.
  N  goes from 1 ( fractional alignment, with math similar to c bit feilds) , 2 , 4, 8 ( byte aligned) , 16,....up to at least 1024 ( the 11 power of 2 starting feom the 0th power)  , while unnecessary, its better to have reliable deafults, especially  because  modorn cpus have massive registers.
 
  however if N is not a power of two , N must be between 1 and 64 
@@ -3758,9 +3758,9 @@ these might be useful to help the compiler in optimizations of math , and maybe 
 
 
 
-- `std::(l/b)(s)(b/eEmM)floatN_t`:
+- `std::(l/b)((z/n/o/d/u)s)(B/eEmM)(u)(r/n)floatN_t`:
 
-4, 8, 16,  32,64,80, 128
+4, 8, 16,  32,64,80, 128 as N.
 
  
 
@@ -3772,6 +3772,64 @@ floating point types with N bits.
  for cross platform and  multiplayer games using the s floating point is recommended to not have issues from incompatible math.
  for single pc or performance critical code using s is optional.
 also if the endian can change across  platforms, using both S and explicit endian is recommended.
+
+ - stable rounding modes ( s is necessary):
+ 1. to nearest even (n):
+ round to nearest floating point , if there are two equidistant ones,choose the one whose least significant digit is even.
+ 2. towards zero (z):
+ rounding to the floating point number closest to zero.
+ 3. downward (d):
+ rounding to the greatest floating point. number blow
+ 4. upwards (u):
+ rounding to least floating  point number above. 
+ 
+ 
+ 5. round to  odd (o):
+ rounding to nearest odd floating point number. 
+ 
+ 
+ -  layout modes:
+  - B :
+  brain float . 
+  ( only   is valid with N of 16 )
+  - e number:
+  number bits as exponent.
+  - m number:
+  number bits as  mantisa.
+  
+  * note that using  e and m necceceraly makes using N not possible, because the addition of e, m and u indicates the bit count and , if bit   count is not devisible by 8 , fractional alignment. 
+  
+  - u:
+  the sign bit is not there and considered 0, unsigned float.
+  
+  - r (deafult) vs n :
+  real float, its a contract violation to have the  result of an expression of type real float not be a real number, 
+ its undefined behavior if real float had  a non real value ( infinity or nan ),
+ having a negative zero results  is a contract violation but not undefined behavior. 
+ n however has implementation defined nan or inf results that do not result in contract violation.
+ 
+  
+  - note : 
+   some implementations may have a templated non fundemental type that is used to represent  custom mantisa and exponents .
+   however the +200  variants that have default mantisa to exponent ratio are fundamental types. 
+   
+   
+ 
+ - `std::(l/b)((z/n/o/d/u)s)(u)(eE)(r/n)positN_t`
+
+
+  - u:
+  the sign bit is not there   value is positive, unsigned  posit.
+  
+  - e number:
+  representative of  bit count  of the max es value.   
+  
+  - others: similar to the float  definition
+  
+   
+  
+  
+
 
 - `std::(l/b)charN_t`:
 
@@ -3870,8 +3928,11 @@ if the cryptographic hash is given to an implementation defined function  `__mcc
 
 
 
-
-
+* note on the register  assigner:
+ on top of the inout priority list , the register allocation  in both the function signature and the function body has preferences of implementation defined ways, 
+for example,  bool , bit  and flag may be passed in a single bit of a register , or in a specific ALU flag ( if appropriate) , or the floating  point  values may have a preference of FPU registers, 
+however this would only be used if the type is passed by value ( ie. trivially relocatable and is not refrence ) , refrence types or pointers also may have preference for specific registers that  can have  load and store ptr operands ( for example   load effective address  in x86)
+ it is implementation defined what preferences are used , and if some non fundemental types also have preferences or not ( for example a sso string object may use compiler intrinsics  to say that a specific register category  of ymm is preferred , however  using intrinsics  is unsafe(magic) and probably  would need other unsafe blocks to indicate non standard abi)
 
 
 
