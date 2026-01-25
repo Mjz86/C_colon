@@ -4101,10 +4101,11 @@ gets the ABI hash off the inner expression.
 * note :
 the ABI hash of a function ( not a type)  does NOT depend on the function's  code ( the function inner scope)
 the abi hash of a namespace depends on its   parent namespace  and its template arguments ( namespace templates are  possible) but it doesn't depend on the content. 
-
+the abi hash of a function does not depend on non virtual member functions,  only specific ones that effect triviality ( trivial copy , move , reallocation,  destruction, construction,...)
 - note :
 
 the c colon linker only uses the ABI hashes as signaturs for linkage.
+
 
 
 
