@@ -549,8 +549,15 @@ this qualifier is not a contributor to the ABI hash or the name mangle,
    makes the symbol an export/import for DLL linking by providing a symbol hash.
 
    also `dllhidden` is the default and removes the symbol  hash in the binary .
-   
-
+ 
+- the  semi-inlining  (Thin)LTO register reassignment optimization( enabled by `dllhidden`  or `dllinline` ):
+the register assigner is allowed to change the calling convention of an internal symbol as long as all other call sites act as if it never happened, 
+this is useful for functions that  often have the static call site visible and want to eliminate  register to register mov instructions ( copy of a register to another).
+if a function pointer is taken , in particular,  if the cost of the function without reassignment is significant,  the static function is wrapped  and the dynamic function pointer is the pointer to a function with the   register assignment of the calling convention ( maybe even a thunk to the  function with atypical register assignment) .
+for this optimization to be possible,  the function must be inlinable ,
+and this is a way to use the inlining knowledge of that function without actually copying an inlined version.
+this makes it so that the baseline performance of a static function call is effectively reduced to the minimum.
+the register  reassigner is free to change all registers except the 2  stack pointer and the instruction pointer , however the other 3 registers can be reassigned.
 
 - non trivial construction or destruction of static symbols:
 while most symbols i mentioned are functions, static variables and other stuff can have symbols as well , and these may not be trivially destructable or trivially bit copyable.
@@ -772,7 +779,7 @@ unaligned / aligned( default)
 
 the alignment of this type might be as low as 1 byte,
 however if the type itself is fractionally aligned the alignment can be as low as 1 bit.
-
+unaligned data is almost always trivially relocatable , trivially destructable and without pointers ,  basically,  the requirements for a safe bit cast)to be useful , because its probably a network or external  packet anyway.
 
 
 
@@ -1983,6 +1990,13 @@ The default behavior of all atomic operations in the library provides for sequen
 4. acquire release :A read-modify-write operation with this memory order is both an acquire operation and a release operation. No memory reads or writes in the current thread can be reordered before the load, nor after the store. All writes in other threads that release the same atomic variable are visible before the modification and the modification is visible in other threads that acquire the same atomic variable.
 
 5. sequencal consistency :A load operation with this memory order performs an acquire operation, a store performs a release operation, and read-modify-write performs both an acquire operation and a release operation, plus a single total order exists in which all threads observe all modifications in the same order (see Sequentially-consistent ordering below).
+
+- note: 
+atomic refrence cannot  refrence fractional alignment types,
+and an atomic with a fractional type inside will padd it.
+the `std::atomic<std::flag_t>` is the only atomic that is granteed to be lock-free , however it has implementation defined layout and alignment ( as required by the compare exchange instruction  support in the hardware, which is virtually all multi-core hardware , or if not supported , an intrupt disable critical section in embedded single core architectures)
+this is because an atomic load or store to a bit requires the byte to be synchronized accordingly, 
+but a bit pointer doesn't use atomic operations so its a race condition , however to avoid it, a fractional atomic is  ill-formed.
 
 
 no changes  were really made  from [the c++26 definitions](https://en.cppreference.com/w/cpp/atomic/memory_order.html) , as its a great well-defined memory model that c colon stands on.
@@ -3726,14 +3740,16 @@ fundemental types
 
 - note :  
    a non binary endian architecture must emulate  a binary one , the existence of base 3  , analog and quantum computers must not interfere with declaration of a standard base 2 ABI.
- - l: little endian 
- - b: big endian 
+ - l: little endian bytes but system  endian bits( the bits in a byte are in  system order, but a multi byte sequence has its bytes in reverse order of big endian)
+ - b: big endian bytes but system  endian bits
+ - L:little endian bits( the bits in a byte are in reverse order of big endian and bytes are also in reverse order of big endian)
+ - B: big endian bits
  - none: pick system endian.
 
 
 
 
-- `std::(l/b) (m/u)intN_t`:
+- `std::(l/b/L/E) (m/u)intN_t`:
  two's compliment integral type.
  N  goes from 1 ( fractional alignment, with math similar to c bit feilds) , 2 , 4, 8 ( byte aligned) , 16,....up to at least 1024 ( the 11 power of 2 starting feom the 0th power)  , while unnecessary, its better to have reliable deafults, especially  because  modorn cpus have massive registers.
 
@@ -3758,7 +3774,7 @@ these might be useful to help the compiler in optimizations of math , and maybe 
 
 
 
-- `std::(l/b)((z/n/o/d/u)s)(B/eEmM)(u)(r/n)floatN_t`:
+- `std::(l/b/L/E) ((z/n/o/d/u)s)(B/eEmM)(u)(r/n)floatN_t`:
 
 4, 8, 16,  32,64,80, 128 as N.
 
@@ -3815,7 +3831,7 @@ also if the endian can change across  platforms, using both S and explicit endia
    
    
  
- - `std::(l/b)((z/n/o/d/u)s)(u)(eE)(r/n)positN_t`
+ - `std::(l/b/L/E)((z/n/o/d/u)s)(u)(eE)(r/n)positN_t`
 
 
   - u:
@@ -3831,13 +3847,13 @@ also if the endian can change across  platforms, using both S and explicit endia
   
 
 
-- `std::(l/b)charN_t`:
+- `std::(l/b/L/E)charN_t`:
 
 N is one of 8,16,32
 
 charechter types with N bits. 
 representative of UTF8, UTF-16 ( little endian  vs big endian) encoding ,UTF-32 ( little endian  vs big endian) encoding .
- not using b and l (endian-ness) picks the default ( for utf8 is big endian, l for char8 is ill-formed, others is system endian)
+ not using b and l (endian-ness) picks the default ( for utf8 is big endian( b) , l for char8 is ill-formed but L is usable, others is system endian)
 
 
 
@@ -3851,7 +3867,7 @@ type of a nullptr, its size is similar to a byte pointer.
 
   
 
-- `std::(l/b)bool_t`(1 byte) ,`std::flag_t`(1 bit) ( a single bit cant have endian-ness):
+- `std::(L/E) bool_t`(1 byte) ,`std::flag_t`(1 bit) ( a single bit cant have endian-ness):
 
   the bolean types 
 
@@ -3867,7 +3883,7 @@ the special bit type with special pointers and references , `sizeof(bit_t)` and 
 
 
 
-- `std::(l/b)byte_t` / `void`:
+- `std::(L/E) byte_t` / `void`:
 
 the special byte type with the alias set of all types (with non fractional alignment, although it can alias the memory holing it).
 also the special void type , with no layout,  although the size is not fractional
@@ -3917,7 +3933,7 @@ if the cryptographic hash is given to an implementation defined function  `__mcc
 
 
 
-- `std::(l/b)cxx_(wchar/...)_t`:
+- `std::(l/b/L/E) cxx_(wchar/...)_t`:
 
 
 
@@ -4541,6 +4557,10 @@ however E colon still recognizes these C colon constructs , allowing custom type
   i think that terminations is very brutal , because of this exception handling mechanism , i think all violations are represented by an exception, 
 
   this is fast and effective , violations *can* be terminations,  and violation catching is unsafe , but generally program will be fine and exception would be lead to a  terminate in main with very sane stack trace and debug info ( if we choose).
+  there is a very subtle but important consideration,  a result return differs in meaning from   an exception in Express colon,   a result return  means that the function successfully did its operation,  however with the nuance of some invalid result,  a throw means that the function failed , and the data it used is also a not usable and  the function  effectively could not do any useful data transformation,  but a result still allows the following functions to use the state from the function signature because its a successful modification,  even though its partial.
+  and because all code is exception safe without even trying ( pun intended) , this secondary way can just indicate other forms of recoverable errors, and both can coexist without much overhead( the jump return table and code size isnt that much relevant in  application logic ),
+  and an important consideration is that both of these mechanics have exactly the same way of calling ( enumret  spec) so its just a matter of  invariant  ensuring( return) vs non invariant ensuring code( throw).
+
 
 12. value and data oriented code :
 having rust-like `enum` types with pattern matching  are still very performant and value oriented alternatives to inheritance.
