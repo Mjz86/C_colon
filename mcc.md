@@ -925,6 +925,8 @@ a stable mutable value. the `inout` qualification
 
 
 
+
+
 `qualiexpr(T V)/qualiexpr()` ( default):
 
 an special qualifier.
@@ -1747,7 +1749,8 @@ in my view,  using some bits in the pointer is superior to addling a capacity fe
 
 there also might be ways to have a call to new or renew  produce a flag , and delete  to consume it.
 
-
+ 
+ 
 
 
 
@@ -2386,7 +2389,7 @@ To reduce stack spills,
 
 to reduce spills , the function signature should also require minimal usage ( that's where overlap optimization comes in) and also ,
 
-for reducing braching , most of the branches known in the callee to occur at call site have been moved to the return branch in the callee , the callees return acting like a switch statement to the caller code, but because the return is already a necessary dynamic branch , the cost of 2 branches ( return , and a check of return calue in callee) is reduced  to one.
+for reducing braching , most of the branches known in the caller to occur at call site have been moved to the return branch in the callee , the callees return acting like a switch statement to the caller code, but because the return is already a necessary dynamic branch , the cost of 2 branches ( return , and a check of return   value in caller) is reduced  to one.
 
 also , because of the lifetime problem( understood in rust dyn calls with lifetime signatures that convert to other signatures) in dynamic calls , any call through a dynamic  function pointer or dll  has either provable valud lifetimes or is unsafe(lifetime-dyn-call) or  for casting between lifetimes using unsafe(lifetime-cast)
 
@@ -2775,6 +2778,10 @@ even tho the call instruction is faster than pushing them manually, the register
 
 all we did was , for static calls, reduce the burden of the runtime to the link time analysis.
 
+* note on custom dynamic call register usage. (  more caller saved stuff , but without all of them) :
+an  `uninitilized  xvaluexpr ` argument can be used as a dummy in val argument that isnt initialized in nither caller nor callee,
+it syntactically makes a used register without actually  having overhead with the fastdyncaller transformation because its effective category is in val.
+
 
 
 --- 
@@ -3083,6 +3090,7 @@ uint32_t dll_prioritis[dll_count];
 ```
 
 
+ 
  
 
 
@@ -3944,6 +3952,9 @@ if the cryptographic hash is given to an implementation defined function  `__mcc
 
 
 
+
+
+
 * note on the register  assigner:
  on top of the inout priority list , the register allocation  in both the function signature and the function body has preferences of implementation defined ways, 
 for example,  bool , bit  and flag may be passed in a single bit of a register , or in a specific ALU flag ( if appropriate) , or the floating  point  values may have a preference of FPU registers( or SSE in x86), 
@@ -4068,43 +4079,56 @@ sets the has as the ABI hash of the apllied expression.
 
 gets the ABI hash off the inner expression.
 
-- the ABI hash of a type:
+- the abi hash of a general symbol( namespace,  variable,  type,  function):
+0. the ABI version number ( any changes to the ABI scheme in the standard will alter this number) 
+1. architecture dependent version/hash ( for example , based on the amout and register priorities, the generic x86-64 win or generic  arm v7 ect....) , this can be specified  using the target qualifier  
+1.  the   name , including  template prams, and the the parent  namespace or type  , including  template prams ( basically the itanium style mangle) 
+3. abi+(...) es ABI hash and dclaration order
 
-1. is based on its definition and declaration order.
 
-2. name mangle of expressions
 
-3. ABI hash of sub expressions.
+- the ABI hash of a  static variable also  depends on:
+4. the type and its abi hash.
 
+
+
+- the ABI hash of a  namespace also  depends on:
+4. nothing more ,  a  namespace doesn't depend on the content. 
+
+
+
+
+- the ABI hash of a type also  depends on:
 4. non static member ABI hash and dclaration order
-
-5. virtual function ABI hash and declaration order
-
+5. if not final qualified, virtual function ABI hashes and declaration order
 6. virtual bases ABI hash and declaration order
-
 7. bases ABI hash and dclaration order
-
-8. abi+(...) es ABI hash and dclaration order
-
-9. qualifiers of a type , but order independent
-
-10. throw-value  and promise-type and input and output of async/sync functions of the context
-
-11. the ABI version number ( any changes to the ABI scheme in the standard will alter this number) 
-
+8. qualifiers of a type , but order independent
 12. diffrent trivially properties of a type.
+13. lifetimes  and their dependancies ( the tokens and their hash in the definition of templates , lifetimes, contracts and requirements)
+ 
+* note:
+the abi hash of a function does not depend on non virtual member functions,  but only specific ones that effect triviality ( trivial copy , move , reallocation,  destruction, construction,...) do change the  triviality 
 
-13. lifetimes of  arguments or members and their dependancies ( the tokens and their hash in the definition of templates , lifetimes, contracts and requirements)
 
-14. architecture dependent version/hash ( for example , based on the amout and register priorities, the generic x86-64 win or generic  arm v7 ect....) , this can be specified  using the target qualifier  
+
+- the ABI hash of a  function :
+4. throw-value , contract in val,  and promise-type and input and output of async/sync functions of the context and generally the specific kind of context-type and its abi hash.
+5. the qualified type of the function pointer  ( so , the full hash of each thing in it , but the qualifier having being sorted to ensure they don't depend on the qualifier order).
+6. if the function is a member function,  the qualified type of the self ( the first argument that has a `this` annotation , similar  to c++ newest deduction of this pattern), but , if a virtual function with a virtual self,  the qualifie type of self that  is final qualified. 
 
 * note :
 the ABI hash of a function ( not a type)  does NOT depend on the function's  code ( the function inner scope)
-the abi hash of a namespace depends on its   parent namespace  and its template arguments ( namespace templates are  possible) but it doesn't depend on the content. 
-the abi hash of a function does not depend on non virtual member functions,  only specific ones that effect triviality ( trivial copy , move , reallocation,  destruction, construction,...)
+
+
+* note :
+the module ir file name has no effect on abi hashes.
+
+
+
 - note :
 
-the c colon linker only uses the ABI hashes as signaturs for linkage.
+the c colon linker only uses the backend ABI hashes as  signature for linkage.
 
 
 
