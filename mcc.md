@@ -1938,7 +1938,7 @@ when making the `castation-table` in the compiler we need to generate it via a g
 
 - non-trivial for the purposes of calls: a type is considered non-trivial for the purposes of calls if:
 
-    - it has a non-trivial realloc-constructor `T( valexpr T&);`, or if its realloc constructors are deleted.
+    - it has a non-trivial realloc-constructor `T( xvaluexpr T&);`, or if its realloc constructors are deleted.
 
     - this definition, as applied to class types, a type which is trivial for the purposes of the ABI will be passed and returned according to the rules of the base mcc ABI , e.g. in registers; often this has the effect of performing a trivial reallocation of the type.
 
