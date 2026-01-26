@@ -2783,9 +2783,9 @@ even tho the call instruction is faster than pushing them manually, the register
 all we did was , for static calls, reduce the burden of the runtime to the link time analysis.
 
 * note on custom dynamic call register usage. (  more caller saved stuff , but without all of them) :
-an  `uninitilized  xvaluexpr ` argument can be used as a dummy in val argument that isnt initialized in nither caller nor callee,
+an  `uninitilized xvaluexpr   ` argument can be used as a dummy in val argument that isnt initialized in nither caller nor callee,
 it syntactically makes a used register without actually  having overhead with the fastdyncaller transformation because its effective category is in val.
-
+or an `uninitilized ivaluexpr   ` if the caller needs an extra callee saved register ( the in category)
 
 
 --- 
