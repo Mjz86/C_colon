@@ -3946,7 +3946,7 @@ if the cryptographic hash is given to an implementation defined function  `__mcc
 
 * note on the register  assigner:
  on top of the inout priority list , the register allocation  in both the function signature and the function body has preferences of implementation defined ways, 
-for example,  bool , bit  and flag may be passed in a single bit of a register , or in a specific ALU flag ( if appropriate) , or the floating  point  values may have a preference of FPU registers, 
+for example,  bool , bit  and flag may be passed in a single bit of a register , or in a specific ALU flag ( if appropriate) , or the floating  point  values may have a preference of FPU registers( or SSE in x86), 
 however this would only be used if the type is passed by value ( ie. trivially relocatable and is not refrence ) , refrence types or pointers also may have preference for specific registers that  can have  load and store ptr operands ( for example   load effective address  in x86)
  it is implementation defined what preferences are used , and if some non fundemental types also have preferences or not ( for example a sso string object may use compiler intrinsics  to say that a specific register category  of ymm is preferred , however  using intrinsics  is unsafe(magic) and probably  would need other unsafe blocks to indicate non standard abi)
 
