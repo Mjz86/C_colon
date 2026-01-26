@@ -3853,7 +3853,7 @@ also if the endian can change across  platforms, using both S and explicit endia
   
   
   
- - `std::(l/b/L/E)((z/n/o/d/u)s)(u)(pP)fixedN_t`:
+ - `std::(l/b/L/E)((z/n/o/d/u)s)(u)(pP)(r/n)fixedN_t`:
    
   
   -  p number:
@@ -4053,7 +4053,7 @@ any implementation may choose hashes with size smaller than 256 or 128
   will do little use of  cache friendly reordering , and will implicitly  ( through reflection) give the context-type very granular information using implicit calls providing reflection information and dynamic information ,
   most values will be lifted to stack for traceability,  this is extremely slow , and that's the reason that it only happens in scopes where context-type is mandating it ,
   this can help separate the binary debug vs release building model into function by function or module by module debugging 
-
+  
   
 
   
