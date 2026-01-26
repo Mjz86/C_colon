@@ -157,7 +157,7 @@ although  a rare occurrence might be that  the f() , `abi=(f())`  when calling t
 
 also , using `abi=` on a member doesn't change the members real type and hash , and even if in some cases it  does, its still possible  to `unsafe(abi-cast)` the hash to the original type's hash ( variable definition having the type be type1 `abi=(abiof(type2))` or at most an unsafe `reinterpret_cast` known as pointer-cast or a bit cast)
  
- there's also an optimization i call hash Ellison,  under the as if rule ( as if the hash was calculated even if the calculation didn't happen) ,
+ there's also an optimization i call hash elision,  under the as if rule ( as if the hash was calculated even if the calculation didn't happen) ,
  note that the visible symbols in the binary are  all fixed size 256bit backend hashes 
 
 also for common graphs where the dependency  chain of the ABI can be resolved without using max evaluation,  the compiler gives the heuristically best point in the cycle to do the breaking , also patterns prone to hit the max evaluation ( doing a complex calculation to get the value of `abi=`) generate a warning.
@@ -1730,7 +1730,7 @@ flag_t elided;// elided flag is in the least significant bit.
   if multiple allocations can be elided safety, they will,
   the allocators fall into two categories,  the ones that are thread-safe and the ones that aren't,
   thread-safe allocators are more expensive to use , although non thread-safe allocators can be used via channels , its still not a good choice.
- its similar to how cxx does coroutine frame Ellison, but this time the stack frame is also available. 
+ its similar to how cxx does coroutine frame elision, but this time the stack frame is also available. 
 
  however,  this time , we have lifetime tokens in the language ,
  so , an example may be:
@@ -1742,7 +1742,7 @@ the compiler is allowed to provide the region M with other means than new and is
  
 for example  a size typed capacity field behind the allocation region,
 or a high bit in a pointer reference to such region.
-or simply having a flag next to the reference that indicates Ellison.
+or simply having a flag next to the reference that indicates elision.
 in my view,  using some bits in the pointer is superior to addling a capacity feild.
 
 there also might be ways to have a call to new or renew  produce a flag , and delete  to consume it.
@@ -4046,7 +4046,7 @@ any implementation may choose hashes with size smaller than 256 or 128
  
  
  
- - hash Ellison:
+ - hash elision:
  the hash calculation is only preformed when an externally visible/ v-table dependent symbol of 256 bit backend mangle needs calculation, 
  however because of the as if rule , we have a null hash function that gives the output as 0 , so any front-end mangle without a calculated hash is known to need a hash if its hash  is 0 , and the 0 is replaced with the actual  hash when its backend mangle is stored.
  also , the hash captured by the `abiof` operator is  eagerly calculated, and must not be 0 because of the as if rule.
@@ -4700,8 +4700,8 @@ this language can be used in the web , similar to E colon ,via wasm
   for example  if i have an array of offset independent members,  and reference a member,  i can just only use the memory of that member and other members may not be in ajason stack memory , also it might help in making array of structures to structure of array
   on the stack ,  reflection also can help with this
   
- 7. heap allocation Ellison :
- its similar to how cxx does coroutine frame Ellison but with std::allocator or custom allocators that satisfy the allocator concept.
+ 7. heap allocation elision :
+ its similar to how cxx does coroutine frame elision but with std::allocator or custom allocators that satisfy the allocator concept.
 
  8.  less interposition depending dynamic dispatch  :
    when code is similar and linked together, it can be sometimes de duplicated,
