@@ -3850,9 +3850,18 @@ also if the endian can change across  platforms, using both S and explicit endia
   
   - others: similar to the float  definition
   
+  
+  
+  
+ - `std::(l/b/L/E)((z/n/o/d/u)s)(u)(pP)fixedN_t`:
    
   
+  -  p number:
+  representative of  bit count  of the fixed point fraction.
+  the precision.
   
+  
+  - others: similar to the float  definition, however with fixed point arethmatic.
 
 
 - `std::(l/b/L/E)charN_t`:
