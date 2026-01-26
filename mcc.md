@@ -2427,19 +2427,19 @@ there are special registers:
 
 
 
-1. the stack pointer and the base pointer (callee saved):
+1. the stack pointer (callee saved) and the base pointer(caller saved) :
 
 
 
-stack pointer is like itanum , except the base pointer is a register, the caller can assume its value is the same after the call, usually some optimizations might use other stratch registers as base pointer as well ,but this one is special because it isn't used through a fastdyncallee dynamic call.
-
+stack pointer is like itanum ,  the caller can assume its value is the same after the call.
+ the base pointer is a register that isnt pinned ,usually some optimizations might use other stratch registers as base pointer as well .
 
 
 2. the instruction pointer (caller passed, no save):
 
 
 
-like itanum
+like itanium
 
 
 
@@ -2449,7 +2449,7 @@ like itanum
 
 the return address to the happy path section in the caller.
 
- if specified `enum` return , its the table pointer to the table of return entries corresponding  to each `enum` entry.
+ if specified `enum` return , its the   absolute address of the first table entry, and the offset of all other table pointers. 
 
 
 
@@ -2459,7 +2459,7 @@ the return address to the happy path section in the caller.
 
 the return address to the unwind/sad path code section in the caller.
 
-if specified `enum` return , its the table pointer to the table of return entries corresponding  to each `enum` entry catch path.
+if specified `enum` return or catch, its the table pointer to the table of return entries corresponding  to each `enum` entry  path.
 
 
 
@@ -2468,6 +2468,82 @@ if specified `enum` return , its the table pointer to the table of return entrie
 ( only 5 pointer sized registers, 2 of which are already used in all architectures for that purpose)
 
 ( the other 3 can be pushed before general purpose use and poped/re assigned when needed at the call boundaries to reduce register pressure when register utilization is too much)
+
+
+the conceptual call site( note that its implementation defined for each function signature if the jump instruction is used or a  call, however  it is encouraged to use the one with the best semantic):
+```
+// in this  one its a jump site caller, with no enum ret or catch .
+// old BP is saved somewhere to be restored later.
+
+ // the cost of  an exception ( or any more than one return path really)  is this mov of a constant to a  register that is pinned as important for multi return. 
+ CRA= catchlable-lable;// constant offset
+ NRA= IP+lable;
+ jump func;// IP=func
+ lable:
+ .....happyy...
+ catchlable:
+ .....sad....
+ 
+ 
+ // or if a tail call:
+ func:
+ BP=SP; // preserve CRA, NRA,BP  throughout the call
+ 
+ // stuff...
+SP=BP;
+ jump func;// IP=func
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ // jump site callee 
+ func :
+ BP=SP; // preserve CRA, NRA,BP  throughout the call
+ //  stuff ... thats happy....
+ SP=BP;
+ jump NRA;
+ //  stuff ... thats  sad....
+ SP=BP;
+ jump NRA+CRA;
+ 
+ 
+ 
+ 
+ // if using call and ret, the call site  , NRA being either a cpu known registers for return,  or a stack position, and CRA being a caller passed register.
+ // however  the implementation must acknowledge that of the base pointer is moved how many bytes to ensure that a stack argument position is known at a fixed offset. 
+ 
+ CRA= catchlable-lable;// constant offset
+ //  is implicitly assigned in the call 
+  call func;// NRA=IP ,IP=func, after call
+ lable:// exactly after all
+ .....happyy...
+ catchlable:
+ .....sad....
+ 
+ 
+ // callee ret site:
+ // preserve CRA, NRA,BP  throughout the call
+ func :
+ //  stuff ... thats happy....
+ ret;
+ //  stuff ... thats  sad....
+ NRA+=CRA;// if the NRA is in the stack  for example some calling conventions the call instructions does stack push , this then becomes an override of the return pointer in the stack
+ ret;
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+```
+
 
 
 
@@ -2555,7 +2631,8 @@ in , out, and `inout` registers.
 
 
 
-- in the rare occasion  of using all registers for parameter passing , the caller pushes arguments to the stack , the caller is responsible for the cleanup of the out and `inout` parameters,  but the callee is responsible for the in parameter cleanup. 
+- in the rare occasion  of using all registers for parameter passing , the caller pushes arguments to the stack , the caller is responsible for the cleanup of the  stack parameters, 
+( the parameter is just in the caller stack frame , but only the last part of the frame that sp is in one edge of)
 
 
 
@@ -2580,7 +2657,7 @@ in , out, and `inout` registers.
 
  the reason is that the caller might read these `inout/out` ( while in and in value are unneeded, its faster if there was only one responsibility ) so they do  need cleanup by the caller.
 
- these arguments are allocated on the stack before assignments of the stack pointer  to the base pointer of the callee.
+ these arguments are allocated on the stack before assignments of the stack pointer  to the base pointer  in the callee.
  
 
 
@@ -3382,6 +3459,9 @@ context object:
   if the type of context-type  of an inlined callee function maches the caller,  and the context satisfies the elidable context concept,  the compiler is allowed to treat the callee context as if it was the caller context, and not call the context making or checking operators,
   debugging contexts however cannot be inlined.
  
+ * note: 
+ if the context types match and  tail call optimization can be performed ,  and the context satisfies the elidable context concept,
+ the context operators can be omitted and the context-type is trivially relocated to the callee.
  
  - operator context( out callee-context-type )caller-context-type :
  constructs the context type of the callee before the call,
