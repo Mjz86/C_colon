@@ -1292,21 +1292,37 @@ the optimization preformed is usually merge of smaller synchronized blocks into 
  
 // the `enum` ret and catch are similar , however they have a secondary lookup( often deduplicated across the link-unit )    table with all the offsets+ret pointing to RC ,then RC finally does a secondary jump lookup to the caller table  , this is only one of the many ways of doing this , and we havent even done callee-inlining the thrunk yet. 
     RC:
+    
     restore the catching return  to the return pointer.
+
     jump to ret.
-    RN:
+ 
+   RN:
+
    restore the normal return  to the return pointer
+
    ret:
+
   restore all registers specified as used in F in stack.
-  jump to the return pointer.
-  absolute value of `(&contact_checked_F-&dyn F)`
+  
+jump to the return pointer.
+ 
+ absolute value of `(&contact_checked_F-&dyn F)`
+
   dynamic F( where the dynamic pointer will point):
+
    save all  registers specified as used in F in stack.
-   save both return pointers.
-   set both return pointers to &RN and &RC.
+ 
+  save both return pointers.
+   
+set both return pointers to &RN and &RC.
+
     static F:
-    F's code...
-    contact_checked_F: 
+  
+  F's code...
+  
+  contact_checked_F: 
+
     contract's code...    
 
     
@@ -1329,10 +1345,15 @@ the difference to `fastdyncallee` is :
 
 
 absolute value of (&contact_checked_F-&dyn F)
+
 dynamic F( where the dynamic pointer will point):
+
 static F:
+
 F's code...
+
 contact_checked_F: 
+
 contract's code...    
 
 
@@ -1354,16 +1375,21 @@ exact mechanism of return pointers:
  the real way we store them is in 4 cases( 2 and 0 being the most common) :
 
  -  special cases:
+
 0. noexcept: 
  enumcatch is irrelevant, and the caller doesn't generate a sad path.
+
 1. noreturn:
 enumret is irrelevant,and the caller doesn't generate a happy path.
 the end of the callee scope in the control flow ( return) is ill-formed,  it must be unreachable ( at most by calling std::unreachable and using unsafe(unreachable) ).
+
 2. only 1 path is expected by the caller (ie: only return, only throw, only one jump table entry ):
 the path's adress is given to `return_ptr`, and the `catching_return_ptr`register is treated as if it was not an special register.
+
 3. only two paths expected by the caller (ie: only 2 return entry, only 2 throw entry, only 2 jump table entry ):
 one path's adresss  is given in the `return_ptr`,
 and the other pathes offset from the  `return_ptr` is stored in the `catching_return_ptr`.
+
 4. noexcept and noreturn combined:
 mostly used in terminate like functions,  no return pointer is provided and the base pointer is also not provided. 
 only the stack pointer  and the instruction pointer are special registers, 
