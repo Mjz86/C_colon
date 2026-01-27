@@ -2988,20 +2988,24 @@ on de-initialization,  the dll de initilizer is called.
 the module constructor that runs :
 0. fetch add 1  to the initilization atomic  and if it was not 0 at the beginning, return.
 
-1. all the dependant modules get initilized.
+1.   set the data segment memory accesses (ie. make the  read only sections read only)
 
-2. all the static variables get initialized in order of declaration.
+2. all the dependant modules get initilized.
+
+3. all the static variables get initialized in order of declaration.
+
+
 
 
 program code: 
 
-3. the main function in the module will run if defined.
+ 4. the main function in the module will run if defined.
  
  
  the module destructor that runs :
-4 .fetch sub 1 to the init atomic , if it didnt went to zero , return. 
+ 5. fetch sub 1 to the init atomic , if it didnt went to zero , return. 
 
-5.    destroy every static variable in the reverse order of declaration and deinitilize each module that we initilized.
+ 6.    destroy every static variable in the reverse order of declaration and deinitilize each module that we initilized.
 
 
 
