@@ -1515,13 +1515,13 @@ many clables:....
  // stuff...   of first enum entry ret
 SP=BP;
 // return of the first enumret entry is  not a table lookup 
- jump NRA;// IP=func
+ jump NRA;// IP=NRA
  
  // stuff...   of other enum rets
 SP=BP;
 // return of the happy path is positive indexes,  index being the same as the return value's enum numeric ( or if the enum is a sum type , the type tag)
 NRA+=*(CRA+retval);
- jump NRA;// IP=func
+ jump NRA;// IP=NRA
  
  
  // stuff...   of  enum throws
@@ -1531,7 +1531,7 @@ SP=BP;
 
 
 NRA+=*(CRA+ (~throwval) );
- jump NRA;// IP=func
+ jump NRA;// IP=NRA
  
  
  
@@ -1542,7 +1542,7 @@ SP=BP;
 val=~throwval;
  (cmove) val = throws?val:retval;
 NRA+=*(CRA+ val );
- jump NRA;// IP=func
+ jump NRA;// IP=NRA
 
    
    
