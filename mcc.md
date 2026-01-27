@@ -945,17 +945,16 @@ an special qualifier.
 
 c colon code:
 
-```
 
-template<autoexpr T-outside>
+`template<autoexpr T-outside>`
 
-...requires... consteval pre... consteval post...
+`...requires... consteval pre... consteval post...`
 
-template<autoexpr T-inside>
+`template<autoexpr T-inside>`
 
-...requires...
+`...requires...`
 
- ...f( T-outside (<-optional) name (<-optional):T-inside,... )...;
+` ...f( T-outside (<-optional) name (<-optional):T-inside,... )...;`
 
 T-outside is the complete outside type, the checks of the outside , however the T-inside is what the function body actually gets as the argument type of name, 
 
@@ -963,15 +962,15 @@ however if there is a dependency from T-inside to T-outside, the function is con
 
 for example , a safe function may need to get a sorted vector ,  but the vector cant really prove without O(n) ops that it is sorted ,  and we really don't want static overhead , 
 
-we can now declare a qualiexpr(bool sorted_flag=false) , (the empty qualiexpr being recognized as not sorted), and declare that the class member has qualiexpr(bool sorted_flag=true) and any operation that preserves that invariant are valid, and therefore we can statically assert that a binary search is not undefined behavior.
+we can now declare a `qualiexpr(bool sorted_flag=false)` , (the empty qualiexpr being recognized as not sorted), and declare that the class member has `qualiexpr(bool sorted_flag=true)` and any operation that preserves that invariant are valid, and therefore we can statically assert that a binary search is not undefined behavior.
 
 
 
 
-```
 
 
-- qualicast<Q>(identifier) :
+
+- `qualicast<Q>(identifier)` :
 unsafe(qualicast), is used to cast qualifiers away or cast them to existence, 
 for example,  a logically  dropped value can be set as uninitialized without a destructor call.
 
@@ -1288,66 +1287,26 @@ the optimization preformed is usually merge of smaller synchronized blocks into 
 
 
 
- ```txt 
+
 
  
 // the `enum` ret and catch are similar , however they have a secondary lookup( often deduplicated across the link-unit )    table with all the offsets+ret pointing to RC ,then RC finally does a secondary jump lookup to the caller table  , this is only one of the many ways of doing this , and we havent even done callee-inlining the thrunk yet. 
     RC:
-
-    
-
     restore the catching return  to the return pointer.
-
     jump to ret.
-
-
-
     RN:
-
- 
-
    restore the normal return  to the return pointer
-
- 
-
    ret:
-
-  
-
   restore all registers specified as used in F in stack.
-
-    jump to the return pointer.
-
-    
-
-    
-
-     
-
-     absolute value of (&contact_checked_F-&dyn F)
-
-     dynamic F( where the dynamic pointer will point):
-
-
-
-    save all  registers specified as used in F in stack.
-
-    save both return pointers.
-
-    set both return pointers to &RN and &RC.
-
-
-
+  jump to the return pointer.
+  absolute value of `(&contact_checked_F-&dyn F)`
+  dynamic F( where the dynamic pointer will point):
+   save all  registers specified as used in F in stack.
+   save both return pointers.
+   set both return pointers to &RN and &RC.
     static F:
-
-    
-
     F's code...
-
-    
-
     contact_checked_F: 
-
     contract's code...    
 
     
@@ -1356,49 +1315,27 @@ the optimization preformed is usually merge of smaller synchronized blocks into 
 
    
 
-   a call to &(dynamic F) is made through the function pointer.
+   a call to `&(dynamic F)` is made through the function pointer.
 
    
 
-```
+
 
 
 
 the difference to `fastdyncallee` is :
 
-```txt
-
-
-
-
-
-
 
 
 
 absolute value of (&contact_checked_F-&dyn F)
-
 dynamic F( where the dynamic pointer will point):
-
 static F:
-
-    
-
-    F's code...
-
-    
-
-
-
-
-
+F's code...
 contact_checked_F: 
-
 contract's code...    
 
 
-
-```
 
 
 
@@ -1494,55 +1431,80 @@ although,  these types of functions are unsafe(longjump) to call because,  well 
 
 - example 
 
-```
     
     //call site
-    {catchs={clables.....}, rets={lables.....}};
     
-  CRA= IP+(rets-IP);// constant offset from IP to support ASLR
- NRA= IP+lable;
- jump func;// IP=func
+    `{catchs={clables.....}, rets={lables.....}};`
+    
+    
+  `CRA= IP+(rets-IP);`// constant offset from IP to support ASLR
+ 
+`NRA= IP+lable;`
+ 
+` jump func;`// IP=func
+
 many lables:....
+
  .....happyy...
+ 
 many clables:....
+
  ....sad.....
  
-
+ 
  
  func:
- BP=SP; // preserve CRA, NRA,BP  throughout the call
- // stuff....
+
+ `BP=SP;` // preserve CRA, NRA,BP  throughout the call
+ 
+// stuff....
+
  // stuff...   of first enum entry ret
-SP=BP;
+
+`SP=BP;`
+
 // return of the first enumret entry is  not a table lookup 
- jump NRA;// IP=NRA
+ 
+`jump NRA;`// IP=NRA
  
  // stuff...   of other enum rets
-SP=BP;
+ 
+`SP=BP;`
+
 // return of the happy path is positive indexes,  index being the same as the return value's enum numeric ( or if the enum is a sum type , the type tag)
-NRA+=*(CRA+retval);
- jump NRA;// IP=NRA
+
+`NRA+=*(CRA+retval);`
+
+ `jump NRA;`// IP=NRA
  
  
  // stuff...   of  enum throws
-SP=BP;
+ 
+`SP=BP;`
+
 // return of the sad path is  negative indexes( with -1 being the first),  index being the same as the  throw value's enum numeric ( or if the enum is a sum type , the type tag)
+
 // the bit not is the way we use two's compliment to map the negative indexes ( the reason for using this is the following both path)
 
 
-NRA+=*(CRA+ (~throwval) );
- jump NRA;// IP=NRA
+`NRA+=*(CRA+ (~throwval) );`
+
+ `jump NRA;`// IP=NRA
  
  
  
  
 // branchless both  path multi dispatch:
 ....
-SP=BP;
-val=~throwval;
- (cmove) val = throws?val:retval;
-NRA+=*(CRA+ val );
- jump NRA;// IP=NRA
+`SP=BP;`
+
+`val=~throwval;`
+
+ `val = throws?val:retval;`// cmove
+ 
+`NRA+=*(CRA+ val );`
+
+ `jump NRA;// IP=NRA`
 
    
    
@@ -1553,7 +1515,6 @@ NRA+=*(CRA+ val );
     
     
     
-    ```
     
 
 
@@ -1664,9 +1625,9 @@ instead of the default `std::context_t<optimization-level>`  use `std::async_con
 
 0.  has to have a `noop` coroutine function  :
 
-   ```
-   context-type-coro-return noop_resume( context-type-coro-input) context-type;
-   ```
+  
+   `context-type-coro-return noop_resume( context-type-coro-input) context-type;`
+   
 
 1. has to have a promise-type ( dependent on function signature ) declared inside it , the promise type is the callee facing context type , because the callee always knows its coroutine status, it can always know if its the context type or the promise type as the context type , on each resume , the promise type is refreshed with new caller facing context types , but the promise within manages the callee.
 
@@ -1724,19 +1685,19 @@ the promise cache is an object only visible in the promise, with lifetime betwee
 
   the coroutine handle  is a pointer to the structure with the following layout:
 
- ```C
 
- struct frame{
 
-  context-type-coro-return (* resume_function ) ( frame* ptr, context-type-coro-input) context-type;// fastdyncaller , and  dyncontract  by default 
+` struct frame{`
 
- intptr_t  program_switch_counter;// positive indexes show normal control flow, negative indexes show the same suspension's catching/cancelation control flow,  0 shows that the function and all of its variables will be destroyed on next resume ( final suspend) .
+  `context-type-coro-return (* resume_function ) ( frame* ptr, context-type-coro-input) context-type;`// fastdyncaller , and  dyncontract  by default 
+
+ `intptr_t  program_switch_counter;`// positive indexes show normal control flow, negative indexes show the same suspension's catching/cancelation control flow,  0 shows that the function and all of its variables will be destroyed on next resume ( final suspend) .
 
  // if the function's last destination ( the counter being set to zero) throws by exception, the resume pointer will be reassigned to soly point to the frame deallocation destructor,  the frame wouldn't be destroyed,  but rather,  the exception would  be caught in the catch and stored on the stack  then the frame will finally be destroyed by calling the resume pointer again. 
 
  // if a the deallocation of the frame fails by exception the program will terminate ( we can assume free and delete will never fail so this isn't an issue) 
 
-  byte[....];// coroutine frame storage 
+ ` byte[....];`// coroutine frame storage 
 
   
 
@@ -1746,49 +1707,49 @@ the promise cache is an object only visible in the promise, with lifetime betwee
 
 
 
-  };
+ ` };`
   
   
-  __raw_handle{ // pack.
-frame* ptr;// the alignment bits are used for the flags.
-flag_t elided;// elided flag is in the least significant bit.
+  `__raw_handle{` // pack.
+`frame* ptr;`// the alignment bits are used for the flags.
+`flag_t elided;`// elided flag is in the least significant bit.
 
-};
+`};`
 
     
 
  // these are simplified code , the actual code would check to see if its a noop coroutine first .
 
-  // all of these are unsafe(explicit-coroutine-handles) . 
+  // all of these are `unsafe(explicit-coroutine-handles)` . 
 
-// bool    done() == (program_switch_counter==0 )
+// `bool    done() == (program_switch_counter==0 )`
 
-// bool elided()== (ptr&1)
+// `bool elided()== (ptr&1)`
 
 
 //note that a cancelation of a function is only observable while it hasn't  reached final suspension,  in the final suspend it had done all of its work so even if the resume throws an exception,  it has already been a finished routine. 
 
-//  bool canceled() ==(program_switch_counter<0)
+//  `bool canceled() ==(program_switch_counter<0)`
 
 // it is necessary for safety that all coroutines are called with their context-type known ( context-type  is acting like the Itanium promise type)
 
 
 
-// context-type-coro-return  resume(context-type-coro-input) context-type {return resume_function(ptr...);}
+// `context-type-coro-return  resume(context-type-coro-input) context-type {return resume_function(ptr...);}`
 
-//  void cancel() {ptr->program_switch_counter=-abs(ptr->program_switch_counter);}// if there are no co_value expressions , then only one resume is necessary before its "done".
+//  `void cancel() {ptr->program_switch_counter=-abs(ptr->program_switch_counter);}`// if there are no `co_value` expressions , then only one resume is necessary before its "done".
 
- // context-type-promise & promise() ...
+ // `context-type-promise & promise() ...`
 
   
 
    
 
-   std::coroutine_handle_t<context-type, std::meta(^^coro-function)> is the non type erased handle , with superior static calls ( calling and optimizing via the reflection information) 
+   `std::coroutine_handle_t<context-type, std::meta(^^coro-function)>` is the non type erased handle , with superior static calls ( calling and optimizing via the reflection information) 
 
-  , however the type erased one has an empty reflection value of  std::meta  , and does a dynamic call, and is needed for callees to preform the control transfer via resume on the caller.
+  , however the type erased one has an empty reflection value of  `std::meta_t`  , and does a dynamic call, and is needed for callees to preform the control transfer via resume on the caller.
 
-```
+
 
 
 ---
@@ -2540,14 +2501,18 @@ if specified `enum` return or catch, its the table pointer to the table of retur
 
 
 the conceptual call site( note that its implementation defined for each function signature if the jump instruction is used or a  call, however  it is encouraged to use the one with the best semantic):
-```
+
 // in this  one its a jump site caller, with no enum ret or catch .
 // old BP is saved somewhere to be restored later.
 
  // the cost of  an exception ( or any more than one return path really)  is this mov of a constant to a  register that is pinned as important for multi return. 
- CRA= catchlable-lable;// constant offset
- NRA= IP+lable;
- jump func;// IP=func
+ 
+`CRA= catchlable-lable;`// constant offset
+
+ `NRA= IP+lable;`
+ 
+ `jump func;`// IP=func
+ 
  lable:
  .....happyy...
  catchlable:
@@ -2556,11 +2521,11 @@ the conceptual call site( note that its implementation defined for each function
  
  // or if a tail call:
  func:
- BP=SP; // preserve CRA, NRA,BP  throughout the call
+ `BP=SP;` // preserve CRA, NRA,BP  throughout the call
  
  // stuff...
-SP=BP;
- jump func;// IP=func
+`SP=BP;`
+ `jump func;`// IP=func
  
  
  
@@ -2570,13 +2535,20 @@ SP=BP;
  
  // jump site callee 
  func :
- BP=SP; // preserve CRA, NRA,BP  throughout the call
+ 
+ `BP=SP;` // preserve CRA, NRA,BP  throughout the call
+
  //  stuff ... thats happy....
- SP=BP;
- jump NRA;
+
+ `SP=BP;`
+ 
+ `jump NRA;`
+ 
  //  stuff ... thats  sad....
- SP=BP;
- jump NRA+CRA;
+ 
+ `SP=BP;`
+ 
+ `jump NRA+CRA;`
  
  
  
@@ -2584,23 +2556,32 @@ SP=BP;
  // if using call and ret, the call site  , NRA being either a cpu known registers for return,  or a stack position, and CRA being a caller passed register.
  // however  the implementation must acknowledge that of the base pointer is moved how many bytes to ensure that a stack argument position is known at a fixed offset. 
  
- CRA= catchlable-lable;// constant offset
- //  is implicitly assigned in the call 
-  call func;// NRA=IP ,IP=func, after call
- lable:// exactly after all
+ `CRA= catchlable-lable;`// constant offset
+ 
+//  is implicitly assigned in the call , the call  instruction is discouraged if call does big shadow stores 
+  
+`call func;`// NRA=IP ,IP=func, after call
+
+ lable:// exactly after  call
  .....happyy...
  catchlable:
  .....sad....
  
  
  // callee ret site:
+ 
  // preserve CRA, NRA,BP  throughout the call
+ 
  func :
  //  stuff ... thats happy....
- ret;
+ 
+ `ret;`
+ 
  //  stuff ... thats  sad....
- NRA+=CRA;// if the NRA is in the stack  for example some calling conventions the call instructions does stack push , this then becomes an override of the return pointer in the stack
- ret;
+ 
+ `NRA+=CRA;`// if the NRA is in the stack  for example some calling conventions the call instructions does stack push , this then becomes an override of the return pointer in the stack
+
+ `ret;`
  
  
  
@@ -2611,7 +2592,7 @@ SP=BP;
  
 
 
-```
+
 
 
 
@@ -2858,7 +2839,6 @@ there might also be optimizations:
 
 
 
-```txt
 
 f:
 
@@ -2890,7 +2870,7 @@ end and ret:
 
 ret to normal ret
 
-```
+
 
 instead of duplicated cleanup code in happy and sad paths in the c++ throw conversions, or returning to an unnecessary brach that is known to be happy or sad in the calle.
 
@@ -3012,49 +2992,90 @@ program code:
 read only dynamic  symbol table layout:
 
 
-```
 // constant read only global section.
+
 // at offset  0 
-needed-linker-abi256-hash;
-dll-identifier-abi256-hash; // this is used in dllmap , not really useful otherwise.
-void (*mayde_initilization_fn_offset)(void* ptr0 , bool init);
- global_loader_ptr_offset;
-size_t  symbol_count;
-size_t dll_count;
+
+`needed-linker-abi256-hash;`
+
+`dll-identifier-abi256-hash;`
+
+ // this is used in dllmap , not really useful otherwise.
+ 
+`void (*mayde_initilization_fn_offset)(void* ptr0 , bool init);`
+
+`global_loader_ptr_offset;`
+
+  `size_t  symbol_count;`
+
+`size_t dll_count;`
 
 
 // padding
+
 // this is the sorted 256bit hash back-end mangle :
- uint256_t  symbol_fragment[symbol_count];
+
+` uint256_t  symbol_fragment[symbol_count];`
+
 // this is the corresponding symbol data to the symbol mangle.
- uintptr_t symbol_ptr_offset_and_mask[symbol_count]
+
+` uintptr_t symbol_ptr_offset_and_mask[symbol_count]`
+
  ...
- // arch is 3-log2(alignof(void*)), and note that if the offset  overflows the program is ill-formed ,however on 32-bit or 16 bit systems this is not really a concern.
- //the symbol_ptr_offset_and_mask's value is defined  with (uintptr_t(offset)<<(arch)) | viability,
+ // arch is `3-log2(alignof(void*))`, and note that if the offset  overflows the program is ill-formed ,however on 32-bit or 16 bit systems this is not really a concern.
+
+ //the `symbol_ptr_offset_and_mask`'s value is defined  with `(uintptr_t(offset)<<(arch)) | viability`,
+
  // the viability mask only can use 3 bits :
- // 1 : dll_comparable_address vs no_dll_comparable_address 
+ 
+// 1 : `dll_comparable_address` vs `no_dll_comparable_address`
+
  // 2 : interpositioned vs no-interposition
+
  // 3 : dllimport vs dllexport
-  //if  no-interposition and dllexport and no_dll_comparable_address pointer is the offset of the function adress reletive  to offset 0  
- //  if its interpositioned and dllexport and no_dll_comparable_address , pointer is the offset of the reserved static atomic storage for the address of the function reletive  to offset 0
- //if  no-interposition and dllexport and dll_comparable_address pointer is the offset of the function pointer reletive  to offset 0  , this function pointer has the function adress reletive  to offset 0   
- //  if its interpositioned and dllexport and dll_comparable_address ,   pointer is the offset of the reserved static atomic storage pointer for the address of the function reletive  to offset 0 , this storage pointer has the reserved static atomic storage for the address of the function reletive  to offset 0
+ 
+ //if  no-interposition and dllexport and `no_dll_comparable_address` pointer is the offset of the function adress reletive  to offset 0  
+
+ //  if its interpositioned and dllexport and `no_dll_comparable_address`  , pointer is the offset of the reserved static atomic storage for the address of the function reletive  to offset 0
+ 
+//if  no-interposition and dllexport and `dll_comparable_address` pointer is the offset of the function pointer reletive  to offset 0  , this function pointer has the function adress reletive  to offset 0   
+ 
+//  if its interpositioned and dllexport and `dll_comparable_address`  ,   pointer is the offset of the reserved static atomic storage pointer for the address of the function reletive  to offset 0 , this storage pointer has the reserved static atomic storage for the address of the function reletive  to offset 0
+
 // if no-interposition and dllimport    pointer is the offset of the function pointer reletive  to offset 0  
- //  if its interpositioned and dllimport  , pointer is the offset of the reserved static atomic storage pointer for the address of the function reletive  to offset 0
+ 
+//  if its interpositioned and dllimport  , pointer is the offset of the reserved static atomic storage pointer for the address of the function reletive  to offset 0
  
  
  
  // write only once in initilization, then make readonly section: 
 
-global_loader_t*const global_loader;
-uint32_t dll_priority;
-const void**const  imported_interposition_fnptr_ptrs[....]; // the pointers to the interpositioned function pointers.
-const void* const imported_non_interposition_fnptrs[....];// the pointer to the imported function.
-const void**const  exported_interposition_dll_comp_address_fnptrs[....];// the pointer to the imported function, first having the offset to the current pointer .
+`global_loader_t*const global_loader;`
+
+
+`uint32_t dll_priority;`
+
+// the pointers to the interpositioned function pointers.
+
+`const void**const  imported_interposition_fnptr_ptrs[....];`
+
+ 
+// the pointer to the imported function.
+
+`const void* const imported_non_interposition_fnptrs[....];`
+
+// the pointer to the imported function, first having the offset to the current pointer .
+
+`const void**const  exported_interposition_dll_comp_address_fnptrs[....];`
+
 ...
   
   // read-write section, note that based on compiler flags each of these can be aligned to the destructive interfaces size.
-void* exported_interposition_fnptrs[....]; // initilized  with the function definition 
+
+// initilized  with the function definition 
+
+`void* exported_interposition_fnptrs[....];`
+ 
 
 ...
 
@@ -3066,30 +3087,44 @@ void* exported_interposition_fnptrs[....]; // initilized  with the function defi
 
 
 // if the binary definition has the mcc dynamic  loader.
+
 // read write section global loader :
-mutex/ atomic flag ;
-size_t total_symbol_count;
-size_t dll_count;
-uint256_t  sorted_symbols(*)[total_symbol_count];
-uintptr_t   symbol_ptr(*)[total_symbol_count];// symbol_ptr is just like symbol_ptr_offset_and_mask, but it has absolute addresses calculated from those offsets.
-uintptr_t dll_info_index_and_mask(*)[total_symbol_count];// the 3 low bits are  for the viability mask , the high bits are more than enough  to indicate dll info index.
+
+`mutex...;` or `atomic flag... ;`
+
+`size_t total_symbol_count;`
+
+`size_t dll_count;`
+
+`uint256_t  sorted_symbols(*)[total_symbol_count];`
+
+// `symbol_ptr` is just like `symbol_ptr_offset_and_mask`, but it has absolute addresses calculated from those offsets.
+
+`uintptr_t   symbol_ptr(*)[total_symbol_count];`
+
+// the 3 low bits are  for the viability mask , the high bits are more than enough  to indicate dll info index.
+
+`uintptr_t dll_info_index_and_mask(*)[total_symbol_count];`
  
 // sorted infos based on dll info's dll-identifier-abi256-hash 
-dll_info dll_infoes(*)[dll_count];
-uint32_t dll_prioritis(*)[dll_count];
+
+`dll_info dll_infoes(*)[dll_count];`
+
+`uint32_t dll_prioritis(*)[dll_count];`
 
 
-// note that for security a sanity check for sorted ness van b done in O(total_symbol_count)time complexity 
+// note that for security a sanity check for sorted ness van b done in `O(total_symbol_count)` time complexity 
 
 
-// this is done before the module initilization, O(total_symbol_count)time complexity 
+// this is done before the module initilization, `O(total_symbol_count)` time complexity 
+
 - dynamic load :
 0.make  lockgard mutex.
 1. inspect the list of given binaries meta datas and their priorities and make sure needed-linker-abi256-hash is compatible with the current version.
 2. allocate at least the size of all given symbols and ptr-masks.
-3. merge all sorted arrays of symbols in all the given binaries  into the region while also turning offsets into absolute values and assigning priorities( also sort based on the  priorities as if  the least significant sorting indicator, and because each binary is sorted and its indicator is constant, we can just do O((total_symbol_count)*log(#binaries)) merge with this via a stable sort merge step or if the log(#binaries) in merge dominate(which is very rare because the number of dlll files would b exponential)  we do a   O(total_symbol_count) radix sort ).( either via  merge step or radix sort based on the appropriate heuristics) and while doing so , for all duplicate regions ( next to each other symbols of equal value)  do the duplication region check function and fail if it fails.
+3. merge all sorted arrays of symbols in all the given binaries  into the region while also turning offsets into absolute values and assigning priorities( also sort based on the  priorities as if  the least significant sorting indicator, and because each binary is sorted and its indicator is constant, we can just do `O((total_symbol_count)*log(#binaries))` merge with this via a stable sort merge step or if the `log(#binaries)` in merge dominate(which is very rare because the number of dll files would b exponential)  we do a   `O(total_symbol_count)` radix sort ).( either via  merge step or radix sort based on the appropriate heuristics) and while doing so , for all duplicate regions ( next to each other symbols of equal value)  do the duplication region check function and fail if it fails.
 4. if checks were not successful , then fail.
-5. assign all given libraries loader pointer to the address of global loader, and set dll_priority es appropriately. 
+5. assign all given libraries loader pointer to the address of global loader, and set `dll_priority` es appropriately. 
 6. do a scan to find  duplicate regions , then for each do the duplicate resolution function.
 7. freeze  the "write only once in initilization" section to readonly 
 8. return successfully ( and unlock)
@@ -3097,9 +3132,9 @@ uint32_t dll_prioritis(*)[dll_count];
 
 - duplication region check:
 0. get the M symbol masks
-1. count all the symbols that are dllimport, are interpositioned are dll_comparable_address. O(M)
+1. count all the symbols that are dllimport, are interpositioned are `dll_comparable_address`. O(M)
 2. check that  all priorities between ajason external symbols is unique or not. O(M), the symbols must have unique dllexport priorities , if not we fail.
-3.   if the loader is not doing  a start up load , all dll_comparable_address counts must be from those qualified as dllimport.
+3.   if the loader is not doing  a start up load , all `dll_comparable_address` counts must be from those qualified as dllimport.
 4.   if the loader has  imports but not any export,  we fail.
 5 . return successfully 
 
@@ -3115,74 +3150,74 @@ uint32_t dll_prioritis(*)[dll_count];
 
 
 
-// this is done after the module deinitilization O(total_symbol_count) time complexity 
+// this is done after the module deinitilization `O(total_symbol_count)` time complexity 
 - dynamic unload ( unchecked)
 0.make  lockgard mutex.
 1. put each dll info needing unload into an unload state ( via a flag) 
-2.  with std::remove_if style algorithm , remove any symbol that has a dll info needing unload at its dll info index.
-3. update total_symbol_count and return successfully ( and unlock)
+2.  with `std::remove_if` style algorithm , remove any symbol that has a dll info needing unload at its dll info index.
+3. update `total_symbol_count` and return successfully ( and unlock)
 
 
-// safer but O(total_symbol_count*log(#binaries)) time complexity 
+// safer but `O(total_symbol_count*log(#binaries))` time complexity 
 - dynamic unload ( with use after free check, but a bit slower) :
 0.make  lockgard mutex.
 1. get the beginning and end pointers for each binary that needs unloading,  and sort theses  via radix sort to allowe for binary search  for range check. 
-2. for all elements in symbol_ptr:
+2. for all elements in `symbol_ptr`:
 3. if element and its internal function and storage being pointed to  is not in range of any of the binary pointers , we continue  to next.
 4. if the element itself was not in binary unload range we fail  by termination ( try to unload symbol while its used ,obvious and easy to check use after free).
-5. remove this element  from the array ( std:: remove_if style removal over the entire loop) 
+5. remove this element  from the array ( `std:: remove_if` style removal over the entire loop) 
 6. continue till all are done.
-8. update total_symbol_count and return successfully ( and unlock)
+8. update `total_symbol_count` and return successfully ( and unlock)
 
 
 
-//  PLT style lazy loading is highly discouraged and frankly very hard to implement under mcc , if we lazy load we will get O(n²) because a trigger of the loader is O(n) and we do it for every symbol on load,  so batch loading makes it better if we stay in the mcc loader, however a represent_cxx loader is not in scope of thisABI .
+//  PLT style lazy loading is highly discouraged and frankly very hard to implement under mcc , if we lazy load we will get O(n²) because a trigger of the loader is O(n) and we do it for every symbol on load,  so batch loading makes it better if we stay in the mcc loader, however a `represent_cxx` loader is not in scope of thisABI .
 
 
-
+``
 
 // high level overview of what radix sort means in this context( not the definitive way , just a way ):
 
-// first , we know that the merge sort algorithm heuristics told us that O(log(#binary)*n) was too big ,so  we have to make an algorithm that works for very large n , 
+// first , we know that the merge sort algorithm heuristics told us that `O(log(#binary)*n)` was too big ,so  we have to make an algorithm that works for very large n , 
 // it probably has a million or more symbols.
 
 // we allocate  a buffer with 2 ^ 16   stacks
 // we sort the hashes based on their 32 most significant bits, by:
-// 1.  put elem in stack with index =  uint16_t(elem>> ( 256-   64)). pop the stacks according to the order of stable sort.
-// 2.  put elem in stack with index =  uint16_t(elem>> ( 256-    48)).pop the stacks according to the order of stable sort.
-// 3.  put elem in stack with index =  uint16_t(elem>> ( 256-    32)). same
-// 4.  put elem in stack with index =  uint16_t(elem>> ( 256-  16)). same
+// 1.  put elem in stack with `index =  uint16_t(elem>> ( 256-   64))`. pop the stacks according to the order of stable sort.
+// 2.  put elem in stack with `index =  uint16_t(elem>> ( 256-    48))`.pop the stacks according to the order of stable sort.
+// 3.  put elem in stack with `index =  uint16_t(elem>> ( 256-    32))`. same
+// 4.  put elem in stack with `index =  uint16_t(elem>> ( 256-  16))`. same
 // now , based on the knowledge that these are cryptographic hashes with uniform distribution, also considering that they even were sorted partitions at the beginning, 
-// we assume that we have  partitioned the memory on this distribution  and so on average  we say that each slot has  (N/ 2 ^  64) elements that are not sorted,   this means that for practical purposes,  we can say that most parts are sorted.
+// we assume that we have  partitioned the memory on this distribution  and so on average  we say that each slot has  `(N/ 2 ^  64)` elements that are not sorted,   this means that for practical purposes,  we can say that most parts are sorted.
 // we do a scan of the regions , and for each part where it didn't have sorted order ,
-// we do  a similar algorithm for sorting on the sub regions or probably a merge sort , or just do a bubble sort if it was tiny , we say its O(m*logm) if we had an unluky hit
-// on average its O(4*O(1+)*n) + f(n) )
-// O(1+)= push back in stack O(1) Amortized. 
+// we do  a similar algorithm for sorting on the sub regions or probably a merge sort , or just do a bubble sort if it was tiny , we say its `O(m*logm)` if we had an unluky hit
+// on average its `O(4*O(1+)*n) + f(n) )`
+// `O(1+)`= push back in stack O(1) Amortized. 
 //  so , we need to calculate why f(n) is O( n) on average.
-// f(n) =  O(n)+  (sum i=0 to 2 ^ 64  ,selecting for ies that existof  O(mlogm)* P( hash conflict that m  symbols with non equal least significant portions  has the same upper hash of I in a uniform distribution))
+// `f(n) =  O(n)+  (sum i=0 to 2 ^ 64  ,selecting for ies that existof  O(mlogm)* P( hash conflict that m  symbols with non equal least significant portions  has the same upper hash of I in a uniform distribution))`
 // we can say that  the probability is very small and negligible that its close to 0.
 // this  btw is the reason that hash tables are considered fast.
 // lets say it more rigorously:
-// uniform distribution means on avrage (N/ 2 ^  64) symbols have the same hash per each part ,
+// uniform distribution means on avrage `(N/ 2 ^  64)` symbols have the same hash per each part ,
 //  the probability of sameness of the upper 64 bits  for m symbols while having non equal  lower parts is :
-// ( 2 ^  -64)^ (m)  =2^(-64m)
+// `( 2 ^  -64)^ (m)  =2^(-64m)`
 // for selecting in the summation , we observe that for  avr partion size of M , in N elements,  we have around N/M partions.
 
 // we multiply the time complexity and the selection sumation:
-//  O(n)+ O(n/avr(m))*O(mlogm)*(2^-64m) 
+//  `O(n)+ O(n/avr(m))*O(mlogm)*(2^-64m)`
 // we say that  m is represented by its average.
-// O(n)+ O(n/m)*O(mlogm)*(2^(-64m)) =
-// O(n)+ O(n/m*mlogm*2^(-64m)) =
-// O(n)+  O(n*logm*2^(-64m)) =
-// O(n)+ O(n*2^O(-64m+loglogm)) = 
+// `O(n)+ O(n/m)*O(mlogm)*(2^(-64m)) =`
+// `O(n)+ O(n/m*mlogm*2^(-64m)) =`
+// `O(n)+  O(n*logm*2^(-64m)) =`
+// `O(n)+ O(n*2^O(-64m+loglogm)) =`
 //  note that the biggest factor of the exponential  is m , not loglogm , and its negative, so , we can just transform it into O(1)
-//  O(n) + O(n*O(1+))= O(n+) , amortized linear time.
-// so , it is 5n+O(n+) amortized 
+//  `O(n) + O(n*O(1+))= O(n+)` , amortized linear time.
+// so , it is `5n+O(n+)` amortized 
 // note that a non probabilistic algorithms is also doable ,
 // to preform a sort using pure radix sort ,
 // it does 16 repetitions of the  put elem in stack  and pop from it steps.
-// so its  16n+O(n+) granteed,  however,  log(#binaries) is probably not going to be more than 16 ,
- // who has 65536 dll files!?... and who expects these many files to load fast?!, even the operating system  has B trees of its files that give O(n*logn) time when accessing n files,  thats not really a CPU bound task   , it's  more  file storage speed bound.
+// so its  `16n+O(n+)` granteed,  however,  `log(#binaries)` is probably not going to be more than 16 ,
+ // who has 65536 dll files!?... and who expects these many files to load fast?!, even the operating system  has B trees of its files that give `O(n*logn)` time when accessing n files,  thats not really a CPU bound task   , it's  more  file storage speed bound.
 // i believe that practically  merge sort may be the only algorithm that is necessary to achieve max speed because of the nature of this operation.
 // however,  dllmap files are still the most significant contribution in binary  loading. 
 
@@ -3191,31 +3226,43 @@ uint32_t dll_prioritis(*)[dll_count];
 
 
 
-```
+
 
 
  there's also a secondary tactic used to make dll loads faster after the first memorization in the program installation,  its called a dllmap, and the linker recognizes dllmaps by using the dll count of non 1.
 
-```
+
 // constant read only global section.
 // at offset  0 
-needed-linker-abi256-hash;
-dll-identifier-abi256-hash; 
-void (*mayde_initilization_fn_offset)(void* ptr0 , bool init);
- global_loader_ptr_offset;
-size_t  symbol_count;
-size_t dll_count;
+
+`needed-linker-abi256-hash;`
+
+`dll-identifier-abi256-hash;`
+
+`void (*mayde_initilization_fn_offset)(void* ptr0 , bool init);`
+
+ `global_loader_ptr_offset;`
+ 
+`size_t  symbol_count;`
+
+`size_t dll_count;`
+
 // padding
 // this is the sorted 256bit hash back-end mangle :
- uint256_t  symbol_fragment[symbol_count];
+
+ `uint256_t  symbol_fragment[symbol_count];`
+ 
 // this is the corresponding symbol data to the symbol mangle.
-uintptr_t offset_and_mask[symbol_count];
-uintptr_t dll_info_index[symbol_count];
+
+
+`uintptr_t offset_and_mask[symbol_count];`
+
+`uintptr_t dll_info_index[symbol_count];`
 
 
 // sorted infos based on dll info's dll-identifier-abi256-hash , this is because the loader may rearrange the given dll map paths if they are path independent( if  path dependent,  meaning that the dllmap has the reletive path of the dll it needs to load compared to its own path , it doesn't even need the dll arguments at all, in most cases a path dependent dll loader is enough for application installation.), also a mix of these can be used if the dynamic loader implementation supports it.
-dll_info dll_infoes[dll_count];
-uint32_t dll_prioritis[dll_count];
+`dll_info dll_infoes[dll_count];`
+`uint32_t dll_prioritis[dll_count];`
 
 
  
@@ -3223,9 +3270,9 @@ uint32_t dll_prioritis[dll_count];
  // the algorithm for this is kinda  just an extension to the base dll loader.
  // first , all dll symbols with  known priorities and known dlls will get merged into this big sorted table for the creation  of dllmap, in an algorithm very similar to the dll loader ( dllmap loader is a variant of it).
  // because the execution of  this dllmap creator algorithm is only done at the program installer, the cost of the symbol merge algorithms are payed omly once.
- // a dllmap leader is given both the dll it mapped and the current program symbol table , and simply merges them similar  to a dll only loader , however because its a dllmap,  at the end of the merge operation it uses the dll_info data to identify the target dll ( for example this info can be an id , a path , a index , even file path independant dll-identifier-abi256-hash can be used, ect, based on the architecture and implementation), and uses the offset and priority , to set the dll data it needs to load , note that the dll table itself is not really used to lookup this operation, but the dllmap info is used instead,  each offset represents a pointer to the dll , and after the load( using dll_info) , its absolute address is calculated and is initialized as if it actually did the dll load.
+ // a dllmap leader is given both the dll it mapped and the current program symbol table , and simply merges them similar  to a dll only loader , however because its a dllmap,  at the end of the merge operation it uses the `dll_info` data to identify the target dll ( for example this info can be an id , a path , a index , even file path independant dll-identifier-abi256-hash can be used, ect, based on the architecture and implementation), and uses the offset and priority , to set the dll data it needs to load , note that the dll table itself is not really used to lookup this operation, but the dllmap info is used instead,  each offset represents a pointer to the dll , and after the load( using `dll_info`) , its absolute address is calculated and is initialized as if it actually did the dll load.
 // note that dllmaps can also merge into bigger dllmaps.
-// the reason for the existence of dllmap is to not have the log(#binaries) factor grow , because a dllmap is a single binary that represents many binaries.
+// the reason for the existence of dllmap is to not have the `log(#binaries)` factor grow , because a dllmap is a single binary that represents many binaries.
 // also , most needed dlls in the real world are known at the program installation phase,  and the ones that do not , they don't need dllmaps , but the ones that do can still benefit from more memorization.
 // we can think of a dllmap as a snapshot/save  of the dynamic state of the dll loader , but with non absolute addresses and reletive offseting, and using it is like restoring a snapshot, instead of building it up.
 
@@ -3237,7 +3284,7 @@ uint32_t dll_prioritis[dll_count];
 
 
 
-```
+
 
 
  
@@ -3436,33 +3483,33 @@ requirements  afterwards include having the OS loader step,  and  OS symbol mang
 
 -  trunks for dynamic calls with specific calling conventions:
  a non exhaustive list of common calling conventions that would  need this thunk ( used in the target qualifier)
-```
+
   cdecl
   stdcall
   fastcall
   thiscall
   vectorcall
   regcall
-  ms_abi
-  sysv_abi
+  `ms_abi`
+  `sysv_abi`
   pascal
   regparm
   sseregs
-  force_align_arg_pointer
+  `force_align_arg_pointer`
   aapcs
   aapcs-vfp
   atpcs
   pcs
-  aarch64_vector_pcs
-  aarch64_sve_pcs
+  `aarch64_vector_pcs`
+  `aarch64_sve_pcs`
   swiftcall
   swiftasynccall
   ghc
   cold
   naked
-  preserve_most
-  preserve_all
-  preserve_none
+  `preserve_most`
+  `preserve_all`
+  `preserve_none`
   interrupt
   signal
   mips16
@@ -3470,18 +3517,18 @@ requirements  afterwards include having the OS loader step,  and  OS symbol mang
   micromips
   nocompression
   altivec
-  spe_abi
+  `spe_abi`
   eabi
-  m68k_rttd
-  amdgpu_kernel
-  amdgpu_cs 
- amdgpu_gs 
- amdgpu_ps 
- amdgpu_vs 
- amdgpu_hs 
- amdgpu_ls 
- amdgpu_es
-```
+  `m68k_rttd`
+  `amdgpu_kernel`
+  `amdgpu_cs`
+   `amdgpu_gs`
+   `amdgpu_ps`
+ `amdgpu_vs`
+ `amdgpu_hs`
+ `amdgpu_ls` 
+ `amdgpu_es`
+
 
 ` ret= std::abi_compat_call<convention-type>(fnptr, args...);`
  
@@ -3658,12 +3705,12 @@ also one to get a reference to a context-type.
 
 - operator set(constructor-args... )main-context-type->block-context-type:
 if set is used in the context,  it creates a code block output the main context , this can be an opt out of debugging for example. 
-```
-set_context<block-context-type>( constructor-args...){
+
+`set_context<block-context-type>( constructor-args...){`
 .....
-...get_context(...);
-}
-```
+...`get_context(...);`
+`}`
+
 
 
 - operator ~set(block-context-type) main-context-type:
@@ -4597,17 +4644,18 @@ although this is fast enough so its good enough,  if not , c colon can be used t
 
  ( note that iteration-primitive is written in c colon as it involves more complex machinery)
 
- ``` 
 
-  for ( `inout` variable: iteration-primitive) {// function body beginning, the function captues the sate and has an `inout` argument 
+
+ ` for ( inout variable: iteration-primitive) {`
+// function body beginning, the function captues the sate and has an `inout` argument 
 
 // modify variable.
 
-}// lambda scope end
+`}`// lambda scope end
 
 
 
-for ( auto [`inout` a, in b, out c, d ]: iteration-primitive){// function body beginning, the function captues the state and has an multiple argument provided in the iterator internals.
+`for ( auto [inout a, in b, out c, d ]: iteration-primitive){`// function body beginning, the function captues the state and has an multiple argument provided in the iterator internals.
 
 // d is copied , a , b and c are "referenced" via value input outputs
 
@@ -4617,21 +4665,21 @@ for ( auto [`inout` a, in b, out c, d ]: iteration-primitive){// function body b
 
 // it not a coroutine so it has:
 
-// makes the iteration primitive call operator break(...) context-type ->lambda-return
+// makes the iteration primitive call `operator break(...) context-type ->lambda-return`
 
-break;
+`break;`
 
-// makes the iteration primitive call operator continue(...) context-type  ->lambda-return
+// makes the iteration primitive call `operator continue(...) context-type  ->lambda-return`
 
-continue;
+`continue;`
 
-// makes the iteration primitives call operator return (...) context-type -> lambda-return
+// makes the iteration primitives call `operator return (...) context-type -> lambda-return`
 
-return...;
+`return...;`
 
 // theres an implicit continue at the end of scope   
 
-}// lambda scope end , once the function ends via the iteration-primitive, it can either implicitly return a value or continue execution or throw.
+`}`// lambda scope end , once the function ends via the iteration-primitive, it can either implicitly return a value or continue execution or throw.
 
 
 
@@ -4643,33 +4691,33 @@ return...;
 
 // theres an implicit  transformation for these code , to make it able to do either a ,co await , co return or a throw or simply  continue execution .
 
- for co_await (auto [`inout` a, in b, out c, d ]: parallel-iteration-primitive){// the iteration primitives may restrict the lambda to only caputure thread_safe constant state if it wants to do parallelization , a const unstable mutex<T> however has internal  unrestricted unstable qualification of its members, some even atomic, therefore  its valid for it to modify its members even tho it looks constant. 
+ `for co_await (auto [inout a, in b, out c, d ]: parallel-iteration-primitive){`// the iteration primitives may restrict the lambda to only caputure `thread_safe` constant state if it wants to do parallelization , a const unstable `mutex<T>` however has internal  unrestricted unstable qualification of its members, some even atomic, therefore  its valid for it to modify its members even tho it looks constant. 
 
 // can modify a c and d , but cannot modify other variables outside of the for loop , however mutexes can still be modified beacuse they can be modified when constant.
 
 // parallelizable async co routine code....
 
-// converted into  operator co_value in the construction and operator ~co_value in the destruction 
+// converted into  `operator co_value` in the construction and `operator ~co_value` in the destruction 
 
- co_value std::async_io_file_t file(...);// makes an object  capable  of async construction and destruction,  and async destruction runs in cancelation,  cancelation is achieved by throw exceptions after a suspended co await is resumed 
-
-
-
- .... = co_yeild...;// produces a result 
-
- .... = co_await...;// awaits a result 
-
- co_return ...;  in a parallel loop does a cancelation of its siblings. and a total function return.
-
- co_break; in a parallel loop does a cancelation of its siblings. and  function continues.
-
- co_continue;// ends the execution of the current coroutine , but doesn't result in a cancelation. 
-
- }// lambda scope end , once the function ends via the iteration-primitive.
+ `co_value std::async_io_file_t file(...);`// makes an object  capable  of async construction and destruction,  and async destruction runs in cancelation,  cancelation is achieved by throw exceptions after a suspended co await is resumed 
 
 
 
-// a lambda  can only do copies in its caputure,   like [=](){} in c++, however with fn before it, but with fn(){}, the caputure( after fn using [...] cannot be specified under E colon ).
+` .... = co_yeild...;`// produces a result 
+
+ `.... = co_await...;`// awaits a result 
+
+` co_return ...;  ` in a parallel loop does a cancelation of its siblings. and a total function return.
+
+` co_break;` in a parallel loop does a cancelation of its siblings. and  function continues.
+
+` co_continue;` // ends the execution of the current coroutine , but doesn't result in a cancelation. 
+
+ `}`// lambda scope end , once the function ends via the iteration-primitive.
+
+
+
+// a lambda  can only do copies in its caputure,   like `[=](){}` in c++, however with fn before it, but with `fn(){}`, the caputure( after fn using `[...]` cannot be specified under E colon ).
 
 // the implicit lambda for iteration-primitive is the only place where caputure is by reference in E colon , and this is also heavily restricted under the iteration-primitive rules
 // also because the scope begins and ends predictably,  and the caller is conceptually paused until the end of the iteration,  this refrences caputure is almost always a pass under implicit borrow rules. 
@@ -4682,17 +4730,17 @@ return...;
 
 
 // also a special case  for example used in more relaxed async code,   this doesn't require  thread safe qualification but still requires const qualifier,  using a   non atomic  refrence counter however can allow for mutability , because it only allows a single thread to be scheduled , but the drawback is that the whole structured concurrency tree with this root has its scheduler changed to a single-threaded one,  however the mutex and atomic overhead is  unnecessary when  using this method.
-for co_await (auto [`inout` a,  in b, out c, d ]:  asynchronous-single-threaded-iteration-primitive){
+`for co_await (auto [`inout` a,  in b, out c, d ]:  asynchronous-single-threaded-iteration-primitive){`
 ...
-}
+`}`
 
 // we can do a combination of these , for example have multiple single-threaded workers that  each run  in parallel. 
 
 
-// also we have  lvl(rw)_mutex<level> ,
+// also we have  `lvl(rw)_mutex<level>` ,
 // in the scheduler  each leveled mutex would be  recorded in a async local stack wait data structure, and if a new leveled mutex is used , then its a violation of the try precondition  if the level is higher or equal than the last level in the level stack.
 
-//  there are different compiler flags , however in a critical system,  using a mutex without a level would be unsafe(deadlock) while in a non critical system it would just be safe because we don't care about deadlock normally .
+//  there are different compiler flags , however in a critical system,  using a mutex without a level would be `unsafe(deadlock)` while in a non critical system it would just be safe because we don't care about deadlock normally .
 
 
 
@@ -4704,7 +4752,7 @@ for co_await (auto [`inout` a,  in b, out c, d ]:  asynchronous-single-threaded-
 
 
 
-```
+
 
 
 
@@ -4868,7 +4916,7 @@ this language can be used in the web , similar to E colon ,via wasm
 
  when all the registers modifted are known , we can just put values in those that are not modified,
 
- when presssure is too high , all the registers are stored(call)/loaded(return) at once (or even have entier hot code sections that do this via a ```move ret ip; jump __mccabiv1::pop_all or jump __mccabiv1::push_all```), on architechures like x86 , cpus can parrarelize multiple stores or multiple loads but not intertwined load and stores like those in cxx calls.
+ when presssure is too high , all the registers are stored(call)/loaded(return) at once (or even have entier hot code sections that do this via a `move ret ip; jump __mccabiv1::pop_all or jump __mccabiv1::push_all`), on architechures like x86 , cpus can parrarelize multiple stores or multiple loads but not intertwined load and stores like those in cxx calls.
 
  also the fastdyncaller qualifier really helps reduce the register usage.
 
