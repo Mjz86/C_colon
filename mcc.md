@@ -4590,9 +4590,9 @@ by banning unsafe , all the complaints of complexity only fall on c colon. While
 the library implementation may use a bit allocator to see which chunks in the region are empty , to not have to use memory movement.
  or the implementation may choose an actual graph implementation,  and have a root node for checks
   
- there are type/lambda erasure primitives that ensure the type within them is recursively  const stable (via reflection, for example a mutex or a non immutable refrence counted object cannot be this way),
+ there are type/lambda erasure primitives that ensure the type within them is    const  stabilized (via reflection, for example a mutex or a non immutable refrence counted object cannot be this way),
  this is because  if the data graph doesn't freeze at creation,  it might make a memory leak when the function calls itself with itself as its prameter and stores it in itself, 
- thats why type erasure is highly restricted in Express colon. 
+ thats why open set type erasure is highly restricted  in Express colon. 
  
 4. speed :
 
