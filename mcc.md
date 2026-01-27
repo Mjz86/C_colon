@@ -2059,17 +2059,23 @@ note that a dynamic class cannot have fractional alignment  for its bases, if it
 
 virtual table layout contains:
  
- - note for virtual base classes and virtual calls in the constructors : 
- the  constructor of a virtual base class subobjects and the mimicking of the itanium virtual table table happens by changing the fat table pointer's vtable throughout the construction process.
- also for each virtual base class we have a special implicit function pointer entry corresponding to that base,
+ - note for virtual base classes  : 
+  for each virtual base class we have a special implicit function pointer entry corresponding to that base,
  the function pointer entry is more of a flag than a  code path, its  either 0 or -1,
  if -1 we know that we need to call the virtual base class constructor, 
  if 0 we know that the virtual base class is already constructed,
  only one -1 entry can correspond to a specific virtual base.
  if the construction is inlined and doesn't call virtual functions the constructor virtual tables can be elided.
  
-
- 
+ * the mandatory this pram advantage(  virtual table thunk sinks to the function):
+  think about a virtual function signature 
+  `virtual f(this virtual base&self)` , an override of this function will be using this signature,  so it would have the same pointer, 
+  if an overrides signature doesn't match the actual function,  then we might do a thunk ( because of type conversion mismatch).
+  
+* the construction  object illusion and the restrictions:
+`base( this virtual ovaluexpr base&self)`, the self reference is the actual real virtual table, 
+however , passing the self ( even implicitly ) without using the  final qualifier ( to basically not ommit construction of itanium-like v table tables , which is a massive itanium section that i simply don't know how to remove the bloat from and is obscure enough to not include) gives an error (" type is not formally constructed,  virtual calls may have different effects than programming expectations  use `represent_cxx` to allow virtual table table dispatch"),
+ also,  using final is basically a good way to say that the type is a standalone entity so even if a virtual call on it occurs,  it doesn't need to use a VTT 
 
 
 
