@@ -1175,7 +1175,7 @@ this is because  throw is not unwind based and doesn't use globals at all , and 
  
   * restrictions for  `enum`s specified of this use :
    all  `enum` entries must be continuous,if not the biggest and smallest one should not be more than 255( or an architecture dependent value ) values apart  ,( if the number is specified) ,
-   warnings or errors will be given in cases where big number of entries generate massive jump tables or missed performance, typically anything more than 32( or an architecture dependent value )   entries gives a warning and anything more than 256 ( or an architecture dependent value ) table entries ( accounting for both `enum`s of throw and return together) is ill-formed, not because of could , but should , if we need 2 lookups (only 1 if continuous) and more than `8*255+255` bytes ( non continuous max before ill-formed) ( or an architecture dependent value ) ... we really aren't fast are we. 
+   warnings or errors will be given in cases where big number of entries generate massive jump tables or missed performance, typically anything more than 32( or an architecture dependent value )   entries gives a warning and anything more than 256 ( or an architecture dependent value ) table entries ( accounting for both `enum`s of throw and return together) is ill-formed, not because of could , but should , if we need 2 lookups (only 1 if continuous) and more than `8*255` bytes ( non continuous max before ill-formed) ( or an architecture dependent value ) ... we really aren't fast are we. 
    these architectural values can be queried.
   
 
@@ -1491,7 +1491,69 @@ although,  these types of functions are unsafe(longjump) to call because,  well 
 
   `{...(-n)th_catching_return_offset, nth_retuen_path_offset....}`.
 
+
+- example 
+
+```
     
+    //call site
+    {catchs={clables.....}, rets={lables.....}};
+    
+  CRA= IP+(rets-IP);// constant offset from IP to support ASLR
+ NRA= IP+lable;
+ jump func;// IP=func
+many lables:....
+ .....happyy...
+many clables:....
+ ....sad.....
+ 
+
+ 
+ func:
+ BP=SP; // preserve CRA, NRA,BP  throughout the call
+ // stuff....
+ // stuff...   of first enum entry ret
+SP=BP;
+// return of the first enumret entry is  not a table lookup 
+ jump NRA;// IP=func
+ 
+ // stuff...   of other enum rets
+SP=BP;
+// return of the happy path is positive indexes,  index being the same as the return value's enum numeric ( or if the enum is a sum type , the type tag)
+NRA+=*(CRA+retval);
+ jump NRA;// IP=func
+ 
+ 
+ // stuff...   of  enum throws
+SP=BP;
+// return of the sad path is  negative indexes( with -1 being the first),  index being the same as the  throw value's enum numeric ( or if the enum is a sum type , the type tag)
+// the bit not is the way we use two's compliment to map the negative indexes ( the reason for using this is the following both path)
+
+
+NRA+=*(CRA+ (~throwval) );
+ jump NRA;// IP=func
+ 
+ 
+ 
+ 
+// branchless both  path multi dispatch:
+....
+SP=BP;
+val=~throwval;
+ (cmove) val = throws?val:retval;
+NRA+=*(CRA+ val );
+ jump NRA;// IP=func
+
+   
+   
+// did you notice?  only 2 jumps, both being necessary ( one as call, one as ret)
+    
+    
+    
+    
+    
+    
+    ```
     
 
 
