@@ -2075,7 +2075,8 @@ virtual table layout contains:
 * the construction  object illusion and the restrictions:
 `base( this virtual ovaluexpr base&self)`, the self reference is the actual real virtual table, 
 however , passing the self ( even implicitly ) without using the  final qualifier ( to basically not ommit construction of itanium-like v table tables , which is a massive itanium section that i simply don't know how to remove the bloat from and is obscure enough to not include) gives an error (" type is not formally constructed,  virtual calls may have different effects than programming expectations  use `represent_cxx` to allow virtual table table dispatch"),
- also,  using final is basically a good way to say that the type is a standalone entity so even if a virtual call on it occurs,  it doesn't need to use a VTT 
+ also,  using final is basically a good way to say that the type is a standalone entity so even if a virtual call on it occurs,  it doesn't need to use a VTT  , however using  the final qualifier in this specific instance has also restrictions on having virtual bases.
+ while we can reconsider this in future versions by changing the abi version,  i still think it's  fundemental requirement of grapth generation( n bases means n tables  and means n nodes , so graph , incompatible with castation) will make the cost too much, the VTT is  `represent_cxx`along with personality routines and array cookies.
 
 
 
