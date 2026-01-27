@@ -4978,6 +4978,9 @@ De-fragmenting C++： Making Exceptions and RTTI More Affordable and Usable - He
 [link](https://youtube.com/watch?v=ARYP83yNAWk)
 
 
+The Day The Standard Library Died:
+[link](https://cor3ntin.github.io/posts/abi/)
+
 
 
 ---
