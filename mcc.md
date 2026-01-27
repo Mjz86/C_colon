@@ -4122,7 +4122,20 @@ if the cryptographic hash is given to an implementation defined function  `__mcc
 for example,  bool , bit  and flag may be passed in a single bit of a register , or in a specific ALU flag ( if appropriate) , or the floating  point  values may have a preference of FPU registers( or SSE in x86), 
 however this would only be used if the type is passed by value ( ie. trivially relocatable and is not refrence ) , refrence types or pointers also may have preference for specific registers that  can have  load and store ptr operands ( for example   load effective address  in x86)
  it is implementation defined what preferences are used , and if some non fundemental types also have preferences or not ( for example a sso string object may use compiler intrinsics  to say that a specific register category  of ymm is preferred , however  using intrinsics  is unsafe(magic) and probably  would need other unsafe blocks to indicate non standard abi)
+ also , implementations are encouraged to make many to many mappings of structures  and  registers,  not  include padding , and pack many arguments into one register, or  brake up one argument to multiple registers, 
+  alignment requirements  are relaxed but considered for preference mappings,  however, in general it is implementation defined per function signature  how the bits are  mapped from the arguments to the registers as long as all information is preserved.
 
+* note on overlapping and timelines:
+each of these 3 are allowed to overlap with each other,  because in   an instruction of call or return , only one of them is active.
+
+ 0. input mapping:
+  how in, inout and in val arguments are mapped. 
+ 1. happy output mapping:
+ how out , and inout argument's are mapped.
+ return-value, out prameters,  out  part of inout prameters,  and the context-type are here for example.
+ 2.  sad output mapping:
+ how out , and inout argument's are mapped.
+  throw-value and the context-type are here for example.
 
 
 
