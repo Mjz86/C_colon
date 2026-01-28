@@ -2050,11 +2050,14 @@ The default behavior of all atomic operations in the library provides for sequen
 5. sequencal consistency :A load operation with this memory order performs an acquire operation, a store performs a release operation, and read-modify-write performs both an acquire operation and a release operation, plus a single total order exists in which all threads observe all modifications in the same order (see Sequentially-consistent ordering below).
 
 - note: 
-atomic refrence cannot  refrence fractional alignment types,
-and an atomic with a fractional type inside will padd it.
+ std atomic refrence of T cannot  refrence fractional alignment types,
+ however  std atomic of T can but must be padded .
 the `std::atomic<std::flag_t>` is the only atomic that is granteed to be lock-free , however it has implementation defined layout and alignment ( as required by the compare exchange instruction  support in the hardware, which is virtually all multi-core hardware , or if not supported , an intrupt disable critical section in embedded single core architectures)
+
+
+* why bit pointers never use atomic operations;
 this is because an atomic load or store to a bit requires the byte to be synchronized accordingly, 
-but a bit pointer doesn't use atomic operations so its a race condition , however to avoid it, a fractional atomic is  ill-formed.
+but a bit pointer doesn't use atomic operations so its a race condition , however to avoid it and stick to the c++ memory model( beacuse hardware supports it), a fractional atomic is  ill-formed.
 
 
 no changes  were really made  from [the c++26 definitions](https://en.cppreference.com/w/cpp/atomic/memory_order.html) , as its a great well-defined memory model that c colon stands on.
@@ -2519,7 +2522,7 @@ the return address to the unwind/sad path code section in the caller.
 
 if specified `enum` return or catch, its the table pointer to the table of return entries corresponding  to each `enum` entry  path.
 
-
+if only one return path is used  (  for example a single noexcept return) this is no longer special in that  call signature. 
 
 
 
@@ -3985,22 +3988,25 @@ because the invariant is either true on initialized or not true on uninitialized
 fundemental types
 
 - note :  
+( these non system native types cannot be directly declared in E  colon because  they are unsafe(obscure-math),  not really a security flaw, just too obscure to have pass code review ) 
    a non binary endian architecture must emulate  a binary one , the existence of base 3  , analog and quantum computers must not interfere with declaration of a standard base 2 ABI.
  - l: little endian bytes but system  endian bits( the bits in a byte are in  system order, but a multi byte sequence has its bytes in reverse order of big endian)
  - b: big endian bytes but system  endian bits
  - L:little endian bits( the bits in a byte are in reverse order of big endian and bytes are also in reverse order of big endian)
  - B: big endian bits
  - none: pick system endian.
+ 
 
 
 
 
-- `std::(l/b/L/E) (m/u)intN_t`:
+- `std::(l/b/L/E) (m/u/s)intN_t`:
  two's compliment integral type.
  N  goes from 1 ( fractional alignment, with math similar to c bit feilds) , 2 , 4, 8 ( byte aligned) , 16,....up to at least 1024 ( the 11 power of 2 starting feom the 0th power)  , while unnecessary, its better to have reliable deafults, especially  because  modorn cpus have massive registers.
 
  however if N is not a power of two , N must be between 1 and 64 
- with its bit alignment being the  prime factor of powers of 2
+ with its bit alignment being the  prime factor of powers of 2.
+ and its unsafe(obscure-math) ,obviously no one expects a 1 bit int to only have 0 and -1 ( except if they saw c bit feild ...).
 
 note that by using qualiexpr tricks and the std bounded integral types , one can have a fundemental type that the compiler known its a violation if it goes outside of its range.
 these might be useful to help the compiler in optimizations of math , and maybe layout .
@@ -4018,11 +4024,15 @@ these might be useful to help the compiler in optimizations of math , and maybe 
 
  any overflow is well-defined, only devision by 0 is a contract violation,is unsigned modular arethmatic type.
 
+4. s:
+ a signed integral, any overflow is well-defined to saturate to the min( least negative) or max value( most positive), only devision by 0 is a contract violation,is  signed  saturate arethmatic type ( maybe for audio processing , or just a signed integer that doesn't overflow).
+
 
 
 - `std::(l/b/L/E) ((z/n/o/d/u)s)(B/eEmM)(u)(r/n)floatN_t`:
 
 4, 8, 16,  32,64,80, 128 as N.
+( again,    fractional ones and the 80 bit one ( 2 byte aligned ) are unsafe(obscure-math))
 
  
 
@@ -4055,9 +4065,9 @@ also if the endian can change across  platforms, using both S and explicit endia
   brain float . 
   ( only   is valid with N of 16 )
   - e number:
-  number bits as exponent.
+  number bits as exponent. unsafe(obscure-math).
   - m number:
-  number bits as  mantisa.
+  number bits as  mantisa. unsafe(obscure-math).
   
   * note that using  e and m necceceraly makes using N not possible, because the addition of e, m and u indicates the bit count and , if bit   count is not devisible by 8 , fractional alignment. 
   
@@ -4069,22 +4079,23 @@ also if the endian can change across  platforms, using both S and explicit endia
  its undefined behavior if real float had  a non real value ( infinity or nan ),
  having a negative zero results  is a contract violation but not undefined behavior. 
  n however has implementation defined nan or inf results that do not result in contract violation.
- 
+  also , n is unsafe(obscure-math).
   
   - note : 
    some implementations may have a templated non fundemental type that is used to represent  custom mantisa and exponents .
-   however the +200  variants that have default mantisa to exponent ratio are fundamental types. 
+   however the +200  variants that have default mantisa to exponent ratio are fundamental types, however  they are mostly unsafe(obscure-math). 
    
    
  
- - `std::(l/b/L/E)((z/n/o/d/u)s)(u)(eE)(r/n)positN_t`
+ - `std::(l/b/L/E)((z/n/o/d/u)s)(u)(eE)(r/n)positN_t` ( this  is either a fundemental type or a standard library type , depending on hardware support)
 
+* note : on an architecture that doesn't support it nativly ( most) its unsafe(obscure-math).
 
   - u:
   the sign bit is not there   value is positive, unsigned  posit.
   
   - e number:
-  representative of  bit count  of the max es value.   
+  representative of  bit count  of the max es value.   unsafe(obscure-math).
   
   - others: similar to the float  definition
   
@@ -4096,7 +4107,7 @@ also if the endian can change across  platforms, using both S and explicit endia
   
   -  p number:
   representative of  bit count  of the fixed point fraction.
-  the precision.
+  the precision. its architecture dependant if its unsafe(obscure-math) or not. 
   
   
   - others: similar to the float  definition, however with fixed point arethmatic.
@@ -4117,21 +4128,21 @@ representative of UTF8, UTF-16 ( little endian  vs big endian) encoding ,UTF-32 
 
 
 type of a nullptr, its size is similar to a byte pointer.
-
-
+ it is still considered unsafe(pointer-use).
 
   
 
 - `std::(L/E) bool_t`(1 byte) ,`std::flag_t`(1 bit) ( a single bit cant have endian-ness):
 
-  the bolean types 
+  the bolean types  , flag is not  obscure because its  the same code generation  as long as it's not stored in memory ( only  then we do a multi instruction sequence to do masking , which might be optimized away).
 
   
 
 -  `std::bit_t`:
 
 the special bit type with special pointers and references , `sizeof(bit_t)` and any types with fractional alignments ( and therefore  sizes) are ill-formed,  instead,  `bit_sizeof(T)`,`bit_alignof(T)`can be used, also , the bit can alias all types with any  alignment.
-
+note that a  bit *pointer* (  i mean  an `std::atomic<std::bit_t>` of a bit  is be padded but the std atomic reference of T is ill-formed because it cant insert padding)   cannot have atomic semantics ( load to register,  modify register,  write  to memory)
+unsafe(obscure-math).
  
 
 
@@ -4141,12 +4152,12 @@ the special bit type with special pointers and references , `sizeof(bit_t)` and 
 - `std::(L/E) byte_t` / `void`:
 
 the special byte type with the alias set of all types (with non fractional alignment, although it can alias the memory holing it).
-also the special void type , with no layout,  although the size is not fractional
-
+also the special void type , with no layout,  although the size is not fractional and 0.
+unsafe(obscure-math) for byte operation logic.
 
 - `std::abi_t` ( hash is endian agnostic):
 
-
+unsafe(obscure-math)  if  logic is preformed using it. 
 
  the hash type that the abiof operator gives.
 
@@ -4170,12 +4181,14 @@ its that  their usage  might happen  without sequencal orders,
  this is already something that happens anyway.
  however compilers are encouraged to give warnings when entering an unsafe block in the constexpr runtime.
 but , if implicit contract violation  during the constexpr runtime occurs the program is ill-formed, explicit ones are implementation defined if they will throw an exception or be ill-formed, however the deafult should be ill-formed.
+ so , they are unsafe(meta)
 
 
 
 
 
 - `std::type_info_t`( hash is endian agnostic):
+unsafe(obscure-math)  if  logic is preformed using it. 
 the hash type that the  typeid operator gives.
 representative of the back end hash used in the linker or v table.
 
@@ -4190,6 +4203,7 @@ if the cryptographic hash is given to an implementation defined function  `__mcc
 
 - `std::(l/b/L/E) cxx_(wchar/...)_t`:
 
+unsafe(obscure-math).
 
 
  cxx compat types.
@@ -4258,14 +4272,13 @@ using fractional types in some contexts  adds padding to the end of them to alig
 
   these point to types with fractional alignments, the reason is to make common bit feilds and flag  vectors easy.
 
-  these are cxx  pointer sized in many cases ( 64 bit ptrs are big enough, however 32 bit ones will reduce the memory map 8 simes!, so  its not big enough)
-
+  these are cxx  pointer sized in many cases ( 64 bit ptrs are big enough, however 32 bit ones , are a fat pointer with  64 bits).
   
 
  3. cxx pointers: 
 
  these are cxx compatible pointers  with cxx pointer sizes , pointer to any `represent_cxx` type.
-
+ they require an explicit cast to   other pointer.
   
 
   
@@ -4278,9 +4291,9 @@ limits
 
 
 
-the architecture must have at least 5 pointer sized registers.
+the architecture must have at least 5 pointer sized registers, if not , the  calling convention  is encouraged to push the CRA( lowest priority) ,BP( middle priority), NRA( highest priority) , and   to the stack before the call if many arguments are passed to save the 3 registers for other arguments. 
 
-while possible for a very obscure architecture to use static variables as  registers , 
+while possible for a very obscure architecture to use static variables as  registers  to avoid stack consumption, its a bit slow unless memory is extremely low, 
 
 the design's focus on extreme register utilization might mitigate the gains ,
 
@@ -4329,11 +4342,15 @@ any implementation may choose hashes with size smaller than 256 or 128
 
 1. `abi+(t/abi_t)`:
 
-adds the hash as a sult to the ABI hash of the apllied expression.
+adds the hash as a  salt to the ABI hash of the apllied expression.
 
-2. `abi=(t/abi_t)`:
+2. `abi=(t/abi_t)/abi=()`:
 
 sets the has as the ABI hash of the apllied expression.
+This is unsafe because ir might lead to ODR violations.
+if   nothing  is used , its a relaxed abi hash, 
+basically,  a tag that , when the hash calculation is entered,   its hash is empty , so nothing  changes it , but when the  type becomes a complete type ( hash is calculated) , its hash becomes fixed to that calculation. 
+ an important consideration is that its generally unsafe to use both of these , and the unsafe abi type would in most cases would  need a wrapper that has a hash that depends  on the whole  structure   calculated with relaxed hash .   
 
 3. `abiof(type/id)`:
 
@@ -4606,6 +4623,7 @@ the library implementation may use a bit allocator to see which chunks in the re
  there are type/lambda erasure primitives that ensure the type within them is    const  stabilized (via reflection, for example a mutex or a non immutable refrence counted object cannot be this way),
  this is because  if the data graph doesn't freeze at creation,  it might make a memory leak when the function calls itself with itself as its prameter and stores it in itself, 
  thats why open set type erasure is highly restricted  in Express colon. 
+ 
  
 4. speed :
 
