@@ -4332,6 +4332,7 @@ sets the has as the ABI hash of the apllied expression.
 3. `abiof(type/id)`:
 
 gets the ABI hash off the inner expression.
+anything that can result in an abi brake must be in the hash.
 
 - the abi hash of a general symbol( namespace,  variable,  type,  function):
 0. the ABI version number ( any changes to the ABI scheme in the standard will alter this number) 
@@ -4360,7 +4361,7 @@ gets the ABI hash off the inner expression.
 8. qualifiers of a type , but order independent
 12. diffrent trivially properties of a type.
 13. lifetimes  and their dependancies ( the tokens and their hash in the definition of templates , lifetimes, contracts and requirements)
- 
+ 14. if an enum , its entry values.
 * note:
 the abi hash of a function does not depend on non virtual member functions,  but only specific ones that effect triviality ( trivial copy , move , reallocation,  destruction, construction,...) do change the  triviality 
 
