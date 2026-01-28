@@ -4433,7 +4433,35 @@ the c colon linker only uses the backend ABI hashes as  signature for linkage.
  the hashs dependent on their dependancies form a tree ( no cycles ) and any changes in any part of the tree will alter all above sections of the tree , similar to a murcle tree , so any changes in the ABI of a section will force all dependent sections to need a new link target .
 
  
+birthday  paradox proof that   :
+P(no collisions) = e^(-k^2 / (2N))
 
+  N = 2^128
+  k = 2^32
+
+
+
+k^2 = (2^32)^2 = 2^(32 × 2) = 2^64
+
+2N = 2 × 2^128 = 2^129
+
+
+(k^2)/(2N) = (2^64)/(2^129) = 2^(64 - 129) = 2^(-65)
+
+
+P(no collisions) ≈ e^(-2^(-65))
+
+P(at least one collision) ≈ 1 - e^(-2^(-65))
+
+
+The value 2^(-65) is an extremely small number , for values of x very close to zero, e^(-x) = 1 - x , therefore, e^(-2^(-65)) = 1 - 2^(-65).
+
+So, P(at least one collision) = 1 - (1 - 2^(-65)) = 2^(-65).
+
+ so the probability of a collision occurring when hashing 2^32 elements with XXHash128 (which has a 2^128 hash space) is approximately 2^(-65).
+
+ so we say that it's practically impossible .
+ 
  
 
  
