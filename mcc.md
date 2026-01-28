@@ -3027,14 +3027,15 @@ read only dynamic  symbol table layout:
 // constant read only global section.
 
 // at offset  0 
-
+// this is used in dllmap , not really useful otherwise.
 `needed-linker-abi256-hash;`
+
 
 `dll-identifier-abi256-hash;`
 
- // this is used in dllmap , not really useful otherwise.
+// this is the initilization function,  the bool it returns says the status of initilization ( true meaning  success), but on deinitilization,  if it returns true then that means that it was the last one to be uninitialized  (  to free the memory if its the last)
  
-`void (*mayde_initilization_fn_offset)(void* ptr0 , bool init);`
+` bool  (*mayde_initilization_fn_offset)(void* ptr0 , bool init);`
 
 `global_loader_ptr_offset;`
 
