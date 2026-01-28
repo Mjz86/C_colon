@@ -2983,7 +2983,8 @@ when c colon initialization  is activated for the initial  binary components,  t
 then initilizes the root module of that component.
 
 on de-initialization,  the dll de initilizer is called.
-
+ note that this section of the specification may need to change a bit , but generally the goal is to make module initilization predictable based on the source code  and each module is initilized as if wrapped by a synchronized block.
+ the    synchronization mechanism may change in next revisions,  but the goal is stated.
 
 
 (de)initilization sequence of modules:
