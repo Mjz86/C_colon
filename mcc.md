@@ -3215,6 +3215,7 @@ read only dynamic  symbol table layout:
 
 // we allocate  a buffer with 2 ^ 16   stacks
 // we sort the hashes based on their 32 most significant bits, by:
+// 0. put elem in stack with `index =  uint16_t( priority)`. pop the stacks according to the order of stable sort. put elem in stack with `index =  uint16_t( priority >> 16)`. pop the stacks according to the order of stable sort.
 // 1.  put elem in stack with `index =  uint16_t(elem>> ( 256-   64))`. pop the stacks according to the order of stable sort.
 // 2.  put elem in stack with `index =  uint16_t(elem>> ( 256-    48))`.pop the stacks according to the order of stable sort.
 // 3.  put elem in stack with `index =  uint16_t(elem>> ( 256-    32))`. same
@@ -3223,7 +3224,7 @@ read only dynamic  symbol table layout:
 // we assume that we have  partitioned the memory on this distribution  and so on average  we say that each slot has  `(N/ 2 ^  64)` elements that are not sorted,   this means that for practical purposes,  we can say that most parts are sorted.
 // we do a scan of the regions , and for each part where it didn't have sorted order ,
 // we do  a similar algorithm for sorting on the sub regions or probably a merge sort , or just do a bubble sort if it was tiny , we say its `O(m*logm)` if we had an unluky hit
-// on average its `O(4*O(1+)*n) + f(n) )`
+// on average its `O(6*O(1+)*n) + f(n) )`
 // `O(1+)`= push back in stack O(1) Amortized. 
 //  so , we need to calculate why f(n) is O( n) on average.
 // `f(n) =  O(n)+  (sum i=0 to 2 ^ 64  ,selecting for ies that existof  O(mlogm)* P( hash conflict that m  symbols with non equal least significant portions  has the same upper hash of I in a uniform distribution))`
@@ -3244,7 +3245,7 @@ read only dynamic  symbol table layout:
 // `O(n)+ O(n*2^O(-64m+loglogm)) =`
 //  note that the biggest factor of the exponential  is m , not loglogm , and its negative, so , we can just transform it into O(1)
 //  `O(n) + O(n*O(1+))= O(n+)` , amortized linear time.
-// so , it is `5n+O(n+)` amortized 
+// so , it is `7n+O(n+)` amortized 
 // note that a non probabilistic algorithms is also doable ,
 // to preform a sort using pure radix sort ,
 // it does 16 repetitions of the  put elem in stack  and pop from it steps.
