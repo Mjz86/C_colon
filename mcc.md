@@ -3018,7 +3018,9 @@ program code:
 *  in a dll initilization the loader has different work to do , so the first step is loading , and after the destruction theres unloading.
 
  
- * each import/export declaration of a module has an import/export symbol of the depenant  module identifier 256bit backend hashes, the identifier is  as if its a function  named with the module name within a `bool __mccabiv1::modules::<name of module and its module fragment>(void*,bool)` that is the same as the dll of the module `mayde_initilization_fn_offset` function;
+ * each import/export declaration of a module has an import/export symbol of the depenant  module identifier 256bit backend hashes, the identifier is  as if its a function  named with the module name within a `bool __mccabiv1::modules::<name of module and its module fragment>(bool)` that is similar  to the  the dll of the module `mayde_initilization_fn_offset` function, however it only (de)initializes the module itself , not all the modules in the dll,
+ once all the modules in a dll are uninitialized,  then `mayde_initilization_fn_offset` can give permission to unload it.
+ 
 
 
 --- 
@@ -3036,7 +3038,7 @@ read only dynamic  symbol table layout:
 
 // this is the initilization function,  the bool it returns says the status of initilization ( true meaning  success), but on deinitilization,  if it returns true then that means that it was the last one to be uninitialized  (  to free the memory if its the last)
  
-` bool  (*mayde_initilization_fn_offset)(void* ptr0 , bool init);`
+` bool  (*mayde_initilization_fn_offset)( bool init);`
 
 `global_loader_ptr_offset;`
 
@@ -3274,7 +3276,7 @@ read only dynamic  symbol table layout:
 
 `dll-identifier-abi256-hash;`
 
-`void (*mayde_initilization_fn_offset)(void* ptr0 , bool init);`
+`void (*mayde_initilization_fn_offset)( bool init);`
 
  `global_loader_ptr_offset;`
  
