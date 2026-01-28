@@ -1455,7 +1455,9 @@ although,  these types of functions are unsafe(longjump) to call because,  well 
   `{...(-n)th_catching_return_offset, nth_retuen_path_offset....}`.
 
 
-- example 
+- example:
+ assuming that the return enum indexes are  non negative and start at 0,
+ if not , we add an offset of the negative of the least enum index to make it start at 0 and be  non negative.
 
     
     //call site
