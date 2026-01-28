@@ -2112,10 +2112,10 @@ virtual table layout contains:
  
  - note for virtual base classes  : 
   for each virtual base class we have a special implicit function pointer entry corresponding to that base,
- the function pointer entry is more of a flag than a  code path, its  either 0 or -1,
- if -1 we know that we need to call the virtual base class constructor, 
- if 0 we know that the virtual base class is already constructed,
- only one -1 entry can correspond to a specific virtual base.
+ the function pointer entry is more of a flag than a  code path, its  either ~((~0)>>1) ( member pointer null value) or  the base offset to the current( to avoid loading the base offset to most derived),
+ if non null we know that we need to call the virtual base class constructor on the base offset, 
+ if null value we know that the virtual base class is already constructed,
+ only one  non null entry can correspond to a specific virtual base.
  if the construction is inlined and doesn't call virtual functions the constructor virtual tables can be elided.
  
  * the mandatory this pram advantage(  virtual table thunk sinks to the function):
