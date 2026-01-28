@@ -2992,7 +2992,7 @@ the module constructor that runs :
 
 1.   set the data segment memory accesses (ie. make the  read only sections read only)
 
-2. all the dependant modules get initilized.
+2. all the dependant modules get initilized .
 
 3. all the static variables get initialized in order of declaration.
 
@@ -3018,6 +3018,7 @@ program code:
 *  in a dll initilization the loader has different work to do , so the first step is loading , and after the destruction theres unloading.
 
  
+ * each import/export declaration has an import/export symbol of the depenant  module identifier 256bit backend hashes, the identifier is  as if its a function  named with the module name within a `bool __mccabiv1::modules::<name of module and its module fragment>(void*,bool)` that is the same as the dll of the module `mayde_initilization_fn_offset` function;
 
 
 --- 
