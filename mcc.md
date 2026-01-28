@@ -4756,12 +4756,11 @@ although this is fast enough so its good enough,  if not , c colon can be used t
 
 
 
-// a lambda  can only do copies in its caputure,   like `[=](){}` in c++, however with fn before it, but with `fn(){}`, the caputure( after fn using `[...]` cannot be specified under E colon ).
-
+// a lambda  can only do  relocations  in its caputure in E colon , `fn(){}` is implicitly `fn[:=](){}`, however in c colon we have other types too, copy in c colon is   like `fn[=](){}` in c++, however with fn before it, but with `fn(){}` the implicit relocation `:=` one, the caputure after fn using `[...]` cannot be specified under E colon, so only relocation constructors of lambda is supported ,for a copy , we can do a copy in the main scope then relocation into the lambda, this can be thought  of making a new function and giving our box to it for usage , so we lost it.
 // the implicit lambda for iteration-primitive is the only place where caputure is by reference in E colon , and this is also heavily restricted under the iteration-primitive rules
 // also because the scope begins and ends predictably,  and the caller is conceptually paused until the end of the iteration,  this refrences caputure is almost always a pass under implicit borrow rules. 
 
-
+// note : a   relocation is `dest:=src` in assignment , copy is `dest=src`, move is `dest=std::move(src)`  ( well.. cpp syntax is my choice because im too entrenched in its quirks but im open to other systems of syntax for all languages  as long as E colon code can just compile as C colon code with a file rename and it gains the votes , for example cpp2 or rust )
 
 //... many other for variants to help build readable and reliable abstractions. 
 
