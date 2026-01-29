@@ -4441,17 +4441,17 @@ P(no collisions) = e^(-k^2 / (2N))
 
 
 
-k^2 = (2^32)^2 = 2^(32 × 2) = 2^64
+k^2 = (2^32)^2 = 2^(32 * 2) = 2^64
 
-2N = 2 × 2^128 = 2^129
+2N = 2 * 2^128 = 2^129
 
 
 (k^2)/(2N) = (2^64)/(2^129) = 2^(64 - 129) = 2^(-65)
 
 
-P(no collisions) ≈ e^(-2^(-65))
+P(no collisions) = e^(-2^(-65))
 
-P(at least one collision) ≈ 1 - e^(-2^(-65))
+P(at least one collision) = 1 - e^(-2^(-65))
 
 
 The value 2^(-65) is an extremely small number , for values of x very close to zero, e^(-x) = 1 - x , therefore, e^(-2^(-65)) = 1 - 2^(-65).
@@ -5024,7 +5024,7 @@ this language can be used in the web , similar to E colon ,via wasm
 
  5. rich aliasing info , and function purity metrics:
  my philosophy is , Every immutability comes with a disability,in e colon , progrmmers are forced with a disability to gain safety and immutability ,  and even boring simplicity. the c colon programmers however should be allowed to declarar the disability to get the performance from the  immutability, for example stable values dont need to be loaded two times in registers to be captured! , they can be loaded only one time only because of their stability ,  the lack of others to change its value is the disability. 
-
+ maybe i should name them complex colon and easy colon ?
 
 6. layout optimizations :
   on top of rust like memory reorder , c colon has non `not_offset_dependant` qualifiers,  meaning that if a sub-object is referenced in memory , the entire object does not need to be placed in memory,  but only that sub-object,  especially true for trivially relocatable types ,
