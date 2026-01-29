@@ -1174,14 +1174,15 @@ this is because  throw is not unwind based and doesn't use globals at all , and 
  
   * restrictions for  `enum`s specified of this use :
    all  `enum` entries must be continuous,if not the biggest and smallest one should not be more than 255( or an architecture dependent value ) values apart  ,( if the number is specified) ,
-   warnings or errors will be given in cases where big number of entries generate massive jump tables or missed performance, typically anything more than 32( or an architecture dependent value )   entries gives a warning and anything more than 256 ( or an architecture dependent value ) table entries ( accounting for both `enum`s of throw and return together) is ill-formed, not because of could , but should , if we need 2 lookups (only 1 if continuous) and more than `8*255` bytes ( non continuous max before ill-formed) ( or an architecture dependent value ) ... we really aren't fast are we. 
+   warnings or errors will be given in cases where big number of entries generate massive jump tables or missed performance, typically anything more than 32( or an architecture dependent value )   entries gives a warning and anything more than 256 ( or an architecture dependent value ) table entries ( accounting for both `enum`s of throw and return together) is ill-formed, not because of could , but should
+ , if we need more than `8*256` bytes ( max before ill-formed) ( or an architecture dependent value ) ... we really aren't fast are we. 
    these architectural values can be queried.
   
 
 
  * definition of what  `enum` return and call means:
 
-   the return pointer of that specific channel ( return or throw) would not be a pointer to the return address , instead,  it will point to a lookup table of return addresses,  corresponding to the `enum`  declaration order, that is handled in the return path.
+   the catching return pointer would not be a pointer to the catch return address , instead,  it will point to a lookup table of return addresses,  corresponding to the `enum`  values , that is handled in the return path.
 
    the way these functions are called ( necessarily having a match expression on the call site) makes it so that the return jump is to the match path corresponding to the `enum`  type,
 
