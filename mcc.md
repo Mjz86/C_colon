@@ -1291,7 +1291,7 @@ the optimization preformed is usually merge of smaller synchronized blocks into 
 
 
  
-// the `enum` ret and catch are similar , however they have a secondary lookup( often deduplicated across the link-unit )    table with all the offsets+ret pointing to RC ,then RC finally does a secondary jump lookup to the caller table  , this is only one of the many ways of doing this , and we havent even done callee-inlining the thrunk yet. 
+// the `enum` ret and catch are similar , 
     RC:
     
     restore the catching return  to the return pointer.
@@ -1459,6 +1459,7 @@ although,  these types of functions are unsafe(longjump) to call because,  well 
 - example:
  assuming that the return enum indexes are  non negative and start at 0,
  if not , we add an offset of the negative of the least enum index to make it start at 0 and be  non negative.
+ 
 
     
     //call site
@@ -1531,7 +1532,7 @@ many clables:....
 
  `val = throws?val:retval;`// cmove
  
-`NRA+=*(CRA+ val );`
+`NRA+=*(CRA+ val );` 
 
  `jump NRA;// IP=NRA`
 
@@ -1541,8 +1542,24 @@ many clables:....
     
     
     
+- example   of non zero offsets for enum:
+
+
+retoffset= least value  in return enum.
+
+catchoffset= least  value in catc enum. 
+
+the values  are calculated as constants to offset the table.
+
+
+`IP+(rets-IP);` becomes  `IP+(rets-IP-retoffset);` , which is no different because both are a single add to  a constant. 
+
+`~throwval` becomes  `(retoffset-catchoffset-1)-throwval;`   , a bit different,  instead of a siungle not instruction we have a single subtraction instruction , although both are relatively  cheap in x86.
+
+
+
     
-    
+  
     
     
 
