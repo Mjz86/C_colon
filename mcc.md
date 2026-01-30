@@ -1045,8 +1045,13 @@ is  `weak_predictable`  and, a predictable call must not do a longjump , termina
 an `predictable`  expression must be composed of only other `predictable`  expressions OR must be casted via `unsafe(as-predictable)` .
 the behaviour is undefined if a predictable function  jumps to non predictable functions.
 ( this somewhat restricts our workload,  because we must either throw or return, and  terminate is ill-formed)
-a critical system might require all functions to be predictable.
 however,  for forcing an abrupt exit we can call std abort.
+
+- `critically_predictable`:
+is  `predictable`  and, after analyzing its call graph,  it must not call itself in any point in the graph( no recursive graph).
+otherwise the program is ill-formed. 
+a critical system might require all functions to be `critically_predictable` ( an intrupt handle  is probably required  to be a critically predictable function pointer) .
+( note that  this is only possible because function pointers dont interfere with static analysis because of the `predictable` requirements).
 
 - `effectless`:
 
