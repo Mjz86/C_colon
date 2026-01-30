@@ -4354,7 +4354,7 @@ any implementation may choose hashes with size smaller than 256 or 128
  also , the hash captured by the `abiof` operator is  eagerly calculated, and must not be 0 because of the as if rule.
  a hash of 0 given in `abi=` is ill-formed.
 
-
+request of the abi hash of a given incomplete type T is ill-formed (unless `abi=` is used)  (  this makes common cycle detection algorithm for compiler deterministic, however because template  is turning complete, it may  still need max evaluation steps, ( this  can still use pimpl for abi stability (   void pointer to implementation wrapped in a container)  ,  but generally most types are  complete types
 
 - the abi@() operators:
 
@@ -5098,7 +5098,7 @@ allows transactional invariant preserving code to be very fast
 
     GNU General Public License for more details.
 ```
-
+* note GNU GPL will eventually change  to a more permisive license 
 
 ---
 
