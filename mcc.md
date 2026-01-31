@@ -4143,6 +4143,19 @@ N is one of 8,16,32
 charechter types with N bits. 
 representative of UTF8, UTF-16 ( little endian  vs big endian) encoding ,UTF-32 ( little endian  vs big endian) encoding .
  not using b and l (endian-ness) picks the default ( for utf8 is big endian( b) , l for char8 is ill-formed but L is usable, others is system endian)
+also , fundemental type of `std::char_t` that represents  an ASCII code point.
+* note :
+we  have a non fundemental type  of `std::grapheme_t<normalization>` that represents an extended grapheme cluster.
+also a non fundemental type of `std::word_t<normalization>` that represents a word ,
+also a non fundemental type of `std::line_t<normalization>` that represents a  line ,
+and normalization being the way we encode many code points together found in `std::unicode::<name>`.
+there's a `std::text_t<elem>` ,  elem being the type of text that can be  iterated , a string  is only representing of . 
+however,  because of the  many languages,  these non fundamental types would probably need a  dll of the normalization mechanism, and  an embedded system may only support  limited normalization  types.
+the data structure used for  text processing  is implementation defined based on the normalization.
+
+ 
+ 
+
 
 
 
@@ -4481,7 +4494,7 @@ The value 2^(-65) is an extremely small number , for values of x very close to z
 
 So, P(at least one collision) = 1 - (1 - 2^(-65)) = 2^(-65).
 
- so the probability of a collision occurring when hashing 2^32 elements with XXHash128 (which has a 2^128 hash space) is approximately 2^(-65).
+ so the probability of a collision occurring when hashing 2^32  versions  with XXHash128 (which has a 2^128 hash space) is approximately 2^(-65).
 
  so we say that it's practically impossible .
  
