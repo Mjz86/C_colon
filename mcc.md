@@ -1511,7 +1511,7 @@ many clables:....
 
 // return of the happy path is positive indexes,  index being the same as the return value's enum numeric ( or if the enum is a sum type , the type tag)
 
-`NRA+=*(CRA+retval);`
+`NRA+=*(CRA+sizeof(void*)*retval);`
 
  `jump NRA;`// IP=NRA
  
@@ -1525,7 +1525,7 @@ many clables:....
 // the bit not is the way we use two's compliment to map the negative indexes ( the reason for using this is the following both path)
 
 
-`NRA+=*(CRA+ (~throwval) );`
+`NRA+=*(CRA+ sizeof(void*)*(~throwval) );`
 
  `jump NRA;`// IP=NRA
  
@@ -1540,7 +1540,7 @@ many clables:....
 
  `val = throws?val:retval;`// cmove
  
-`NRA+=*(CRA+ val );` 
+`NRA+=*(CRA+ sizeof(void*)*val );` 
 
  `jump NRA;// IP=NRA`
 
