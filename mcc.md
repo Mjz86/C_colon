@@ -4278,6 +4278,42 @@ however  if the  register pressure got extreme ( all general purpose occupied) ,
 and if at a point the compiler evaluation results that  registers are  slower than L1 cache ( the stack ) then it would  release all the pressure and free up the register bank for the register assigner .
 this is all theoretical,  but  it would be used if and only if it made the program perform better,  if not we can always use the stack. 
 
+* memory speed ( not exact , just an illustration) (x86):
+
+ALU .
+
+GPR(  bulk flushing to XMM).
+
+XMM(bulk flushing to YMM).
+
+YMM ( bulk  flushing to ZMM).
+
+ZMM(  bulk flushing  to the stack) .
+
+FPU( only if floating, limited  because x86 fpu is ... heavy, the FPU is  not that fast , but for precision floatings its not that bad).
+
+hot stack/ram( L1 cache).
+
+heap  memory(L2 cache) .
+
+ ( in here theres a TLB lookup cost , L3 has physical addresses instead of virtual).
+ 
+ cold   memory( L3 cache) .
+ 
+ super cold memory  ( RAM).
+ 
+ idle memory in a swamp ( pun intended) ( swap in SSD).
+ 
+ file mapped memory (assuming  the file isnt cached and is being opened) ( hard drive).
+ 
+  cloud / external storage(  somewhere in a database ).
+ 
+ 
+
+ 
+
+
+
 
 
 * note on overlapping and timelines:
