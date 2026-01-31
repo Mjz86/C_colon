@@ -2520,6 +2520,10 @@ there are special registers:
 
 stack pointer is like itanum ,  the caller can assume its value is the same after the call.
  the base pointer is a register that isnt pinned ,usually some optimizations might use other stratch registers as base pointer as well .
+ the stack pointer must be aligned to the size of the biggest register  on  the hardware .
+ for example on x86 its 64 bytes ( zmm ).
+ the reason for this is to be able to push and pop multiple registers at a time .
+ 
 
 
 2. the instruction pointer (caller passed, no save):
@@ -4262,6 +4266,19 @@ however this would only be used if the type is passed by value ( ie. trivially r
  it is implementation defined what preferences are used , and if some non fundemental types also have preferences or not ( for example a sso string object may use compiler intrinsics  to say that a specific register category  of ymm is preferred , however  using intrinsics  is unsafe(magic) and probably  would need other unsafe blocks to indicate non standard abi)
  also , implementations are encouraged to make many to many mappings of structures  and  registers,  not  include padding , and pack many arguments into one register, or  brake up one argument to multiple registers, 
   alignment requirements  are relaxed but considered for preference mappings,  however, in general it is implementation defined per function signature  how the bits are  mapped from the arguments to the registers as long as all information is preserved.
+
+
+
+* note on the preferences and register priority ( architecture dependent):
+based on the registers assigned latency and throughput and easy of access ( the availability of moving from one to the next ),
+we form a higherarchy of register, first on top   might be the ALU flags , then close second the general purpose registers, 
+then  after that the simd registers ( simd registers are less easy to move around and split up ) ,
+for example as long as all general purpose registers are  not used  for pointers  , we dont put pointer in them ,
+however  if the  register pressure got extreme ( all general purpose occupied) , we may then fall back to XMM , after all XMM got full , we fall  back to YMM then after all those got  full we fall back  to ZMM.
+and if at a point the compiler evaluation results that  registers are  slower than L1 cache ( the stack ) then it would  release all the pressure and free up the register bank for the register assigner .
+this is all theoretical,  but  it would be used if and only if it made the program perform better,  if not we can always use the stack. 
+
+
 
 * note on overlapping and timelines:
 each of these 3 are allowed to overlap with each other,  because in   an instruction of call or return , only one of them is active.
