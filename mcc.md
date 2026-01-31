@@ -296,6 +296,7 @@ using the latest technologies and theories to develop code that can be understoo
 
 writing utilities that help automate rust, c++ and other language bindings and more.
 
+ 
 
 
 
@@ -330,6 +331,8 @@ and about moving away from the burden of ABI legacy , from killing the standard 
 
 its about using a regex without saying that PHP's regex is faster.
 
+another philosophy is ,every right comes with a duty,   if you want the right to invoke  unsafe , you have the duty to ensure it doesn't  lead to UB ( ODR,UAF,...).
+ and  ,  E colon programmers  don't want that duty , therfore  they are prohibited from that right.
 
 
 
