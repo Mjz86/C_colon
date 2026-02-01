@@ -1790,7 +1790,7 @@ if a promise wants ( decided in the `awaiter` suspension via returned `transfere
 
 - cancelation grantees: 
 
- an error type in the catch scope is either a base of the empty cancelation token type , or its a base of the common violation token or isn't either , for cancelation and violation catches ( a catch with these types) unsafe(ignore-cancelation) and unsafe(ignore-violation) is applied , but otherwise its safe to do in the coroutine,  also the  catch(throw-value), equivalent to catch(...) in c++  is also unsafe(catch-all-tokens).
+ an error type in the catch scope is either a  child of the empty cancelation token type , or its a  child of the common violation token or isn't either , for cancelation and violation catches ( a catch with these types) unsafe(ignore-cancelation) and unsafe(ignore-violation) is applied , but otherwise its safe to do in the coroutine,  also the  catch(throw-value), equivalent to catch(...) in c++  is also unsafe(catch-all-tokens).
 
  so , the c colon libraries can distinguish if the throw is a cancelation or not and do the appropriate safe thing for E:
 
