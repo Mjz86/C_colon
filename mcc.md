@@ -1369,6 +1369,67 @@ contract's code...
 
 
 
+
+* special qualifier for operators:
+
+-   commutative: 
+ can be applied to operator@ ( for example `+`), or a function that has exactly two operators. 
+  the evaluation  of f(a,b) must be equivalent  to evaluation of f(b,a), otherwise the behavior is undefined.
+   other than known  fundemental math functions known by the synthesizer,  its  unsafe(commutative) to declare .
+- associative:
+can be applied to operator@ ( for example `+`), or a function f that has exactly two operators. 
+  the evaluation  of `f(c,f(a,b))` must be equivalent  to evaluation of `f(f(c,a),b)`,otherwise the behavior is undefined.
+  other than known  fundemental math functions known by the synthesizer,  its  unsafe(associative) to declare .
+
+
+
+
+- (l/r)Identity=( (values,g).../values...) :
+can be applied to operator@ ( for example `+`), or a function f that has exactly two operators.
+in the case of r( right side identity ), for any pair of value V and optional( if the function is not specified,  the function g is defined as the function that returns  its prameter) ,function g (where the function g takes  exactly one prameter ) in the  identify list , the evaluation  of `f(a,v)` must be equivalent  to evaluation of `g(a)`,otherwise the behavior is undefined.
+ in the case of l( left side identity) , the left side is the one that has v inside it , for example the  math function `f(a,b)=a/b` has   right side identity of 1 , and  `f(b,a)=a/b` has    left side identity of 1 , both having g as  `g(a)=a`.
+other than known  fundemental math functions known by the synthesizer,  its  unsafe(Identity) to declare .
+( this  is both used for inverse math axiom and identity math axiom `a*1=a, a/1=a , a+0=a, 0-a=-a, ....`).
+ 
+
+- (l/r)distributive=(g....): 
+can be applied to operator@ ( for example `+`), or a function f that has exactly two operators.
+,in the case of l( left side distributive) ,  for any function g in the distributive list , the evaluation  of `f(g(a,b),g(a,c))` must be equivalent  to evaluation of `g(a,f(b,c))`,otherwise the behavior is undefined.
+the right side is similar (`f(g(a,c),g(b,c))` and `g(f(a,b),c)`). 
+other than known  fundemental math functions like `(a*(b+c)=a*b+a*c)` known by the synthesizer,  its  unsafe(distributive) to declare .
+
+
+* note :
+the spaceship operator `<=>` result (an standard  ordering) and idempotent  can be combined  to achieve  the Inequality math axioms. 
+
+
+
+- ordered: 
+can be applied to operator@ ( for example `<=>`), or a function f that has exactly two operators and returns either a boolean or a standard ordering.
+if the evaluation  of `f(a,b)`  and `f(b,c)`   results  in a strict order between  a , b and c , the evaluation  of `f(a,c)` must follow that  order, otherwise the behavior is undefined. 
+other than known  fundemental math functions known by the synthesizer,  its  unsafe(ordered) to declare .
+
+- (l/r)transitive=((g,v)....):
+can be applied to operator@ ( for example `<=>`), or a function f that has exactly two operators and returns either a boolean or a standard ordering.
+in the case of l ( left side equational) , for any pair of function g and value v ,  if the evaluation  of `f(v,a)` and `f(v,b)`   follow a specific ordering  , the evaluation  of `f(v,g(a,b))` must also follow  that ordering, otherwise the behavior is undefined. 
+the right side is similar.
+other than known  fundemental math functions known by the synthesizer,  its  unsafe(transitive) to declare .
+
+- (l/r)equational=((g,v)....):
+can be applied to operator@ ( for example `<=>`), or a function f that has exactly two operators .
+in the case of l ( left side equational) , for any pair of function g and value v ,    the evaluation   of `f(v,g(a,b))` is equivalent to  `f(a,b)`, otherwise the behavior is undefined. 
+the right side is similar.
+other than known  fundemental math functions known by the synthesizer ( for example `a==b` to `0==b-a`),  its  unsafe(equational) to declare .
+
+
+
+* note :
+ the `sfloatN_t` variants might not follow certain expected axioms associated with real numbers,  because they must not have their deterministic behavior removed.
+also ,  having certain things  count as contract violation and defined behavior( for example an overflow) would make these math axioms  hard to use as optimization ,
+so , dont expect  a code section without `unsafe(contract-UB)` to  allow these.
+
+
+
 ---
 
 exact mechanism of return pointers:
@@ -4059,7 +4120,7 @@ these might be useful to help the compiler in optimizations of math , and maybe 
 
 
 
-- `std::(l/b/L/E) ((z/n/o/d/u)s)(B/eEmM)(u)(r/n)floatN_t`:
+- `std::(l/b/L/E) ((z/(z/d/u/a/o)n/d/u)s)(B/eEmM)(u)(r/n)floatN_t`:
 
 4, 8, 16,  32,64,80, 128 as N.
 ( again,    fractional ones and the 80 bit one ( 2 byte aligned ) are unsafe(obscure-math))
@@ -4076,8 +4137,9 @@ floating point types with N bits.
 also if the endian can change across  platforms, using both S and explicit endian is recommended.
 
  - stable rounding modes ( s is necessary):
- 1. to nearest even (n):
- round to nearest floating point , if there are two equidistant ones,choose the one whose least significant digit is even.
+ 1. to nearest even (n) ( default ):
+ round to nearest floating point , if there are two equidistant ones,choose the one whose based on the tie mode.
+ selection of tie mode is with z,d,u and a,e,o  ( put before n) ,representative of the tie choosing strategy 
  2. towards zero (z):
  rounding to the floating point number closest to zero.
  3. downward (d):
@@ -4085,10 +4147,12 @@ also if the endian can change across  platforms, using both S and explicit endia
  4. upwards (u):
  rounding to least floating  point number above. 
  
- 
- 5. round to  odd (o):
- rounding to nearest odd floating point number. 
- 
+ 5. round to  odd (o n):
+ rounding tie  to nearest odd floating point number. 
+ 6. round  to even (e n) ( default):
+ rounding tie  to nearest  even floating point number. 
+ 7. round  away from zero (a n):
+ rounding tie  to nearest  even floating point  away from zero. 
  
  -  layout modes:
   - B :
