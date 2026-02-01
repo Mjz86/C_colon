@@ -4191,7 +4191,7 @@ also if the endian can change across  platforms, using both S and explicit endia
    
    
  
- - `std::(l/b/L/E)((z/n/o/d/u)s)(u)(eE)(r/n)positN_t` ( this  is either a fundemental type or a standard library type , depending on hardware support)
+ - `std::(l/b/L/E)((z/(z/d/u/a/o)n/d/u)s)(u)(eE)(r/n)positN_t` ( this  is either a fundemental type or a standard library type , depending on hardware support)
 
 * note : on an architecture that doesn't support it nativly ( most) its unsafe(obscure-math).
 
@@ -4206,7 +4206,7 @@ also if the endian can change across  platforms, using both S and explicit endia
   
   
   
- - `std::(l/b/L/E)((z/n/o/d/u)s)(u)(pP)(r/n)fixedN_t`:
+ - `std::(l/b/L/E)((z/(z/d/u/a/o)n/d/u)s)(u)(pP)(r/n)fixedN_t`:
    
   
   -  p number:
