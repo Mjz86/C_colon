@@ -1423,6 +1423,16 @@ other than known  fundemental math functions known by the synthesizer ( for exam
 
 
 
+- equivalent:
+can be applied to operator@ ( for example `==`), or a function f that has exactly two operators  and returns  a boolean or a standard ordering. 
+in the above definitions,  the equivalence of two  sub expressions  `a` and  the`v` in the signature is determined by having the equality operator tagged with equivalent say that they are the same.
+the substitution of `a` instead  of `v`  is valid if and only if the function confirms equivalence,  otherwise, the behaviour is undefined. 
+
+
+
+
+
+
 * note :
  the `sfloatN_t` variants might not follow certain expected axioms associated with real numbers,  because they must not have their deterministic behavior removed.
 also ,  having certain things  count as contract violation and defined behavior( for example an overflow) would make these math axioms  hard to use as optimization ,
