@@ -3008,14 +3008,9 @@ instead of duplicated cleanup code in happy and sad paths in the c++ throw conve
 
 
 
-in x86 specifically ,some things to note is that , while x86 has like 1024 bytes of zmm registers, its all caller saved in itanum , so... the compiler often wont use their full potential even in static calls, it is already not used ,
+in x86 specifically ,some things to note is that , while x86 has like   dozens  of zmm registers, its all caller saved in itanum , so... the compiler often wont use their full potential even in static calls, it is already not used ,
 
 and with the movement towards less virtual calls and more compike time polymorphism, the gains might be very beneficial.
-
-
-
-also, even at worse cases of using all 1024 registers , at most we do 16x2 simd zmm load and stores , although, i still believe that with the amount of avoidance of the people from dynamic calls, the overall optimization will be worth it , even if it costs 32 simd instructions in the virtual call site.
-
 
 
 an important consideration is comparing the dynamic call to the call instruction,
@@ -4335,7 +4330,7 @@ unsafe(obscure-math).
 
 * note on the register  assigner:
  on top of the inout priority list , the register allocation  in both the function signature and the function body has preferences of implementation defined ways, 
-for example,  bool , bit  and flag may be passed in a single bit of a register , or in a specific ALU flag ( if appropriate) , or the floating  point  values may have a preference of FPU registers( or SSE in x86), 
+for example,  bool , bit  and flag may be passed in a single bit of a K register ( 16 in a mask of 16 bit )  , or in a specific ALU flag ( if appropriate) , or the floating  point  values may have a preference of FPU registers( or SSE in x86), 
 however this would only be used if the type is passed by value ( ie. trivially relocatable and is not refrence ) , refrence types or pointers also may have preference for specific registers that  can have  load and store ptr operands ( for example   load effective address  in x86)
  it is implementation defined what preferences are used , and if some non fundemental types also have preferences or not ( for example a sso string object may use compiler intrinsics  to say that a specific register category  of ymm is preferred , however  using intrinsics  is unsafe(magic) and probably  would need other unsafe blocks to indicate non standard abi)
  also , implementations are encouraged to make many to many mappings of structures  and  registers,  not  include padding , and pack many arguments into one register, or  brake up one argument to multiple registers, 
@@ -4354,15 +4349,17 @@ this is all theoretical,  but  it would be used if and only if it made the progr
 
 * memory speed ( not exact , just an illustration) (x86):
 
-ALU .
+ALU flags.
 
-GPR(  bulk flushing to XMM).
+GPR(  bulk flushing to XMM) ( usually 16,  the segment registers and  other inaccessibile ones are ignored  , but may be used to point  to cpp style thread local storage)  .
 
 XMM(bulk flushing to YMM).
 
+K masks ( for  bit vector).
+
 YMM ( bulk  flushing to ZMM).
 
-ZMM(  bulk flushing  to the stack) .
+ZMM(  bulk flushing  to the stack) ( the k registers also can be used as storage).
 
 FPU( only if floating, limited  because x87 fpu is ... heavy, the FPU is  not that fast , but for precision floatings its not that bad).
 
@@ -4827,7 +4824,7 @@ the library implementation may use a bit allocator to see which chunks in the re
 
  happy path often has less branches compared to using optional/expected/result types, and sad path is more performant than cxx-throw or rust panic, and as performant as optional types.
 
- the variable access is often faster , because in architectures like x86 , almost 1 kilobytes can be passed between functions via prameters in registers with ease.
+ the variable access is often faster , because in architectures like x86 , almost  2 kilobytes ( 32 ZMMs ) can be passed between functions via prameters in registers with ease.
 
  
 
