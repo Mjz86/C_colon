@@ -4364,13 +4364,13 @@ YMM ( bulk  flushing to ZMM).
 
 ZMM(  bulk flushing  to the stack) .
 
-FPU( only if floating, limited  because x86 fpu is ... heavy, the FPU is  not that fast , but for precision floatings its not that bad).
+FPU( only if floating, limited  because x87 fpu is ... heavy, the FPU is  not that fast , but for precision floatings its not that bad).
 
 hot stack/ram( L1 cache).
 
 heap  memory(L2 cache) .
 
- ( in here theres a TLB lookup cost , L3 has physical addresses instead of virtual).
+ ( for L3 access here theres a TLB lookup cost , L3 has physical addresses instead of virtual).
  
  cold   memory( L3 cache) .
  
