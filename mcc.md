@@ -452,7 +452,9 @@ any stabilized variable is thread safe and otherwise  unsafe, the stable mut is 
  
 
 `async_safe` / `async_unsafe`:
- similar to `thread_safe` , but for async-smi-threads.
+ similar to `thread_safe` but more  relaxed  ,  for async-smi-threads.
+  an `async_unsafe` qualifier means that  even a single threaded concurrent loop  can not  caputure  it,
+  realistically  most data is `async_safe` , however some may not be.
 
 
 
@@ -2569,11 +2571,6 @@ also , because of the lifetime problem( understood in rust dyn calls with lifeti
 
 
 
-a mcc signature has:
-
-
-
-return-type function-mangled-name ( arg-type-(in/out/`inout`) args... ) context-type (noexcept/throws) (noreturn/mayreturn) ( other-function-qualifiers);
 
 
 
@@ -4516,8 +4513,30 @@ any implementation may choose hashes with size smaller than 256 or 128
   this can help separate the binary debug vs release building model into function by function or module by module debugging 
   
   
+---
+syntax?
 
+im not certain on syntax, it may not be good , im not an expert on syntax  and this specification isnt mostly about syntax ,  however i think this might be good? anyway,  im open to other syntax choices,  for example trailing await ,  exceptions, or a qualifier rename, ect.
+maybe even cppfront syntax. 
+
+-qualified type with lifetime is :
+`qualifier...` (`type`/( `concept` `auto`/`decltype(auto)` ) ) (`@` ` lifetime`)  (`&`/`*` (`qualified-ref-with-lifetime`))   .
+
+
+
+- an argument  of a function is :
+
+  (`inout`/`in`/`out`)   `name`  `:`    `qualified-type-with-lifetime` (`->`  `qualified-type-with-lifetime`)
   
+  note that the   part after `->` is for specifying the argument's  type and qualifiers after the call, usually not used.
+  
+  
+  
+  
+ `fn` `function-name` `(` (`this` `arg-thing-for-self` `,`) `arg-things...` `)` `context-type` (`noexcept`/`throws`) (`noreturn`/`mayreturn`) ( `other-function-qualifiers....`) `->` `return-type`;
+ 
+ 
+ in c colon , 
 
 ---
 
@@ -5010,7 +5029,7 @@ although this is fast enough so its good enough,  if not , c colon can be used t
 
 
 
-// also a special case  for example used in more relaxed async code,   this doesn't require  thread safe qualification but still requires const qualifier,  using a   non atomic  refrence counter however can allow for mutability , because it only allows a single thread to be scheduled , but the drawback is that the whole structured concurrency tree with this root has its scheduler changed to a single-threaded one,  however the mutex and atomic overhead is  unnecessary when  using this method.
+// also a special case  for example used in more relaxed async code,   this doesn't require  thread safe qualification but still requires const qualifier and async safe qualifier,  using a   non atomic  refrence counter however can allow for mutability , because it only allows a single thread to be scheduled , but the drawback is that the whole structured concurrency tree with this root has its scheduler changed to a single-threaded one,  however the mutex and atomic overhead is  unnecessary when  using this method.
 `for co_await (auto [`inout` a,  in b, out c, d ]:  asynchronous-single-threaded-iteration-primitive){`
 ...
 `}`
