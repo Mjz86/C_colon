@@ -449,6 +449,12 @@ any stabilized variable is thread safe and otherwise  unsafe, the stable mut is 
  also , if a member  is thread unsafe in E: ( not C:) , because of the qualifier visibility ban and the unsafe ban , that qualifier cannot be overridden by using a thread safe type with an `aliasset`.
 `unsafe(thread_safe-cast)`  can also be used to cast the qualifier back ( for example the std mutex internals  are not safe , but yhe mutex itself is)
  note that , unlike the stronger `stabilized` grantee , `thread_safe` is not a compiler truth, its a developer promise.
+ 
+
+`async_safe` / `async_unsafe`:
+ similar to `thread_safe` , but for async-smi-threads.
+
+
 
 uninitialized /initialized/ intermediate/ erroneous
 
@@ -685,6 +691,12 @@ this value is valid for the entire program.
 - `thread_local` storage:
 
 this value is valid while the current thread of execution is alive.
+
+
+- `async_local` storage:
+
+this value is valid while the current async-semi-thread of execution is alive.
+
 
 - automatic storage:
 
@@ -3780,6 +3792,28 @@ this operator must be noexcept.
  this can be used for trivially relocatable types or storage that needs to expand or shrink. 
  note that a failure  of expanding or shrinking the memory does not invalidate the previous region of memory, a success will end the lifetime of previous region and begins the new one's lifetime.
 in a debugging environment,  this can have conditional trap instructions. 
+
+- `operator whonew(in size, in alignment, inout intermediate const byte*)context-type-> optional<bool>/bool`:
+asks the allocator if the memory is their own, usefull for allocator chains,
+if returns nullopt then the memory may or may not be theirs , implementations however are encouraged to implement this function such that it never reterns nullopt .
+
+- `operator async_id()context-type->type_info/uintN_t`:
+returns the id of the async-semi-thread of execution .
+ 
+* note :
+for a structured cuncurency tree , one of the childern has the same id as the parent.
+
+- `operator async_local(type_info var_id,void(*init_fn)(T*))context-type-> std::async_local_t<T>`:
+ a `weak_idempotent` function ( that is , if many of it appear in a single async-semi-thread of execution , the first one's return will be used instead of calling it multiple times ), `var_id` is representitive of the unique id of the  `async_local` variable,
+an async_local variable can be used safely by using the `std::async_local_t` refrence like primitive  , similar in API to a non-atomic refrence counted vaiable, however not refrence counted, but managed by the scheduler,
+ two   `async_local` variables are the same if and only if their `var_id` is equal and their async-semi-thread of execution's `async_id` is the same.
+
+
+
+
+
+
+
 
 -`operator debug(instruction-pointer/expression-index)context-type`:
  in a debugging context,  each expression that might involve a break point  will call this operator , in  optimized context this is just not defined.
