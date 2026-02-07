@@ -4536,8 +4536,15 @@ maybe even cppfront syntax.
  `fn` `function-name` `(` (`this` `arg-thing-for-self` `,`) `arg-things...` `)` `context-type` (`noexcept`/`throws`) (`noreturn`/`mayreturn`) ( `other-function-qualifiers....`) `->` `return-type`;
  
  
- in c colon , 
-
+ in c colon ,   unlike  c++ , the struct and class keywords are very different, 
+ a class is a type with a closed set of  content,  it can be  used in a class inheritance graph and in general its a complete type with  a closed set of member functions and implementation. 
+ however,  struct is similar to rust , it doesn't support inheritance,  however it can use traits( a subset of concept that is similar  to rust ) and implementation that is outside the  struct definition.
+ the only exceptions to this implementation freedom is that the struct construction , destruction and assignment operators must be declared in the struct , ( this is because the abi hash depends on triviality,  and must be calculated when the struct definition is processed).
+ 
+ union , and enum struct are  similar to rust union and enum respectively.
+ enum class and enum are similar to the c++ counterparts. 
+ 
+ 
 ---
 
 
