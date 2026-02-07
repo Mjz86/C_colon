@@ -4551,6 +4551,7 @@ maybe even cppfront syntax.
  however because of the as if rule , we have a null hash function that gives the output as 0 , so any front-end mangle without a calculated hash is known to need a hash if its hash  is 0 , and the 0 is replaced with the actual  hash when its backend mangle is stored.
  also , the hash captured by the `abiof` operator is  eagerly calculated, and must not be 0 because of the as if rule.
  a hash of 0 given in `abi=` is ill-formed.
+ also  true for the ~0 hash , as these two placeholders are used in this algorithm.
 
 request of the abi hash of a given incomplete type T is ill-formed (unless `abi=` is used)  (  this makes common cycle detection algorithm for compiler deterministic, however because template  is turning complete, it may  still need max evaluation steps, ( this  can still use pimpl for abi stability (   void pointer to implementation wrapped in a container)  ,  but generally most types are  complete types
 
@@ -4563,9 +4564,9 @@ adds the hash as a  salt to the ABI hash of the apllied expression.
 2. `abi=(t/abi_t)/abi=()`:
 
 sets the has as the ABI hash of the apllied expression.
-This is unsafe because ir might lead to ODR violations.
-if   nothing  is used , its a relaxed abi hash, 
-basically,  a tag that , when the hash calculation is entered,   its hash is empty , so nothing  changes it , but when the  type becomes a complete type ( hash is calculated) , its hash becomes fixed to that calculation. 
+This is unsafe because  it might lead to ODR violations.
+if   nothing  is used , its a relaxed abi hash with value of ~0, 
+basically,  a tag that , when the hash calculation is entered,   its hash is empty ( ~0 ), so nothing  changes it , but when the  type becomes a complete type ( hash is calculated) , its hash becomes fixed to that calculation. 
  an important consideration is that its generally unsafe to use both of these , and the unsafe abi type would in most cases would  need a wrapper that has a hash that depends  on the whole  structure   calculated with relaxed hash .   
 
 3. `abiof(type/id)`:
