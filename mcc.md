@@ -924,7 +924,7 @@ an owned object can use and must drop after use.
 
 determines the general usage and call convention in a function argument.
 
-- `valuexpr` ( translates to `mut ivaluexpr`  or the `in-val` register):
+- `valuexpr` ( translates to `mut ivaluexpr`  or the pass register):
 
 a stable  mutable value that is initialized on the call site. the value qualification
 
@@ -1292,7 +1292,7 @@ the optimization preformed is usually merge of smaller synchronized blocks into 
  - `nodyncontract/dyncontract( default)`:
 
  `dyncontract`  allows a function's contract to execute in the call site based on the callers contract evaluation requirements. 
- an `in-val` argument is implicitly passed to make contract violation controlled. 
+ an pass argument is implicitly passed to make contract violation controlled. 
 
 
 
@@ -2748,7 +2748,7 @@ cannot  be written to by callee, only read from .
 
  
 
-2.  in-val ( mut in argument ) :
+2.  pass ( mut in argument ) :
 
 
 
@@ -2833,13 +2833,13 @@ in , out, and `inout` registers.
 
 2.  all out registers. 
 
-3.  all in-val registers. 
+3.  all pass registers. 
 
 4. all in registers. 
 
 
 
-- after stable sorting of arguments based on in/out/`inout` the stack arguments are pushed onto the stack from right to left.
+- after stable sorting of arguments based on in/pass/out/`inout` the stack arguments are pushed onto the stack from right to left.
 
 
 
@@ -2918,7 +2918,7 @@ any dyncontract function who's address is captured for dynamic calls must have a
 
 this function pointer is the contract checked F pointer , it points to the contract handler,
 
-the contact handler checkes the pre or post conditions of a function, based on an implicit  in-val argument  that contains:
+the contact handler checkes the pre or post conditions of a function, based on an implicit  pass argument  that contains:
 
 0. check the pre vs check the post bit.
 
@@ -3818,41 +3818,41 @@ an async_local variable can be used safely by using the `std::async_local_t` ref
  an implementation defined debugging thread might change a table ( atomic store )  ( the table's atomic pointer pointer can be caputured in the meta operator ) to indicate ( atomic load)   that this debug logic should trap or not.
  
 
-- contract-in-val  type is defined to be used in  the `dyncontract`  dynamic  contract code , or the static non inlined contract checked code,
+- contract-pass  type is defined to be used in  the `dyncontract`  dynamic  contract code , or the static non inlined contract checked code,
 if the contract is not executed then this argument and all post and pre logic  is allowed  to be elided.
 also , this can be used to check for specific types of contracts using contact categories. 
 
 
-- `operator  pass_contract()caller-context-type ->contract-in-val `:
+- `operator  pass_contract()caller-context-type ->contract-pass `:
 if the contract on callee is checked,  or dyncontract checking is selected , the implicit  value is created to provide the checking semantics for callee.
 
-- `operator (explicit/implicit)_contract(contract-in-val, instruction-pointer( optional))context-type ->bool-convertible-type:`
+- `operator (explicit/implicit)_contract(contract-pass, instruction-pointer( optional))context-type ->bool-convertible-type:`
  the return value indicates if the contract  condition should execute.
 this function is executed before the contract.
 in a debugging environment,  this can have conditional trap instructions. 
 
 
-- `operator ~(explicit/implicit)_contract(contract-in-val)context-type `:
+- `operator ~(explicit/implicit)_contract(contract-pass)context-type `:
 this function is executed after the contract  condition, even if the contract throws an exception.
 in a debugging environment,  this can have conditional trap instructions. 
 
 
 
-- operator  pre(contract-in-val, contract-stack-size( optional),stack-pointer( optional), instruction-pointer( optional))callee-context-type ->bool-convertible-type:
+- operator  pre(contract-pass, contract-stack-size( optional),stack-pointer( optional), instruction-pointer( optional))callee-context-type ->bool-convertible-type:
  the return value indicates if the contract pre condition should execute.
 this function is executed before the contract.
 in a debugging environment,  this can have conditional trap instructions. 
 
-- operator  ~pre(contract-in-val  ,...)callee-context-type :
+- operator  ~pre(contract-pass  ,...)callee-context-type :
 this function is executed after the contract pre condition, even if the contract throws an exception.
 in a debugging environment,  this can have conditional trap instructions. 
 
-- operator  post(contract-in-val , contract-stack-size( optional),stack-pointer( optional), instruction-pointer( optional) )callee-context-type  -> bool-convertible-type:
+- operator  post(contract-pass , contract-stack-size( optional),stack-pointer( optional), instruction-pointer( optional) )callee-context-type  -> bool-convertible-type:
 the return value indicates if the contract post condition should execute.
 this function is executed before the contract.
 in a debugging environment,  this can have conditional trap instructions. 
 
-- operator  ~post(contract-in-val  )callee-context-type :
+- operator  ~post(contract-pass  )callee-context-type :
 this function is executed after the contract post condition, even if the contract throws an exception.
  in a debugging environment,  this can have conditional trap instructions. 
  
@@ -4527,7 +4527,7 @@ maybe even cppfront syntax.
 
 - an argument  of a function is :
 
-  (`inout`/`in`/`out`)   `name`  `:`    `qualified-type-with-lifetime` (`->`  `qualified-type-with-lifetime`)
+  `pass`/`inout`/`in`/`out`   `name`  `:`    `qualified-type-with-lifetime` (`->`  `qualified-type-with-lifetime`)
   
   note that the   part after `->` is for specifying the argument's  type and qualifiers after the call, usually not used.
   
@@ -4882,7 +4882,7 @@ the library implementation may use a bit allocator to see which chunks in the re
 
 
 
- even in-value oriented code,  functions can throw errors with ease and speed , the values often flow in registers and they are optimized well beacuse of lack of aliases .
+ even in value oriented code,  functions can throw errors with ease and speed , the values often flow in registers and they are optimized well beacuse of lack of aliases .
 
  happy path often has less branches compared to using optional/expected/result types, and sad path is more performant than cxx-throw or rust panic, and as performant as optional types.
 
@@ -4930,7 +4930,7 @@ the express colon language also tends to look more functional than its c colon c
 
  however because of the ABI nature they will remain valid for the duration of the function call so they are inheritly safe. 
 
- the in-val ( no specifier) does a copy or a drop/relocation  on most occasions .
+ the pass  specifier does a relocation but does not give it back .
 
  these are ideal for register usage ,  but they introduce more copying and occasionally the need for reference counting if dynamic  referencing is necessary, 
  also because of the strict exception safety  that grantees invariants,  we can optimize on those invariants.
@@ -4954,6 +4954,8 @@ although this is fast enough so its good enough,  if not , c colon can be used t
 
  ( note that iteration-primitive is written in c colon as it involves more complex machinery)
 
+  this may look like that in E colon everything we do is a for each loop, thats not entierly true , but its an imperitive language that changes values in containers , so maybe thats a good match, bur this makes programming more pridictable and so, more readable .  
+
 
 
  ` for ( inout variable: iteration-primitive) {`
@@ -4964,8 +4966,33 @@ although this is fast enough so its good enough,  if not , c colon can be used t
 `}`// lambda scope end
 
 
+ ` for ( pass variable: iteration-primitive) {`
+// function body beginning, the function captues the sate and has a pass argument 
 
-`for ( auto [inout a, in b, out c, d ]: iteration-primitive){`// function body beginning, the function captues the state and has an multiple argument provided in the iterator internals.
+// modify variable.
+
+`}`// lambda scope end, iteration-primitive is consumed and the code following the loop does not have it.
+
+
+ ` for ( in variable: iteration-primitive) {`
+// function body beginning, the function captues the sate and has  an in argument 
+
+//  read variable.
+
+`}`//iteration-primitive is usable in the loop as a constant, even in the iteration prosess, a read write lock for example may have multiple of these .
+
+
+
+
+ ` for (  out variable: iteration-primitive) {`
+ //  read variable.
+
+`}`// produce values, for example filling up a buffer with patterns.
+
+
+
+
+`for ( auto [inout a, in b, out c,pass d ]: iteration-primitive){`// function body beginning, the function captues the state and has an multiple argument provided in the iterator internals.
 
 // d is copied , a , b and c are "referenced" via value input outputs
 
@@ -5001,7 +5028,7 @@ although this is fast enough so its good enough,  if not , c colon can be used t
 
 // theres an implicit  transformation for these code , to make it able to do either a ,co await , co return or a throw or simply  continue execution .
 
- `for co_await (auto [inout a, in b, out c, d ]: parallel-iteration-primitive){`// the iteration primitives may restrict the lambda to only caputure `thread_safe` constant state if it wants to do parallelization , a const unstable `mutex<T>` however has internal  unrestricted unstable qualification of its members, some even atomic, therefore  its valid for it to modify its members even tho it looks constant. 
+ `for co_await (auto [inout a, in b, out c,pass d ]: parallel-iteration-primitive){`// the iteration primitives may restrict the lambda to only caputure `thread_safe` constant state if it wants to do parallelization , a const unstable `mutex<T>` however has internal  unrestricted unstable qualification of its members, some even atomic, therefore  its valid for it to modify its members even tho it looks constant. 
 
 // can modify a c and d , but cannot modify other variables outside of the for loop , however mutexes can still be modified beacuse they can be modified when constant.
 
@@ -5027,11 +5054,11 @@ although this is fast enough so its good enough,  if not , c colon can be used t
 
 
 
-// a lambda  can only do  relocations  in its caputure in E colon , `fn(){}` is implicitly `fn[:=](){}`, however in c colon we have other types too, copy in c colon is   like `fn[=](){}` in c++, however with fn before it, but with `fn(){}` the implicit relocation `:=` one, the caputure after fn using `[...]` cannot be specified under E colon, so only relocation constructors of lambda is supported ,for a copy , we can do a copy in the main scope then relocation into the lambda, this can be thought  of making a new function and giving our box to it for usage , so we lost it.
+// a lambda  can only do  relocations  in its caputure in E colon , `fn(){}` is implicitly `fn[pass](){}`, however in c colon we have other types too, copy in c colon is   like `fn[clone](){}` in c++, however with fn before it, but with `fn(){}` the implicit relocation `pass` one, the caputure after fn using `[...]` cannot be specified under E colon, so only relocation constructors of lambda is supported ,for a copy , we can do a copy in the main scope then relocation into the lambda, this can be thought  of making a new function and giving our box to it for usage , so we lost it.
 // the implicit lambda for iteration-primitive is the only place where caputure is by reference in E colon , and this is also heavily restricted under the iteration-primitive rules
 // also because the scope begins and ends predictably,  and the caller is conceptually paused until the end of the iteration,  this refrences caputure is almost always a pass under implicit borrow rules. 
-
-// note : a   relocation is `dest:=src` in assignment , copy is `dest=src`, move is `dest=std::move(src)`  ( well.. cpp syntax is my choice because im too entrenched in its quirks but im open to other systems of syntax for all languages  as long as E colon code can just compile as C colon code with a file rename and it gains the votes , for example cpp2 or rust )
+// in, inout, out, move , pass and clone are keywords used for function arguments, similar to &mut and & in rust, pass can be ommided in the call site .  
+// note : a   relocation is `dest=pass src` or `dest=src` in assignment , copy is `dest=clone src`, move is `dest= move src`  ( well.. cpp syntax is my choice because im too entrenched in its quirks but im open to other systems of syntax for all languages  as long as E colon code can just compile as C colon code with a file rename and it gains the votes , for example cpp2 or rust )
 
 //... many other for variants to help build readable and reliable abstractions. 
 
@@ -5039,7 +5066,7 @@ although this is fast enough so its good enough,  if not , c colon can be used t
 
 
 // also a special case  for example used in more relaxed async code,   this doesn't require  thread safe qualification but still requires const qualifier and async safe qualifier,  using a   non atomic  refrence counter however can allow for mutability , because it only allows a single thread to be scheduled , but the drawback is that the whole structured concurrency tree with this root has its scheduler changed to a single-threaded one,  however the mutex and atomic overhead is  unnecessary when  using this method.
-`for co_await (auto [`inout` a,  in b, out c, d ]:  asynchronous-single-threaded-iteration-primitive){`
+`for co_await (auto [`inout` a,  in b, out c,pass d ]:  asynchronous-single-threaded-iteration-primitive){`
 ...
 `}`
 
@@ -5128,7 +5155,7 @@ having rust-like `enum` types with pattern matching  are still very performant a
 
  copy would use the in parameter and moving/ relocation would be automatically generated(  not using any references would make types trivial to automatically relocate if inner c colon types are trivial) . 
 
- the destructor would also use in-val ( no specifier) to relocate the object for final destruction. 
+ the destructor would also use pass   to relocate the object for final destruction. 
 
   these aren't just safe , these are also fast , because trivial values are passed by registers , and this language mostly operates on trivial values 
 however,  because of unsafty of non trivial type erasure,  and refrences caputure.  lambda  ,
