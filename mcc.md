@@ -1398,7 +1398,7 @@ can be applied to operator@ ( for example `+`), or a function f that has exactly
 
 
 
-- (l/r)Identity=( (values,g).../values...) :
+- (l/r)identity=( (values,g).../values...) :
 can be applied to operator@ ( for example `+`), or a function f that has exactly two operators.
 in the case of r( right side identity ), for any pair of value V and optional( if the function is not specified,  the function g is defined as the function that returns  its prameter) ,function g (where the function g takes  exactly one prameter ) in the  identify list , the evaluation  of `f(a,v)` must be equivalent  to evaluation of `g(a)`,otherwise the behavior is undefined.
  in the case of l( left side identity) , the left side is the one that has v inside it , for example the  math function `f(a,b)=a/b` has   right side identity of 1 , and  `f(b,a)=a/b` has    left side identity of 1 , both having g as  `g(a)=a`.
@@ -4500,8 +4500,9 @@ and for any cxx pointer `(memcast<uintmax_t>(byte_ptr)&~(sizeof(cxx_char_t)-1))=
 
 
 - hash sizes:
-any implementation may choose hashes with size smaller than 256 or 128 
-
+any implementation may choose hashes with size smaller or bigger than 256 or 128 ,
+for the default use of xxhash128,  a collision resistance grantee is achieved for less than   2 ^ 32 diffrent declarations. 
+however if an alien has concerns,  they can use a cryptographic 256 bit hash instead of xxhash128. 
 
 
 ---
