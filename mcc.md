@@ -3712,6 +3712,11 @@ in the   constexpr runtime,  this thunk is more restricted for security purposes
   * note : for each calling convention ( fast call, vector call, cdecl ,....) we have a unique caller register saver trunk and a unique callee register changer trunk and  exception handling trunks.
 
  
+ * note :
+  a goal is to have a platform independent  dll system,  where x86 windows mcc dll and x86 linux mcc dlls can link seamlessly , ( each architecture having a single mcc abi ) ,   if the target qualifier isn't used ,
+  the mcc syscall thunk is defined by the dynamic loader,  so it can call the operating system,  also , 
+  the  mccabiv1.dll defines OS independent  wrappers for things like UI , networking, drivers,  and rendering, 
+  all platform dependent code is encouraged to have a dll that wrapps  it for that given platform in a platform independent  API.
 
 
 
