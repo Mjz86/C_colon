@@ -3623,9 +3623,20 @@ requirements  afterwards include having the OS loader step, lib unwind if  cxx e
 requirements  afterwards include having the OS loader step,  and  OS symbol mangling.
 
  
-- syscalls :
- theres an unsafe low level syscall trunk to allow talking to the OS  
+-  runtime syscalls :
+ theres an unsafe low level syscall trunk to allow talking to the OS  .
  
+ -   constexpr syscalls :
+in the   constexpr runtime,  this thunk is more restricted for security purposes ,
+ it also   is the only place  that compile time pointer can change its permissions ( read write ) so it doesn't allow execution permissions  for non function pointers and it doesn't allow read write permissions to function pointers. 
+  if the  permissions are violated the program is ill-formed.
+  if the  pointers are casted to non pinters , or  non pointers are casted to pointers,  the program is ill-formed.
+   the way we handle pointers  in compiler  is explained  in the pointer section. 
+ also , cast of pointers  to other pointers or types  is an especial IR instruction  ( no op in runtime assembly, JIT syscall  in compile time assembly),
+  if the pointer to a type has the possibility of aliasing a pointer , the dereference of that pointers  will check for that in compile time.
+  if the pointer to a type has no possibility of aliasing a pointer,   and the cast from a pointers that has that possibility shows that it is  has a pointer inside , the program is ill-formed. 
+ 
+* note : range , or reference also are similar  to pointers  but they have a known bound.
 
 -  trunks for dynamic calls with specific calling conventions:
  a non exhaustive list of common calling conventions that would  need this thunk ( used in the target qualifier)
@@ -4474,6 +4485,10 @@ using fractional types in some contexts  adds padding to the end of them to alig
  these are cxx compatible pointers  with cxx pointer sizes , pointer to any `represent_cxx` type.
  they require an explicit cast to   other pointer.
   
+  
+  
+  * note on constexpr pointers:
+   the  bit representation of this pointer is implementation defined  and must effect the program behavior , otherwise ( in a bad cast)  the program is ill-formed.
 
   
 
@@ -4503,6 +4518,15 @@ and for any cxx pointer `(memcast<uintmax_t>(byte_ptr)&~(sizeof(cxx_char_t)-1))=
 any implementation may choose hashes with size smaller or bigger than 256 or 128 ,
 for the default use of xxhash128,  a collision resistance grantee is achieved for less than   2 ^ 32 diffrent declarations. 
 however if an alien has concerns,  they can use a cryptographic 256 bit hash instead of xxhash128. 
+
+
+- meta programming security:
+the JIT engine code that gets executed checks all the system calls  inside the system call thunk, and can not call into other languages outside the mcc abi, and if they do not have permissions ( url permissions for module   download ,  file permissions  for file access,  sudo permissions for administrative purposes,  and anything in between) the program is ill-formed, the permissions  each module has are configured by the module consumer , 
+and if a public module,  the public module repository ( like cargo).
+for example,  public modules   may only have a  100 megabyte download permission  to other public modules and  cannot not access the global internet. 
+they may only have user permissions and file access may be only limited to files in the module folder. 
+and  also they cannot for example  change the program signal handler,  and  may not be able to cast pointer to non pointer and non pointer to pointer. 
+
 
 
 ---
