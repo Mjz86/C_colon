@@ -3149,7 +3149,7 @@ read only dynamic  symbol table layout:
  
 ` bool  (*mayde_initilization_fn_offset)( bool init);`
 
-`global_loader_ptr_offset;`
+`global_loader_syscall_ptr_offset;`
 
   `size_t  symbol_count;`
 
@@ -3387,7 +3387,7 @@ read only dynamic  symbol table layout:
 
 `void (*mayde_initilization_fn_offset)( bool init);`
 
- `global_loader_ptr_offset;`
+ `global_loader_syscall_ptr_offset;`
  
 `size_t  symbol_count;`
 
