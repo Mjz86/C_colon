@@ -81,7 +81,7 @@ the language has lifetime annotations, borrow rules, qualifier rules, pointers a
 
 each operation that can be optimized at compile time will be optimized at compile time,
 
-the link times in mcc may increase from the calling conventions burden, but it's for the runtime.
+the link times in mcc may increase from the calling conventions burden, but it is for the runtime.
 
 
 
@@ -151,13 +151,13 @@ and each independent code that stayed unchanged did not need duplications, a dre
 
 the hashes although not cryptographically secure are big enough to be unique, basically like a UUID (because its just a name mangling scheme).
 
-if there's a cycle in the hash dependency chain, the problem is ill-formed and notified of the need to use the `abi=` operator that doesn't rely on something else at least one node in that cycle,
+if there is a cycle in the hash dependency chain, the problem is ill-formed and notified of the need to use the `abi=` operator that does not rely on something else at least one node in that cycle,
 
 although a rare occurrence might be that the f(), `abi=(f())` when calling the `constexpr` f, itself needs f, so, while such issues cannot be avoided due to the halting problem, its still relatively easy to fix when noticing the `constexpr` max evaluation steps has been reached. 
 
-also, using `abi=` on a member doesn't change the members real type and hash, and even if in some cases it does, its still possible to `unsafe(abi-cast)` the hash to the original type's hash ( variable definition having the type be type1 `abi=(abiof(type2))` or at most an unsafe `reinterpret_cast` known as pointer-cast or a bit cast)
+also, using `abi=` on a member does not change the members real type and hash, and even if in some cases it does, its still possible to `unsafe(abi-cast)` the hash to the original type's hash ( variable definition having the type be type1 `abi=(abiof(type2))` or at most an unsafe `reinterpret_cast` known as pointer-cast or a bit cast)
  
- there's also an optimization i call hash elision, under the as if rule ( as if the hash was calculated even if the calculation didn't happen),
+ there is also an optimization i call hash elision, under the as if rule ( as if the hash was calculated even if the calculation did not happen),
  note that the visible symbols in the binary are all fixed size 256bit backend hashes 
 
 also for common graphs where the dependency chain of the ABI can be resolved without using max evaluation, the compiler gives the heuristically best point in the cycle to do the breaking, also patterns prone to hit the max evaluation ( doing a complex calculation to get the value of `abi=`) generate a warning.
@@ -165,7 +165,7 @@ also for common graphs where the dependency chain of the ABI can be resolved wit
 
  * as a gist :
 
-It's similar to Itanium, however, 
+It is similar to Itanium, however, 
 
 The name has an appended `xxhash128`, of its signature, 
 
@@ -266,7 +266,7 @@ beginners:
 
 avoiding most qualifiers and completely, sticking to using mut when necessary, 
 
-sticking to value semantics, for functions, `inout`, in, out and non reference, reference-like alternative that don't cause much confusion, 
+sticking to value semantics, for functions, `inout`, in, out and non reference, reference-like alternative that do not cause much confusion, 
 
 and coping most things, occasionally using more complex code.
 
@@ -319,9 +319,9 @@ it is rewarding, but its hard, the easiest way to write safe code in both rust a
 
 try only focusing on what needs to be optimized before making it hard for yourself, 
 
-the compiler isn't there to demand the best code, it's not bad to mostly write value oriented code,
+the compiler is not there to demand the best code, it is not bad to mostly write value oriented code,
 
-those who get boggled down in mcc or rust lifetimes want speed, but c: isn't just about speed,
+those who get boggled down in mcc or rust lifetimes want speed, but c: is not just about speed,
 
 its about speed if you want it, yes, but its about easier libraries, and not needing to link everything statically like rust,
 
@@ -331,8 +331,8 @@ and about moving away from the burden of ABI legacy, from killing the standard l
 
 its about using a regex without saying that PHP's regex is faster.
 
-another philosophy is,every right comes with a duty,  if you want the right to invoke unsafe, you have the duty to ensure it doesn't lead to UB ( ODR,UAF,...).
- and , E colon programmers don't want that duty, therefore they are prohibited from that right.
+another philosophy is,every right comes with a duty,  if you want the right to invoke unsafe, you have the duty to ensure it does not lead to UB ( ODR,UAF,...).
+ and , E colon programmers do not want that duty, therefore they are prohibited from that right.
 
 
 
@@ -421,7 +421,7 @@ for a pointer p declared within its lifetime L,  to an stable const region of me
 
  1. mut-stable is like restrict in c, but a const-stable is like a rust constant
 
- 2. its dangerous ( unsafe(unrestricted-stable)) for stable values to be declared unrestricted, it is as if a c restrict isn't proven to not alias.
+ 2. its dangerous ( unsafe(unrestricted-stable)) for stable values to be declared unrestricted, it is as if a c restrict is not proven to not alias.
 
  
 
@@ -467,7 +467,7 @@ however, while the initialized qualifier requires that value is safety readable,
 the inintimidates qualifier is more relaxed,
 we can use pointer optimization fences to allow code to work while not adhering to the one qualifier set per expression rule.
  for example the new and renew have an intimidate pointer parameter,
- that doesn't mean that all bytes are uninitialized, it means that all bytes can be uninitialized, 
+ that does not mean that all bytes are uninitialized, it means that all bytes can be uninitialized, 
  the c++ memory model like pointers are intermediate.
 erroneous is more of a relaxed form of uninitialized that has defined behavior when its read.
 only read of initialized and erroneous values is safe,
@@ -552,7 +552,7 @@ a value declared `constexpr` is known at compile time.
 
  comparing two variables with `no_dll_comparable_address` 
  is dependent on dynamic execution order of the loader and its given priorities,
- in a binary with `dllexport` we will get that export's address when we store it and it can also be inlined freely ( because of modular builds within a single parallel translation unit we don't really have static linking ODR violations in mcc because they are ill-formed, but multiple translation units can benefit from the abi operators. ).
+ in a binary with `dllexport` we will get that export's address when we store it and it can also be inlined freely ( because of modular builds within a single parallel translation unit we do not really have static linking ODR violations in mcc because they are ill-formed, but multiple translation units can benefit from the abi operators. ).
  however in a build with `dllimport` , we get the `dllexport` address with highest priority at dll initialization,
 when using this qualifier, we must use `unsafe(no_dll_comparable_address)` .
 
@@ -602,7 +602,7 @@ the case for construction or destruction of interpositioned symbols is however h
  we have an interpositioned symbol S that has initialization,
  and an atomic pointer PS for  symbol S,
  and the pointer pointer PP.
- init flag F.// doesn't need to be atomic.
+ init flag F.// does not need to be atomic.
  
  PS is initialized with the address of PS ( technically the offset, but then converted into the pointer after load )
 PP is initialized with the address of the highest priority symbol S'es pointer. (&SP)
@@ -624,7 +624,7 @@ deinit myS;
 
 }
  
- // now we're good.
+ // now we are good.
 
 and for getting the value :
 p= PP->load(aquire);
@@ -634,7 +634,7 @@ return p;
 
 
 although, a warning will be omitted if the interpositioned symbol needs to be non trivial.
-because the overhead is more, and it's also not immediately availabel after load time.
+because the overhead is more, and it is also not immediately availabel after load time.
  think about it, you initialized an static dllexport by calling f, now, f is not called, but g instead.
  this is rather unintuitive, but thats dll interposition in a nutshell.
  ( this is also true for functions, a `dll_comparable_address` function may do something like print yes, but if we override it by higher priority, we can make it print no, even tho the source says its yes),
@@ -647,7 +647,7 @@ because the overhead is more, and it's also not immediately availabel after load
  - `dllinline` on function :
  the function is assumed to have the highest priority,and therefore is inlined.
  however if the function address is anything other than the right one during a call or a capture of its address, its an implicit violation of contract.
- similarly, the interposition load occurs to check the contract, and conceptually if the contract failed we would have just used a dynamic call , but the important distinction is that we didn't , because of the violation ending the control flow through that path.
+ similarly, the interposition load occurs to check the contract, and conceptually if the contract failed we would have just used a dynamic call , but the important distinction is that we did not , because of the violation ending the control flow through that path.
  - `dllinline` on objects : 
  the object is assumed to be have the highest priority.
  however if the address observed is different, its an implicit violation of contract. 
@@ -675,7 +675,7 @@ because the overhead is more, and it's also not immediately availabel after load
  a static definition is one that only depends on the pervious definitions in the module tree.
  any declaration until this point that is used within this scope is pinned as the only declaration .
  if a code section after the original modified this declaration, its an ODR violation, and the program is ill-formed.
- however there is a nuance that if the abi hashes don't conflict, its not counted as the same declaration, and that dllexport symbols with different priorities dont count as the same symbol.
+ however there is a nuance that if the abi hashes do not conflict, its not counted as the same declaration, and that dllexport symbols with different priorities do not count as the same symbol.
  the reason for this is that in c we have header file and c files,
  header files compile dependent on the translation unit.
  but c files compile independently of each other.
@@ -760,7 +760,7 @@ also if reorder is possible, any padding bytes or invalid state may be used to r
 if its a `std::flag_t`, even more possibilities are made, as long as other declared object's are preserved
 
 also a value expression function pointer can be the same as other  function pointers( de duplications) . 
-also a value expression string literal ( string literal doesn't have null terminator in c colon unless explicitly using "\0" ) or trivially relocatable and trivially destructible object can overlap with any static constant stable memory region.
+also a value expression string literal ( string literal does not have null terminator in c colon unless explicitly using "\0" ) or trivially relocatable and trivially destructible object can overlap with any static constant stable memory region.
 
 an array of empty value expression structures is itself an empty structure,
 subtraction of two pointers of empty value expressions is ill-formed.
@@ -844,7 +844,7 @@ if the most derived class has `no_virtual_rtti` but a base class has `virtual_rt
 the virtual cast base is in the castation-table if the most derived type is `virtual_rtti`.
 -`no_this_virtual_rtti`:
 the virtual cast base has no entry in the castation-table.
-this is the default because most types don't use dynamic cast.
+this is the default because most types do not use dynamic cast.
 
 
 
@@ -858,7 +858,7 @@ interface / final( default for types with a virtual table) / virtual / nonvirtua
 
  a type pointer + virtual table pointer.
 
- any virtual inheritance, polymorphism and etc., has an owner, but every other reference to it's sub types is virtually qualified.
+ any virtual inheritance, polymorphism and etc., has an owner, but every other reference to it is sub types is virtually qualified.
 
  because there are no virtual table/base pointers in the type, but offsets and function pointers in the table.
 
@@ -886,7 +886,7 @@ interface / final( default for types with a virtual table) / virtual / nonvirtua
 
 for example `intn_t` can alias the `uintn_t` and `mintn_t` types, but `noaliasset intn_t` cannot.
 
-there's also a similar usage not for static types but for identifiers, of dclaration of two unstable memory regions of having noaliasset on each other, that is, saying that they will not alias one another.
+there is also a similar usage not for static types but for identifiers, of dclaration of two unstable memory regions of having noaliasset on each other, that is, saying that they will not alias one another.
 
 theres also entangled stable pointers, note that the cast to stable can introduce UB if not used carefully, this is why unsafe(ptr-cast) is almost always necessary in "valid"( as in borderline not UB) usage of entangled pointers, meaning that we cast two unstable pointers as stable, but entangle them, to satisfy the stable definition,
 an example may be that :
@@ -998,7 +998,7 @@ T-outside is the complete outside type, the checks of the outside, however the T
 
 however if there is a dependency from T-inside to T-outside, the function is considered fully templated, but if not, the function body is considered to be non templated, but the function call site still does execute the requires clause, which may contain checks or info about the type,
 
-for example, a safe function may need to get a sorted vector, but the vector cant really prove without O(n) ops that it is sorted, and we really don't want static overhead, 
+for example, a safe function may need to get a sorted vector, but the vector cant really prove without O(n) ops that it is sorted, and we really do not want static overhead, 
 
 we can now declare a `qualiexpr(bool sorted_flag=false)`, (the empty qualiexpr being recognized as not sorted), and declare that the class member has `qualiexpr(bool sorted_flag=true)` and any operation that preserves that invariant are valid, and therefore we can statically assert that a binary search is not undefined behavior.
 
@@ -1022,7 +1022,7 @@ dyn is more of a prefix on key words.
 a structure that will have a dynamic memory layout based on specific vals ( vals are of type `size_t`),
 based on the alignment, which can used by (bit) alignof, its size can only be known on an object that has been created in the sizeof or bit sizeof.
 a dyn type can have other dyn types within it via specifying the val arguments, 
-however a non dyn type cannot have dyn objects within it ( references to dynamic objects dont count)
+however a non dyn type cannot have dyn objects within it ( references to dynamic objects do not count)
 either on the definition of a dyn object or on its declaration we need to specify the vals it uses,
 if a dyn type has all values statically known it is considered a static type again,
 however if the dyn type info is stored in a variable not known at compile time or cannot be elided, 
@@ -1048,7 +1048,7 @@ function qualifiers
 
 
 - async(...),debug(...),optimize(...),lang(...): 
-these don't really mean anything to the compiler, the are not relevant to ODR ( the declaration is allowed to not include these while the definition may) in c colon,( not even used in the ABI hash), however E colon can put these, to allow the context-type to be implicitly changed via reflection to reflect that functions intent 
+these do not really mean anything to the compiler, the are not relevant to ODR ( the declaration is allowed to not include these while the definition may) in c colon,( not even used in the ABI hash), however E colon can put these, to allow the context-type to be implicitly changed via reflection to reflect that functions intent 
  for example debug(std::debug::obfuscated) to do debugging in release or debug(std::debug::unwind), to debug during unwind. 
  or lang(std::python) to make bindings.
 
@@ -1089,7 +1089,7 @@ however, for forcing an abrupt exit we can call std abort.
 is `predictable` and, after analyzing its call graph, it must not call itself in any point in the graph( no recursive graph).
 otherwise the program is ill-formed. 
 a critical system might require all functions to be `critically_predictable` ( an interrupt handle is probably required to be a critically predictable function pointer) .
-( note that this is only possible because function pointers dont interfere with static analysis because of the `predictable` requirements).
+( note that this is only possible because function pointers do not interfere with static analysis because of the `predictable` requirements).
 
 - `effectless`:
 
@@ -1108,7 +1108,7 @@ however, the one qualifier per expression on rule must still hold, meaning that 
 
 an evaluation e is idempotent if a second evaluation of e can be sequenced immediately after the original one without changing the resulting value, if any, or the observable state of the execution, an idempotent expression is also an `weak_idempotent` expression.
 
-an `idempotent` expression must be composed of only other `idempotent` expressions OR must be casted via unsafe(as-idempotent) ( because some code that looks like it modifies really dose not, for example an i++ in an internal for loop) OR in the case of paring synth(idempotent) via compiler proof that it's IR block was idempotent, if none were true, the program is ill-formed
+an `idempotent` expression must be composed of only other `idempotent` expressions OR must be casted via unsafe(as-idempotent) ( because some code that looks like it modifies really dose not, for example an i++ in an internal for loop) OR in the case of paring synth(idempotent) via compiler proof that it is IR block was idempotent, if none were true, the program is ill-formed
 
 
 
@@ -1186,7 +1186,7 @@ an `reproducible` expression must be composed of only other `reproducible` expre
 
 
 -`dyn (Q)`:
-a dyn purity qualifier Q, can be declared on an expression, this asserts the purity qualification Q, however, the allocation and deallocation of dyn objects doesn't count in side effects of the program, 
+a dyn purity qualifier Q, can be declared on an expression, this asserts the purity qualification Q, however, the allocation and deallocation of dyn objects does not count in side effects of the program, 
 because the usage of dyn objects is exactly similar to stack objects, but with the difference that the compiler implicitly manages the memory via operator (re)new and operator delete in the context-type, and knows the lifetimes, we can use this qualifier to our advantage, 
 one reason being that F colon functions need dynamic arrays but still are pure. 
 
@@ -1195,7 +1195,7 @@ one reason being that F colon functions need dynamic arrays but still are pure.
 
 
 * note: throwing a trivially relocatable throw-value via a special hand crafted functional supporting context-types can still allow the throw expression to be `purely_functional` if the function is not `represent_cxx`, 
-this is because throw is not unwind based and doesn't use globals at all, and can be used without any side effects nor pointer usage, if an exception is not possible, then use noexcept to complete the purity qualifications.
+this is because throw is not unwind based and does not use globals at all, and can be used without any side effects nor pointer usage, if an exception is not possible, then use noexcept to complete the purity qualifications.
 
  
 
@@ -1306,7 +1306,7 @@ the optimization preformed is usually merge of smaller synchronized blocks into 
 
  a `fastdyncaller` ( fast caller site, callee save register) qualifier makes the dynamic call, have no variables in the used set.
 
- a `fastdyncallee` ( fast callee site, caller save register) doesn't do much to the function's dynamic signature, but the registers in the used set increase a lot.
+ a `fastdyncallee` ( fast callee site, caller save register) does not do much to the function's dynamic signature, but the registers in the used set increase a lot.
 
  
 
@@ -1323,9 +1323,9 @@ the optimization preformed is usually merge of smaller synchronized blocks into 
 
  usually smaller functions with less used registers benefit from the `fastdyncaller` specification, but those with many moving parts who already have large register usage are better used with the `fastdyncallee` qualifier. 
 
- if F's address isn't stored or used, then the transformation code is optimized away.
+ if F's address is not stored or used, then the transformation code is optimized away.
 
- the `fastdyncallee`, on the other hand doesn't have a transformation in the function's assembly.
+ the `fastdyncallee`, on the other hand does not have a transformation in the function's assembly.
 
 
 
@@ -1471,7 +1471,7 @@ the substitution of `a` instead of `v` is valid if and only if the function conf
 * note :
  the `sfloatN_t` variants might not follow certain expected axioms associated with real numbers, because they must not have their deterministic behavior removed.
 also, having certain things count as contract violation and defined behavior( for example an overflow) would make these math axioms hard to use as optimization,
-so, dont expect a code section without `unsafe(contract-UB)` to allow these.
+so, do not expect a code section without `unsafe(contract-UB)` to allow these.
 
 
 
@@ -1492,10 +1492,10 @@ exact mechanism of return pointers:
  - special cases:
 
 0. noexcept: 
- enumcatch is irrelevant, and the caller doesn't generate a sad path.
+ enumcatch is irrelevant, and the caller does not generate a sad path.
 
 1. noreturn:
-enumret is irrelevant,and the caller doesn't generate a happy path.
+enumret is irrelevant,and the caller does not generate a happy path.
 the end of the callee scope in the control flow ( return) is ill-formed, it must be unreachable ( at most by calling std::unreachable and using unsafe(unreachable) ).
 
 2. only 1 path is expected by the caller (ie: only return, only throw, only one jump table entry ):
@@ -1807,7 +1807,7 @@ instead of the default `std::context_t<optimization-level>` use `std::async_cont
 
 - last function that is called resulting in suspension: 
 
- note that the reason for using references instead of `inout` here is because the callee will probably throw, resulting in the drop of `inout`, but references don't drop self on throw.
+ note that the reason for using references instead of `inout` here is because the callee will probably throw, resulting in the drop of `inout`, but references do not drop self on throw.
 
  `promise_suspend(this promise& self, promise-cache,bool& is_cancled )context-type->context-type-coro-return;`
 
@@ -1825,7 +1825,7 @@ if a promise wants ( decided in the `awaiter` suspension via returned `transfere
 
 - cancelation grantees: 
 
- an error type in the catch scope is either a child of the empty cancelation token type, or its a child of the common violation token or isn't either, for cancelation and violation catches ( a catch with these types) unsafe(ignore-cancelation) and unsafe(ignore-violation) is applied, but otherwise its safe to do in the coroutine, also the catch(throw-value), equivalent to catch(...) in c++ is also unsafe(catch-all-tokens).
+ an error type in the catch scope is either a child of the empty cancelation token type, or its a child of the common violation token or is not either, for cancelation and violation catches ( a catch with these types) unsafe(ignore-cancelation) and unsafe(ignore-violation) is applied, but otherwise its safe to do in the coroutine, also the catch(throw-value), equivalent to catch(...) in c++ is also unsafe(catch-all-tokens).
 
  so, the c colon libraries can distinguish if the throw is a cancelation or not and do the appropriate safe thing for E:
 
@@ -1853,9 +1853,9 @@ the promise cache is an object only visible in the promise, with lifetime betwee
 
  `intptr_t program_switch_counter;`// positive indexes show normal control flow, negative indexes show the same suspension's catching/cancelation control flow, 0 shows that the function and all of its variables will be destroyed on next resume ( final suspend) .
 
- // if the function's last destination ( the counter being set to zero) throws by exception, the resume pointer will be reassigned to soly point to the frame deallocation destructor, the frame wouldn't be destroyed, but rather, the exception would be caught in the catch and stored on the stack then the frame will finally be destroyed by calling the resume pointer again. 
+ // if the function's last destination ( the counter being set to zero) throws by exception, the resume pointer will be reassigned to soly point to the frame deallocation destructor, the frame would not be destroyed, but rather, the exception would be caught in the catch and stored on the stack then the frame will finally be destroyed by calling the resume pointer again. 
 
- // if a the deallocation of the frame fails by exception the program will terminate ( we can assume free and delete will never fail so this isn't an issue) 
+ // if a the deallocation of the frame fails by exception the program will terminate ( we can assume free and delete will never fail so this is not an issue) 
 
  ` byte[....];`// coroutine frame storage 
 
@@ -1953,7 +1953,7 @@ there also might be ways to have a call to new or renew produce a flag, and dele
 
 a value oriented reference-like type,
 
-for function arguments, these don't necessarily mean that T will have the same address, unless T isn't trivially relocatable, which will make T relocate into the stack in the caller.
+for function arguments, these do not necessarily mean that T will have the same address, unless T is not trivially relocatable, which will make T relocate into the stack in the caller.
 
 
 
@@ -2189,7 +2189,7 @@ the `std::atomic<std::flag_t>` is the only atomic that is guaranteed to be lock-
 
 * why bit pointers never use atomic operations;
 this is because an atomic load or store to a bit requires the byte to be synchronized accordingly, 
-but a bit pointer doesn't use atomic operations so its a race condition, however to avoid it and stick to the c++ memory model( beacuse hardware supports it), a fractional atomic is ill-formed.
+but a bit pointer does not use atomic operations so its a race condition, however to avoid it and stick to the c++ memory model( beacuse hardware supports it), a fractional atomic is ill-formed.
 
 
 no changes were really made from [the c++26 definitions](https://en.cppreference.com/w/cpp/atomic/memory_order.html), as its a great well-defined memory model that c colon stands on.
@@ -2251,18 +2251,18 @@ virtual table layout contains:
  if non null we know that we need to call the virtual base class constructor on the base offset, 
  if null value we know that the virtual base class is already constructed,
  only one non null entry can correspond to a specific virtual base.
- if the construction is inlined and doesn't call virtual functions the constructor virtual tables can be elided.
+ if the construction is inlined and does not call virtual functions the constructor virtual tables can be elided.
  
  * the mandatory this pram advantage( virtual table thunk sinks to the function):
  think about a virtual function signature 
  `virtual f(this virtual base&self)`, an override of this function will be using this signature, so it would have the same pointer, 
- if an overrides signature doesn't match the actual function, then we might do a thunk ( because of type conversion mismatch).
+ if an overrides signature does not match the actual function, then we might do a thunk ( because of type conversion mismatch).
  
 * the construction object illusion and the restrictions:
 `base( this virtual ovaluexpr base&self)`, the self reference is the actual real virtual table, 
-however, passing the self ( even implicitly ) without using the final qualifier ( to basically not ommit construction of itanium-like v table tables, which is a massive itanium section that i simply don't know how to remove the bloat from and is obscure enough to not include) gives an error (" type is not formally constructed, virtual calls may have different effects than programming expectations use `represent_cxx` to allow virtual table table dispatch"),
- also, using final is basically a good way to say that the type is a standalone entity so even if a virtual call on it occurs, it doesn't need to use a VTT , however using the final qualifier in this specific instance has also restrictions on having virtual bases.
- while we can reconsider this in future versions by changing the abi version, i still think it's fundamental requirement of grapth generation( n bases means n tables and means n nodes, so graph, incompatible with castation) will make the cost too much, the VTT is `represent_cxx`along with personality routines and array cookies.
+however, passing the self ( even implicitly ) without using the final qualifier ( to basically not ommit construction of itanium-like v table tables, which is a massive itanium section that i simply do not know how to remove the bloat from and is obscure enough to not include) gives an error (" type is not formally constructed, virtual calls may have different effects than programming expectations use `represent_cxx` to allow virtual table table dispatch"),
+ also, using final is basically a good way to say that the type is a standalone entity so even if a virtual call on it occurs, it does not need to use a VTT , however using the final qualifier in this specific instance has also restrictions on having virtual bases.
+ while we can reconsider this in future versions by changing the abi version, i still think it is fundamental requirement of grapth generation( n bases means n tables and means n nodes, so graph, incompatible with castation) will make the cost too much, the VTT is `represent_cxx`along with personality routines and array cookies.
 
 
 
@@ -2474,7 +2474,7 @@ struct conceptual_node_data_t {
  // we have the base vtable pointer, we know that if the cast was successful, it would be that the drived table has the base table indide it at a known offset,
  // so, we first see if the space between the root and the castation-table can allow such a thing,
 // if not, cast fails, if it can, we go at that offset, and get the castation_table_ref assuming its valid and see if the 256bit hash matches, 
-// if the hash matches we are in the correct place, if we are, we're done and successful, we just use the offsets.
+// if the hash matches we are in the correct place, if we are, we are done and successful, we just use the offsets.
 // so this is O(1) operation, not even the search is necessary 
 // note that this is a algorithm dependens on the assumption of unique hashes, and the failure would be reading a memory that is exactly what the hash is, but not being the castation-table hash, this is astronomically unlikely because its 256 bits that are needed to match and its a cryptographic hash, so even more unlikely, practically impossible.
  
@@ -2610,7 +2610,7 @@ after sorting, remove all duplicates.
  
  
 * note : 
- a cool side effect of this is that you don't need a main function anymore to execute predictable code, 
+ a cool side effect of this is that you do not need a main function anymore to execute predictable code, 
  its not as flexible as python style REPL, and you eventually would write a main function, but its neat.
  
  
@@ -2882,13 +2882,13 @@ important note:
 
 
 
- in and out registers may overlap in the calling convention, this doesn't mean that they will be `inout`, only that the registers who are used for input purposes, will have output purposes after the call, because its faster as an `inout` amd has less register pressure.
+ in and out registers may overlap in the calling convention, this does not mean that they will be `inout`, only that the registers who are used for input purposes, will have output purposes after the call, because its faster as an `inout` amd has less register pressure.
 
 
 
 any registers not used or not in any signature is unused,
 
-any register not needed after a call, or a fastdyncallee dynamic call doesn't need to be saved,unless proven better by compiler.
+any register not needed after a call, or a fastdyncallee dynamic call does not need to be saved,unless proven better by compiler.
 
 for example if i do a call to a fastdyncallee dynamic function in an almost empty function, no registers are saved, only the function will have many used registers.
 
@@ -3018,7 +3018,7 @@ this set grows linearly until the registers load is too high, then for these reg
 
  
 
-however because fastdyncallee dynamic/external calls don't have the luxury of known assembly, so,
+however because fastdyncallee dynamic/external calls do not have the luxury of known assembly, so,
 
 every register might be used, so, the intermediate registers need storing before the fastdyncallee dynamic call and re storing afterwards, just like how the call and ret instructions work via stack push and jumps, or how the c++ async resume and suspend is defined via jumps,
 
@@ -3028,7 +3028,7 @@ this is just more explicit, because we have no control over what call instructio
 
 there are also 2 return paths,
 
-instead of a branch after a call like most std::expected, we do an optimization, not valid in c, that isn't try catch with cold paths, but,
+instead of a branch after a call like most std::expected, we do an optimization, not valid in c, that is not try catch with cold paths, but,
 
 the caller happy paths have no need for a branch because a throw will return to the catch path in the caller from the catch register address, this is also very fast, like a single return statement, and the only cost is that a register is occupied, not bad compared to throw, or even the if statement in my opinion
 
@@ -3036,7 +3036,7 @@ the caller happy paths have no need for a branch because a throw will return to 
 
 this is also possible because of the radical exception handling mechanism ( a statically known context type specified in the function signature, to be the vessel for the allocators,exception handling, debugging and stack trace information in debug builds, and maybe other information, this means that the exception type is statically known, unless abstracted away by a std::any-like object in the context type, also the debugging could be more information rich, for example skipping unnecessary name mangles or helper functions, because the debugger is just code with some trap brake points),
 
-basically i don't need to tell about all of it, but every function has any catch statements or raii clean up codes in the catch path, this doesn't need any extra unwinder, because there is no data structure for the unwinder, it's just code, and the return is directly to the unwind code instead of calling many cxx throw functions and using thread local or dynamic storage
+basically i do not need to tell about all of it, but every function has any catch statements or raii clean up codes in the catch path, this does not need any extra unwinder, because there is no data structure for the unwinder, it is just code, and the return is directly to the unwind code instead of calling many cxx throw functions and using thread local or dynamic storage
 
 
 
@@ -3050,7 +3050,7 @@ at most the catching return points to a cxx throw for compatibility.
 
 
 
-note that, as far as i know, the call and ret instructions already store much unnecessary registers in the stack, so i dont think the dynamic overhead is much different from a normal dynamic call,
+note that, as far as i know, the call and ret instructions already store much unnecessary registers in the stack, so i do not think the dynamic overhead is much different from a normal dynamic call,
 
 also, i believe that allowing the return, arguments and more be able to expand, be even simd registers is far more beneficial than a restricted set of registers as function arguments and a single return registers, let alone the catch register
 
@@ -3140,7 +3140,7 @@ or an `uninitialized ivaluexpr  ` if the caller needs an extra callee saved regi
 
  - normal control flow: 
 
- the `enum` type doesn't have any match specifier 
+ the `enum` type does not have any match specifier 
 
  
 
@@ -3158,7 +3158,7 @@ or an `uninitialized ivaluexpr  ` if the caller needs an extra callee saved regi
 
 
 
- but often the return pointer doesn't need indirections because often the return is not an enum.
+ but often the return pointer does not need indirections because often the return is not an enum.
 
  
 
@@ -3422,7 +3422,7 @@ read only dynamic symbol table layout:
 // 4. put elem in stack with `index = uint16_t(elem>> ( 256- 16))`. same
 // now, based on the knowledge that these are cryptographic hashes with uniform distribution, also considering that they even were sorted partitions at the beginning, 
 // we assume that we have partitioned the memory on this distribution and so on average we say that each slot has `(N/ 2 ^ 64)` elements that are not sorted,  this means that for practical purposes, we can say that most parts are sorted.
-// we do a scan of the regions, and for each part where it didn't have sorted order,
+// we do a scan of the regions, and for each part where it did not have sorted order,
 // we do a similar algorithm for sorting on the sub regions or probably a merge sort, or just do a bubble sort if it was tiny, we say its `O(m*logm)` if we had an unluky hit
 // on average its `O(6*O(1+)*n) + f(n) )`
 // `O(1+)`= push back in stack O(1) Amortized. 
@@ -3450,7 +3450,7 @@ read only dynamic symbol table layout:
 // to preform a sort using pure radix sort,
 // it does 16 repetitions of the put elem in stack and pop from it steps.
 // so its `16n+O(n+)` guaranteed, however, `log(#binaries)` is probably not going to be more than 16,
- // who has 65536 dll files!?... and who expects these many files to load fast?!, even the operating system has B trees of its files that give `O(n*logn)` time when accessing n files, thats not really a CPU bound task , it's more file storage speed bound.
+ // who has 65536 dll files!?... and who expects these many files to load fast?!, even the operating system has B trees of its files that give `O(n*logn)` time when accessing n files, thats not really a CPU bound task , it is more file storage speed bound.
 // i believe that practically merge sort may be the only algorithm that is necessary to achieve max speed because of the nature of this operation.
 // however, dllmap files are still the most significant contribution in binary loading. 
 
@@ -3462,7 +3462,7 @@ read only dynamic symbol table layout:
 
 
 
- there's also a secondary tactic used to make dll loads faster after the first memorization in the program installation, its called a dllmap, and the linker recognizes dllmaps by using the dll count of non 1.
+ there is also a secondary tactic used to make dll loads faster after the first memorization in the program installation, its called a dllmap, and the linker recognizes dllmaps by using the dll count of non 1.
 
 
 // constant read only global section.
@@ -3493,7 +3493,7 @@ read only dynamic symbol table layout:
 `uintptr_t dll_info_index[symbol_count];`
 
 
-// sorted infos based on dll info's dll-identifier-abi256-hash, this is because the loader may rearrange the given dll map paths if they are path independent( if path dependent, meaning that the dllmap has the relative path of the dll it needs to load compared to its own path, it doesn't even need the dll arguments at all, in most cases a path dependent dll loader is enough for application installation.), also a mix of these can be used if the dynamic loader implementation supports it.
+// sorted infos based on dll info's dll-identifier-abi256-hash, this is because the loader may rearrange the given dll map paths if they are path independent( if path dependent, meaning that the dllmap has the relative path of the dll it needs to load compared to its own path, it does not even need the dll arguments at all, in most cases a path dependent dll loader is enough for application installation.), also a mix of these can be used if the dynamic loader implementation supports it.
 `dll_info dll_infoes[dll_count];`
 `uint32_t dll_prioritis[dll_count];`
 
@@ -3506,7 +3506,7 @@ read only dynamic symbol table layout:
  // a dllmap leader is given both the dll it mapped and the current program symbol table, and simply merges them similar to a dll only loader, however because its a dllmap, at the end of the merge operation it uses the `dll_info` data to identify the target dll ( for example this info can be an id, a path, a index, even file path independant dll-identifier-abi256-hash can be used, ect, based on the architecture and implementation), and uses the offset and priority, to set the dll data it needs to load, note that the dll table itself is not really used to lookup this operation, but the dllmap info is used instead, each offset represents a pointer to the dll, and after the load( using `dll_info`), its absolute address is calculated and is initialized as if it actually did the dll load.
 // note that dllmaps can also merge into bigger dllmaps.
 // the reason for the existence of dllmap is to not have the `log(#binaries)` factor grow, because a dllmap is a single binary that represents many binaries.
-// also, most needed dlls in the real world are known at the program installation phase, and the ones that do not, they don't need dllmaps, but the ones that do can still benefit from more memorization.
+// also, most needed dlls in the real world are known at the program installation phase, and the ones that do not, they do not need dllmaps, but the ones that do can still benefit from more memorization.
 // we can think of a dllmap as a snapshot/save of the dynamic state of the dll loader, but with non absolute addresses and relative offseting, and using it is like restoring a snapshot, instead of building it up.
 
 // the c colon dynamic loader is consistent of the dll (un)loader, dll map (un)loader and the dll map linker( to make dllmaps).
@@ -3619,7 +3619,7 @@ in general, API objects defined as part of this ABI are assumed to be extern "c:
 
  7. import and export ajason:
  an ajason module is a module that is defined in a different translation unit,
- however we have a dependancy on this unit's executable, but we dont import its content, 
+ however we have a dependancy on this unit is executable, but we do not import its content, 
  note that we can define ajason units in a module just by making the  definition, and saying exactly what needs to export, and what part needs no symbol imported.
  
  note that scopes can either only depend on the dependancies or the wholw translation unit.
@@ -3662,7 +3662,7 @@ in general, API objects defined as part of this ABI are assumed to be extern "c:
 
    so, for the resolution of this, we first need to resolve all the dependancies by execution of the `constexpr` IR-JIT code, the IR code will build the graph during its execution, 
 
-   if the step count doesn't exceed, then we have the the graph in all templates being specialized, and so being usable.
+   if the step count does not exceed, then we have the the graph in all templates being specialized, and so being usable.
 
    while non specialized templates are hard to parrarelize, the non dependent parts of the global graph can still run their template resolutions in parallel. 
 
@@ -3715,7 +3715,7 @@ requirements afterwards include having the OS loader step, and OS symbol manglin
  
  -  constexpr syscalls :
 in the  constexpr runtime, this thunk is more restricted for security purposes,
- it also  is the only place that compile time pointer can change its permissions ( read write ) so it doesn't allow execution permissions for non function pointers and it doesn't allow read write permissions to function pointers. 
+ it also  is the only place that compile time pointer can change its permissions ( read write ) so it does not allow execution permissions for non function pointers and it does not allow read write permissions to function pointers. 
  if the permissions are violated the program is ill-formed.
  if the pointers are casted to non pinters, or non pointers are casted to pointers, the program is ill-formed.
   the way we handle pointers in compiler is explained in the pointer section. 
@@ -3800,7 +3800,7 @@ in the  constexpr runtime, this thunk is more restricted for security purposes,
 
  
  * note :
- a goal is to have a platform independent dll system, where x86 windows mcc dll and x86 linux mcc dlls can link seamlessly, ( each architecture having a single mcc abi ),  if the target qualifier isn't used,
+ a goal is to have a platform independent dll system, where x86 windows mcc dll and x86 linux mcc dlls can link seamlessly, ( each architecture having a single mcc abi ),  if the target qualifier is not used,
  the mcc syscall thunk is defined by the dynamic loader, so it can call the operating system, also, 
  the mccabiv1.dll defines OS independent wrappers for things like UI, networking, drivers, and rendering, 
  all platform dependent code is encouraged to have a dll that wrapps it for that given platform in a platform independent API.
@@ -4190,7 +4190,7 @@ theres a very clever way to both do range check and have simd instructions,
 first we assume that the iteration-primitive way is not used ( because that is just the better faster way ) and we need a range check because we use indexes.
  
 in express colon code if operator ~throw is reached the array is dropped ( uninitialized specified ),
-so it can have any value,  inside the loop we set the values, but we didn't really  load them, and then they got uninitialized, 
+so it can have any value,  inside the loop we set the values, but we did not really  load them, and then they got uninitialized, 
 so under the as if rule we can just elide the store operation in the violation path,
 so if we do this wr either have : 
 0. no violation all writes were preformed:
@@ -4255,7 +4255,7 @@ these might be useful to help the compiler in optimizations of math, and maybe l
  any overflow is well-defined, only devision by 0 is a contract violation,is unsigned modular arethmatic type.
 
 4. s:
- a signed integral, any overflow is well-defined to saturate to the min( least negative) or max value( most positive), only devision by 0 is a contract violation,is signed saturate arethmatic type ( maybe for audio processing, or just a signed integer that doesn't overflow).
+ a signed integral, any overflow is well-defined to saturate to the min( least negative) or max value( most positive), only devision by 0 is a contract violation,is signed saturate arethmatic type ( maybe for audio processing, or just a signed integer that does not overflow).
 
 
 
@@ -4322,7 +4322,7 @@ also if the endian can change across platforms, using both S and explicit endian
  
  - `std::(l/b/L/E)((z/(z/d/u/a/o)n/d/u)s)(u)(eE)(r/n)positN_t` ( this is either a fundamental type or a standard library type, depending on hardware support)
 
-* note : on an architecture that doesn't support it nativly ( most) its unsafe(obscure-math).
+* note : on an architecture that does not support it nativly ( most) its unsafe(obscure-math).
 
  - u:
  the sign bit is not there  value is positive, unsigned posit.
@@ -4359,7 +4359,7 @@ we have a non fundamental type of `std::grapheme_t<normalization>` that represen
 also a non fundamental type of `std::word_t<normalization>` that represents a word,
 also a non fundamental type of `std::line_t<normalization>` that represents a line,
 and normalization being the way we encode many code points together found in `std::unicode::<name>`.
-there's a `std::text_t<elem>`, elem being the type of text that can be iterated, a string is only representing of . 
+there is a `std::text_t<elem>`, elem being the type of text that can be iterated, a string is only representing of . 
 however, because of the many languages, these non fundamental types would probably need a dll of the normalization mechanism, and an embedded system may only support limited normalization types.
 the data structure used for text processing is implementation defined based on the normalization.
 
@@ -4380,7 +4380,7 @@ type of a nullptr, its size is similar to a byte pointer.
 
 - `std::(L/E) bool_t`(1 byte),`std::flag_t`(1 bit) ( a single bit cant have endian-ness):
 
- the bolean types , flag is not obscure because its the same code generation as long as it's not stored in memory ( only then we do a multi instruction sequence to do masking, which might be optimized away).
+ the bolean types , flag is not obscure because its the same code generation as long as it is not stored in memory ( only then we do a multi instruction sequence to do masking, which might be optimized away).
 
  
 
@@ -4407,7 +4407,7 @@ unsafe(obscure-math) if logic is preformed using it.
 
  the hash type that the abiof operator gives.
 
- its a 128 bit uuid, it doesn't support any operations outside of the ABI operators, other than the usual load and store or casts.
+ its a 128 bit uuid, it does not support any operations outside of the ABI operators, other than the usual load and store or casts.
 
  for example, the hash given by xxhash128 or a better architecture dependent implementation. 
 
@@ -4439,7 +4439,7 @@ the hash type that the typeid operator gives.
 representative of the back end hash used in the linker or v table.
 
 
- its a 256bit cryptographic hash, it doesn't support any operations outside of the compare or equal, other than the usual load and store or casts.
+ its a 256bit cryptographic hash, it does not support any operations outside of the compare or equal, other than the usual load and store or casts.
 if the cryptographic hash is given to an implementation defined function `__mccabiv1::demangle`, it either gives the empty string or the true front-end name mangle that lead to this hash, this outcome depends on security and rtti flags during compilation.
 
 
@@ -4476,7 +4476,7 @@ however this would only be used if the type is passed by value ( ie. trivially r
 based on the registers assigned latency and throughput and easy of access ( the availability of moving from one to the next ),
 we form a higherarchy of register, first on top  might be the ALU flags, then close second the general purpose registers, 
 then after that the simd registers ( simd registers are less easy to move around and split up ),
-for example as long as all general purpose registers are not used for pointers , we dont put pointer in them,
+for example as long as all general purpose registers are not used for pointers , we do not put pointer in them,
 however if the register pressure got extreme ( all general purpose occupied), we may then fall back to XMM, after all XMM got full, we fall back to YMM then after all those got full we fall back to ZMM.
 and if at a point the compiler evaluation results that registers are slower than L1 cache ( the stack ) then it would release all the pressure and free up the register bank for the register assigner .
 this is all theoretical, but it would be used if and only if it made the program perform better, if not we can always use the stack. 
@@ -4655,7 +4655,7 @@ maybe even cppfront syntax.
  
  in c colon,  unlike c++, the struct and class keywords are very different, 
  a class is a type with a closed set of content, it can be used in a class inheritance graph and in general its a complete type with a closed set of member functions and implementation. 
- however, struct is similar to rust, it doesn't support inheritance, however it can use traits( a subset of concept that is similar to rust ) and implementation that is outside the struct definition.
+ however, struct is similar to rust, it does not support inheritance, however it can use traits( a subset of concept that is similar to rust ) and implementation that is outside the struct definition.
  the only exceptions to this implementation freedom is that the struct construction, destruction and assignment operators must be declared in the struct, ( this is because the abi hash depends on triviality, and must be calculated when the struct definition is processed).
  
  union, and enum struct are similar to rust union and enum respectively.
@@ -4712,7 +4712,7 @@ anything that can result in an abi brake must be in the hash.
 
 
 - the ABI hash of a namespace also depends on:
-4. nothing more, a namespace doesn't depend on the content. 
+4. nothing more, a namespace does not depend on the content. 
 
 
 
@@ -4733,7 +4733,7 @@ the abi hash of a function does not depend on non virtual member functions, but 
 
 - the ABI hash of a function :
 4. throw-value, contract in val, and promise-type and input and output of async/sync functions of the context and generally the specific kind of context-type and its abi hash.
-5. the qualified type of the function pointer ( so, the full hash of each thing in it, but the qualifier having being sorted to ensure they don't depend on the qualifier order).
+5. the qualified type of the function pointer ( so, the full hash of each thing in it, but the qualifier having being sorted to ensure they do not depend on the qualifier order).
 6. if the function is a member function, the qualified type of the self ( the first argument that has a `this` annotation, similar to c++ newest deduction of this pattern), but, if a virtual function with a virtual self, the qualifie type of self that is final qualified. 
 
 * note :
@@ -4801,7 +4801,7 @@ So, P(at least one collision) = 1 - (1 - 2^(-65)) = 2^(-65).
 
  so the probability of a collision occurring when hashing 2^32 versions with XXHash128 (which has a 2^128 hash space) is approximately 2^(-65).
 
- so we say that it's practically impossible .
+ so we say that it is practically impossible .
  
  
 
@@ -4945,7 +4945,7 @@ by banning unsafe, all the complaints of complexity only fall on c colon. While 
 
    the reason for safety being guaranteed for express colon, ( if the c colon libraries used internally are well written and safe ) is that there is no referencing to begin with, imagine using a member from a vector, you aren't using a reference to it, so you must copy it,so you will never worry if the vector reallocation will invalidate anything, because you do not have any reference to begin with. 
 
-   you dont need to borrow anything because you only need to change its value, most functions can use either full value semantics or fall into using a reference-counted variable if they truly need multiple ownership.
+   you do not need to borrow anything because you only need to change its value, most functions can use either full value semantics or fall into using a reference-counted variable if they truly need multiple ownership.
 
   any unsafe code is delt with in the internal c colon libraries, freeing the burden of safety concers from the developers.
 
@@ -4953,9 +4953,9 @@ by banning unsafe, all the complaints of complexity only fall on c colon. While 
 
   because the only thing allowed to be modified is the value of objects,
 
-  even data races cannot be made in express colon because the reference counted variable provided by c colon is either a totally immutable value or protected via a read write lock ( assuming the c colon libraries dont provide safe looking unsafe abstractions)
+  even data races cannot be made in express colon because the reference counted variable provided by c colon is either a totally immutable value or protected via a read write lock ( assuming the c colon libraries do not provide safe looking unsafe abstractions)
 
-  although dead locks can be a concern in highly parallel environments, they don't really cause memory unsafty.
+  although dead locks can be a concern in highly parallel environments, they do not really cause memory unsafty.
 
   even stack overflows can be tracked if context objects use the reflection information into a stack trace ( for example by having a counter incremented by the stack usage of a frame when the context begins and having a maximum threshold before a contract violation occurs).
 
@@ -4969,7 +4969,7 @@ by banning unsafe, all the complaints of complexity only fall on c colon. While 
 
   however, an extreme measure against all cycles is making the use of `abi=` as unsafe(abi=), this makes any E colon code unable to make any liked list, graph or tree like structure and etc, and severly limits many forms of inheritance, but it grantees that all reference counters will be freed .
 
-  any use of `abi=` is unsafe and so E colon programs cannot have memory leaks and need to drop to c colon for creating such structures,  the reason fot this is, lets assume T has a storage mechanism to a tree, this tree either doesn't have T ( which means no cycles to T) or it does, if it does, T's ABI hash would become dependent on the graph that is itself dependent on T, and because we cannot type erase T to not depend on itself, and we cannot cause a brake in the ABI chain via `abi=`, then we really cant form a cycle ( assuming c colon libraries dont provide any type erasure primitives, but only sum types ( like rust `enum` or CPP std variant) ) ( because the virtual table ABI is dependent on the type of the class argument,and the class is dependent on the virtual table), ( and std::any like types are not provided to E colon because its too low level for it) 
+  any use of `abi=` is unsafe and so E colon programs cannot have memory leaks and need to drop to c colon for creating such structures,  the reason fot this is, lets assume T has a storage mechanism to a tree, this tree either does not have T ( which means no cycles to T) or it does, if it does, T's ABI hash would become dependent on the graph that is itself dependent on T, and because we cannot type erase T to not depend on itself, and we cannot cause a brake in the ABI chain via `abi=`, then we really cant form a cycle ( assuming c colon libraries do not provide any type erasure primitives, but only sum types ( like rust `enum` or CPP std variant) ) ( because the virtual table ABI is dependent on the type of the class argument,and the class is dependent on the virtual table), ( and std::any like types are not provided to E colon because its too low level for it) 
 
   arguably this is extreme, and we cant always grantee that no open-set type erasure will be provided from c colon,  but i would say that if E colon developers want to make a self referential type, it would be more elegant in C colon, and probably there are graph, linked list and tree libraries that can do that.
 
@@ -4990,7 +4990,7 @@ the library implementation may use a bit allocator to see which chunks in the re
  or the implementation may choose an actual graph implementation, and have a root node for checks
  
  there are type/lambda erasure primitives that ensure the type within them is  const stabilized (via reflection, for example a mutex or a non immutable refrence counted object cannot be this way),
- this is because if the data graph doesn't freeze at creation, it might make a memory leak when the function calls itself with itself as its parameter and stores it in itself, 
+ this is because if the data graph does not freeze at creation, it might make a memory leak when the function calls itself with itself as its parameter and stores it in itself, 
  thats why open set type erasure is highly restricted in Express colon. 
  
  
@@ -5012,7 +5012,7 @@ the library implementation may use a bit allocator to see which chunks in the re
 
 the standard library aims to have many of the widely used utilities, for example networking libraries, asynchronous frameworks and web like UI development utilities. 
 
-this is because the standard can change the ABI of these components at later versions so it doesn't need to worry about backwards compatibility. 
+this is because the standard can change the ABI of these components at later versions so it does not need to worry about backwards compatibility. 
 
 
 
@@ -5020,7 +5020,7 @@ this is because the standard can change the ABI of these components at later ver
 
 
 
-users don't need to worry about using old or vulnerable code, or complex building process. 
+users do not need to worry about using old or vulnerable code, or complex building process. 
 
 
 
@@ -5034,7 +5034,7 @@ users don't need to worry about using old or vulnerable code, or complex buildin
 
 theres no traditional borrowing in express colon, because references aren't allowed, only value oriented reference-like alternatives are, this is because most simple objectives can be achieved soly via containers, dynamic referencing containers and value types,
 
-the express colon language also tends to look more functional than its c colon counterparts, many changes to heap variables happening in monadic like fashion if they are garded via a mutex, or value based of they are easily movable and copyable, while the underlying c colon has borrowing rules, express colon programs still dont need lifetime anotations ( the c colon libraries however probably do)
+the express colon language also tends to look more functional than its c colon counterparts, many changes to heap variables happening in monadic like fashion if they are garded via a mutex, or value based of they are easily movable and copyable, while the underlying c colon has borrowing rules, express colon programs still do not need lifetime anotations ( the c colon libraries however probably do)
 
 
 
@@ -5064,7 +5064,7 @@ although this is fast enough so its good enough, if not, c colon can be used to 
 
  
 
- for example, common monadic operations can be made in a lambda function that is hidden inside of a for loop, this doesn't look like were using a monadic operation here, but we implicitly are doing that, while still benefiting from readability of c style for loops, iteration-primitive can be a mutex, can be a vector, can be an optional, 
+ for example, common monadic operations can be made in a lambda function that is hidden inside of a for loop, this does not look like were using a monadic operation here, but we implicitly are doing that, while still benefiting from readability of c style for loops, iteration-primitive can be a mutex, can be a vector, can be an optional, 
 
  the option for monadic lambdas is provided, but common monands can be expressed with ease.
 
@@ -5164,7 +5164,7 @@ although this is fast enough so its good enough, if not, c colon can be used to 
 
 ` co_break;` in a parallel loop does a cancelation of its siblings. and function continues.
 
-` co_continue;` // ends the execution of the current coroutine, but doesn't result in a cancelation. 
+` co_continue;` // ends the execution of the current coroutine, but does not result in a cancelation. 
 
  `}`// lambda scope end, once the function ends via the iteration-primitive.
 
@@ -5181,7 +5181,7 @@ although this is fast enough so its good enough, if not, c colon can be used to 
 
 
 
-// also a special case for example used in more relaxed async code,  this doesn't require thread safe qualification but still requires const qualifier and async safe qualifier, using a  non atomic refrence counter however can allow for mutability, because it only allows a single thread to be scheduled, but the drawback is that the whole structured concurrency tree with this root has its scheduler changed to a single-threaded one, however the mutex and atomic overhead is unnecessary when using this method.
+// also a special case for example used in more relaxed async code,  this does not require thread safe qualification but still requires const qualifier and async safe qualifier, using a  non atomic refrence counter however can allow for mutability, because it only allows a single thread to be scheduled, but the drawback is that the whole structured concurrency tree with this root has its scheduler changed to a single-threaded one, however the mutex and atomic overhead is unnecessary when using this method.
 `for co_await (auto [`inout` a, in b, out c,pass d ]: asynchronous-single-threaded-iteration-primitive){`
 ...
 `}`
@@ -5192,7 +5192,7 @@ although this is fast enough so its good enough, if not, c colon can be used to 
 // also we have `lvl(rw)_mutex<level>`,
 // in the scheduler each leveled mutex would be recorded in a async local stack wait data structure, and if a new leveled mutex is used, then its a violation of the try precondition if the level is higher or equal than the last level in the level stack.
 
-// there are different compiler flags, however in a critical system, using a mutex without a level would be `unsafe(deadlock)` while in a non critical system it would just be safe because we don't care about deadlock normally .
+// there are different compiler flags, however in a critical system, using a mutex without a level would be `unsafe(deadlock)` while in a non critical system it would just be safe because we do not care about deadlock normally .
 
 
 
@@ -5219,7 +5219,7 @@ or at most a " the catch block cannot capture a variable that might be dropped i
 
 in contrast to C colon ( which allows all of these c++ style things), Express colon does not have operator overloadding,and also function overloadding, and template specializations, and only allows simple template declarations ( like the c++ auto concept constraint parameters),
 
-this isn't really a safety problem, but an error massage problem, 
+this is not really a safety problem, but an error massage problem, 
 
 if express colon wants readable error massages in its express colon module, it needs to have less type anotations necessary to show that error message, and therefore, much type information would not be shown because the function name and at most the namespace would be sufficient for its detection. 
 
@@ -5229,7 +5229,7 @@ however E colon still recognizes these C colon constructs, allowing custom types
 
  similarly, common pitfalls like cyclic object hash dependency chains have relatively good information on their errors " it seems that your building a graph like structure within your types, however types dependent on themselves tend to be error prone, firstly, use `abi=` operators to resolve the cyclic hash, secondly, if dynamic referencing is involved, consider using weak pointers as well, because it would help avoid leaks".
 
- note that definition of a destructor, makes it so that a drop on member is ill-formed in many cases ( because the destructor needs a full object, but one part is uninitialized, especially on the throw path), this would make it so that using an inout would be incorrect, and would also encourage the use of setters and getters for correct logic, but using an in, and a separate out would be correct, but would result in a copy in the callee because the callee can't change the in pram directly.
+ note that definition of a destructor, makes it so that a drop on member is ill-formed in many cases ( because the destructor needs a full object, but one part is uninitialized, especially on the throw path), this would make it so that using an inout would be incorrect, and would also encourage the use of setters and getters for correct logic, but using an in, and a separate out would be correct, but would result in a copy in the callee because the callee cannot change the in pram directly.
  
  there is a similar restriction in c colon, but c colon can just use non dropped references, however in E colon that is disallowed for exception safety, note that these rules are a combination of borrow checker and qualifiers rules, done in a double entry book keeping style in the compiler. 
 
@@ -5240,13 +5240,13 @@ however E colon still recognizes these C colon constructs, allowing custom types
 
  because of the implicit one qualifier set per expression rule, any E: function that might modify its arguments on the throw statement, the arguments would not be usable after that throw, 
 
- that's why all the value oriented catch blocks would not encounter unexpected states (those who were in the process of completion but couldn't because of an exception).
+ that's why all the value oriented catch blocks would not encounter unexpected states (those who were in the process of completion but could not because of an exception).
 
  although this means that often containers who have a single incomplete value would also get dropped or put in an empty state,
 
  for example what happens if an exception happens in a reference counted mutex modification lambda, that mutex would need to be put in an error state, this way, any later code that attempts to access that mutex would throw an incomplete mutex error.
 
- in my opinion, this is a good thing, even rust panics dont have such properties, because if a value is modified through a reference then it throws and attems to catch a panic, the previous value is gone!, it is memory safe to access it yes, but it might be incomplete so its s logic error.
+ in my opinion, this is a good thing, even rust panics do not have such properties, because if a value is modified through a reference then it throws and attems to catch a panic, the previous value is gone!, it is memory safe to access it yes, but it might be incomplete so its s logic error.
 
  also, in my view, it is bad to assume panic safety is something obscure, 
 
@@ -5333,9 +5333,9 @@ the colon dynamic or Colon D language:
 a scripting language with a garbage collector,  designed for fast development, also for easy debugging, tooling and prototyping.
 there are some restrictions on what a colon D type can do, the arguments are implicitly `inout`,
 however the type may remain opaque ( if an explicit type is specified then its a violation for a non value type to be passed)
- colon D also doesn't have references similar to E colon, however using `rc(obj)` on them will make the object reference counted ( no atomic required because of the nature of concurrency, for ease of use, )
+ colon D also does not have references similar to E colon, however using `rc(obj)` on them will make the object reference counted ( no atomic required because of the nature of concurrency, for ease of use, )
 a value is always of type `stdd::any` ( can be thought of as an index-into-interpreter/value), also, 
-the type can be used within a context with `stdd::interpreter_context_t`, its a violation if the interpreter doesn't match the one that manages the lifetime.
+the type can be used within a context with `stdd::interpreter_context_t`, its a violation if the interpreter does not match the one that manages the lifetime.
 the any type in E colon facing code has set, get, cast, info, name, clear and other functions to be able to be usable.
 therefore value must always be trivially relocatable,
 must either copy, move or do contract violation if these are not defined but required.
@@ -5359,7 +5359,7 @@ this language can be used in the web, similar to E colon,via wasm
  improvments and advancements compared to cxx ( in the performance category):
  0. so maybe one day CPP can be as fast:
 
- i always have loved C++, even seeing it now with all its legecy, cxx still can be like c colon, heck i wanted c colon to be a c++ superset, but i dont think i can change anything major in it anytime soon, in hopes that a std c++xx maybe powered by mcc can be as fast as c colon in the following decades
+ i always have loved C++, even seeing it now with all its legecy, cxx still can be like c colon, heck i wanted c colon to be a c++ superset, but i do not think i can change anything major in it anytime soon, in hopes that a std c++xx maybe powered by mcc can be as fast as c colon in the following decades
  
  1. ABI brakage leads to better implementations:
  the 128 bit recursive hash ABI makes this possible.
@@ -5391,7 +5391,7 @@ this language can be used in the web, similar to E colon,via wasm
  
 
  5. rich aliasing info, and function purity metrics:
- my philosophy is, Every immutability comes with a disability,in e colon, progrmmers are forced with a disability to gain safety and immutability, and even boring simplicity. the c colon programmers however should be allowed to declarar the disability to get the performance from the immutability, for example stable values dont need to be loaded two times in registers to be captured!, they can be loaded only one time only because of their stability, the lack of others to change its value is the disability. 
+ my philosophy is, Every immutability comes with a disability,in e colon, progrmmers are forced with a disability to gain safety and immutability, and even boring simplicity. the c colon programmers however should be allowed to declarar the disability to get the performance from the immutability, for example stable values do not need to be loaded two times in registers to be captured!, they can be loaded only one time only because of their stability, the lack of others to change its value is the disability. 
  maybe i should name them complex colon and easy colon ?
 
 6. layout optimizations :
@@ -5404,7 +5404,7 @@ this language can be used in the web, similar to E colon,via wasm
 
  8. less interposition depending dynamic dispatch :
   when code is similar and linked together, it can be sometimes de duplicated,
-also if a function's address is not taken or exported it doesn't need a fixed address, also the relaxed function addresss help in dew duplicated code.
+also if a function's address is not taken or exported it does not need a fixed address, also the relaxed function addresss help in dew duplicated code.
 also static data like strings would be able to merge better with valexpr ( because no null termination, sub string merge is safe)
 
 9. fast program and dll loader:
@@ -5469,7 +5469,7 @@ Mjz colon compiler design and details:
 
 
 
-Quantum-Secure Encryption is Here. And it's WILD ( hash verification) :
+Quantum-Secure Encryption is Here. And it is WILD ( hash verification) :
 
 [link](https://youtube.com/watch?v=T9fCCGzwHJc&si=BzDNoo-vLqmsSJ7g)
 
