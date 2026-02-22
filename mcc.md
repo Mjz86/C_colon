@@ -475,6 +475,22 @@ however read of other intermediate is unsafe(intermediate).
 
 
 
+atomic /molecule/divisible:
+
+- divisible(default):
+for a region of memory M with lifetime L, if any  sub region  of M is atomic,  the pointer to M must not be a divisible pointer.
+ any read or write to a non volatile divisible  region can be made as long as the observable behavior of the program is the same.
+
+ - molecule: a region of memory  that may or may not be atomic,
+ handling such regions (  for example a region given by an  the  new in the C++ lang  is a molecular .
+
+
+- atomic :
+for a region of memory M with lifetime L, if any  sub region  of M is  divisible,  the pointer to M must not be an atomic pointer.
+any atomic region of memory must adhere to one of  the atomic ordering definitions in any given operations 
+
+
+
 unrestricted / restricted( default)
 
 
@@ -483,6 +499,11 @@ unrestricted disables the exclusive mutability borrow rule in the compiler.
 
  unrestricted often has to come with the unstable qualifier so explicit stable exclusive or unstable qualification is required.
 
+  for a restricted memory  region M with non zero size with lifetime  LM ,   having a non null pointer P with lifetime LP capable of observing or modifying the region M,
+  the lifetime LM must outlive PM , 
+  if the pointer P is observing M with  a const sub region in M , all M is observed as const .
+  if the pointer P has the region as mut , for the duration LP , only P must represent the adresss range of M, meaning that for any other pointer Q  with adresss A within M , if Q is used in lifetime LP , the behaviour is undefined.
+  
 
 
 
@@ -2541,7 +2562,66 @@ type pointer
     truncated-count is the minimum value that it can be , while having each truncated-hash in the table unique.
    
 
-    
+ ---
+
+module symbol and initization order in the loader:
+
+for ensuring a sane order of initilization between the modules of different names and versions,  
+the module symbol is used , it represents a node in the graph of all modules, on module load or unload ( in the dynamic loader syscalls) , the module graph  is garbage collected , this ensures that the unused modules get cleaned up , and that all unique module versions or instances  get initialized regardless of whether  they are from old versions or new versions of a library.
+if the the  graph analysis detected a cycle in the module includes, the program is terminated , if the cycle is detected at compile time,  the program is ill-formed. 
+if two  modules have the  same identity but are in different dlls , the initialization  of the given identity will initialize all modules with that identity  in order of their priorities.
+the  dependent modules  in the graph of a given identity module are a union of all  identity module dependencies.
+
+ 
+ the module  identity(backend hash)  is determined by :
+ 0. the ABI version number ( any changes to the ABI scheme in the standard will alter this number) 
+ 1. sub module name abi hash.
+ 2. parent module abi hash.
+
+
+- example:
+
+ unicode module (dll version 1) includes   std , emoji , and regex.
+ 
+ unicode module (dll version  2) includes  std , regex , glyph
+ 
+ unicode module (dll version  3 ) includes    glyph, std
+ 
+ the  unicode  identity has  3 entries,
+ and in the given example the dependency of unicode identity is  glyph,  std, regex , emoji. in that order.
+ the order  of dependency inclusion is determined by the highest priority identity in case  of a tie , the next highest and so on.
+ 
+ the algorithm for merging these is a stable sorting algorithm 
+
+with the comparison function being :
+
+compare   index of declaration in the dll first ( the entry  is by definition sorted by its indexes  in their declaration order) .
+
+compare priority of the dll  second .
+
+
+after sorting,  remove all duplicates. 
+ 
+ 
+ 
+ 
+ each line of  the static initization phase in a given module executes as if under a synchronized block.
+ 
+ 
+ 
+* note : 
+ a cool side effect of this is that you don't need a main function anymore to execute  predictable code , 
+ its not as flexible as python style REPL , and you  eventually  would  write a  main function, but its  neat.
+ 
+ 
+
+
+
+
+ 
+ 
+ 
+ 
 
 ---
 
@@ -3167,17 +3247,21 @@ read only dynamic  symbol table layout:
 ` uintptr_t symbol_ptr_offset_and_mask[symbol_count]`
 
  ...
- // arch is `3-log2(alignof(void*))`, and note that if the offset  overflows the program is ill-formed ,however on 32-bit or 16 bit systems this is not really a concern.
+ // arch is `4-log2(alignof(void*))`, and note that if the offset  overflows the program is ill-formed ,however on 32-bit or 16 bit systems this is not really a concern.
 
  //the `symbol_ptr_offset_and_mask`'s value is defined  with `(uintptr_t(offset)<<(arch)) | viability`,
 
- // the viability mask only can use 3 bits :
+ // the viability mask only can use  4 bits :
+ 
+ // 0 : module table symbol 
  
 // 1 : `dll_comparable_address` vs `no_dll_comparable_address`
 
  // 2 : interpositioned vs no-interposition
 
  // 3 : dllimport vs dllexport
+ 
+ 
  
  //if  no-interposition and dllexport and `no_dll_comparable_address` pointer is the offset of the function adress reletive  to offset 0  
 
@@ -3191,6 +3275,9 @@ read only dynamic  symbol table layout:
  
 //  if its interpositioned and dllimport  , pointer is the offset of the reserved static atomic storage pointer for the address of the function reletive  to offset 0
  
+ 
+ 
+// if its a module table symbol,  its  a special kind of symbol,  more of this is discussed in the module section.
  
  
  // write only once in initilization, then make readonly section: 
