@@ -4708,7 +4708,8 @@ represent destruction, by default the destructor is implicitly `operator   ~pass
  
  * note :
  defining or deleting the operator  without  explicitly defaulting it will result in a non default  destructor.
- and will remove the triviality of that  operator. 
+ and will remove the triviality of that  operator.
+ any default operator that executes a  a non trivial operator is itself non trivial. 
  
  
  
@@ -4783,7 +4784,7 @@ anything that can result in an abi brake must be in the hash.
 6. virtual bases ABI hash and declaration order
 7. bases ABI hash and dclaration order
 8. qualifiers of a type, but order independent
-12. different trivially properties of a type and defualt-ness of certain functions ( the `out,pass,~pass,clone, move` operators ) .
+12. different trivially properties of a type and defualt-ness of certain functions ( the `out,pass,~pass,clone, move` operators  ) .
 13. lifetimes and their dependancies ( the tokens and their hash in the definition of templates, lifetimes, contracts and requirements)
  14. if an enum, its entry values.
 * note:
