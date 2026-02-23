@@ -1073,13 +1073,13 @@ the explicit synth is more appropriate for formal proof engines or similar thing
 there can be a compiler flag to also info dump on implicit synth and that hits at missed static optimizations opportunities.
 
 - `weak_predictable`( default): 
-a weak predictable call must not do a longjump or setjump, 
+a weak predictable call must not do a longjump or setjump ( including a dynamic goto) , 
 an `weak_predictable` expression must be composed of only other `weak_predictable` expressions OR must be casted via `unsafe(as-weak_predictable)` .
 the behaviour is undefined if the function long jumps to non `weak_predictable` functions or is entered via a setjump or a computed goto.
 this is the default because RAII clean up code must run.
 
 - `predictable`: 
-is `weak_predictable` and, a predictable call must not do a longjump, terminate, or a dynamic call ( through a function pointer or dll), 
+is `weak_predictable` and, a predictable call must not do a longjump, terminate, or a dynamic call ( through a function pointer or dll) ( including coroutine  resumption or suspension) , 
 an `predictable` expression must be composed of only other `predictable` expressions OR must be casted via `unsafe(as-predictable)` .
 the behaviour is undefined if a predictable function jumps to non predictable functions.
 ( this somewhat restricts our workload, because we must either throw or return, and terminate is ill-formed)
@@ -1088,8 +1088,12 @@ however, for forcing an abrupt exit we can call std abort.
 - `critically_predictable`:
 is `predictable` and, after analyzing its call graph, it must not call itself in any point in the graph( no recursive graph).
 otherwise the program is ill-formed. 
-a critical system might require all functions to be `critically_predictable` ( an interrupt handle is probably required to be a critically predictable function pointer) .
 ( note that this is only possible because function pointers do not interfere with static analysis because of the `predictable` requirements).
+
+- `purely_predictable`:
+ is  `critically_predictable`, and cannot have a goto statement or a loop with unbounded execution, after analyzing its code  it must belong to the  family of the polynomial time complexity algorithms ( having a known bound on how many instructions it will execute) ,  if the proof is not reached within a max limit ( this is exactly a halting problem ) , the program is ill-formed, 
+ otherwise the program is ill-formed. 
+ a critical system might require all functions to be `purely_predictable` ( an interrupt handle is probably required to be a  purely predictable function pointer) .
 
 - `effectless`:
 
