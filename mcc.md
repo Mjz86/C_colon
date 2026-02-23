@@ -3992,12 +3992,13 @@ executed after the block ends to destroy the block context,even on throw paths
 to get the context type with an expression.
 
 
-- operator continue/break/~break/for/~for(...)lambda-context-type ...:
+- operator continue/break/~break/~continue/for/~for(...)lambda-context-type ...:
 used in an implicit for each loops lambda,depending on the iteration primitive, these control the loops control flow.
 note that in a for each loop using goto to an outer loop is ill-formed, for that, one needs to use the for loop with explicit iterator or indexies and also unsafe(goto)/unsafe(dyn-goto).
 but, we can label the for loops using `for break(label)`, and by using `break label;` in an inner loop, the operator ~break will compare the equality of those labels ( the labels are given at runtime via adding offsets of the instruction pointer of the loop end) and if not equal, perform a break, but if equal, perform a last break of the loop and stop unwinding.
+ `continue lable;` can also be used similarly,  it breaks all non  equal lables and when reaching an equal lable will preform a continue  on that loop .
 
--`operator co_yeild/ co_await/ co_return /co_break / co_continue(...)context-type ...`:
+-`operator co_yeild/ co_await/ co_return /co_break / co_continue/co_for/ ~co_break / ~co_continue/~co_for(...)context-type ...`:
 used similarly to operator break and continue, however they also return awaitables, to allow for suspension and resumption of the coroutine.
 note that while-loops and c-style for loops do not have an implicit lambda, and cannot become a coroutine by using the co await operator.
 
@@ -5144,7 +5145,7 @@ although this is fast enough so its good enough, if not, c colon can be used to 
 
 // theres an implicit transformation for these code, to make it able to do either a,co await, co return or a throw or simply continue execution .
 
- `for co_await (auto [inout a, in b, out c,pass d ]: parallel-iteration-primitive){`// the iteration primitives may restrict the lambda to only capture `thread_safe` constant state if it wants to do parallelization, a const unstable `mutex<T>` however has internal unrestricted unstable qualification of its members, some even atomic, therefore its valid for it to modify its members even tho it looks constant. 
+ `co_for (auto [inout a, in b, out c,pass d ]: parallel-iteration-primitive){`// the iteration primitives may restrict the lambda to only capture `thread_safe` constant state if it wants to do parallelization, a const unstable `mutex<T>` however has internal unrestricted unstable qualification of its members, some even atomic, therefore its valid for it to modify its members even tho it looks constant. 
 
 // can modify a c and d, but cannot modify other variables outside of the for loop, however mutexes can still be modified beacuse they can be modified when constant.
 
@@ -5182,7 +5183,7 @@ although this is fast enough so its good enough, if not, c colon can be used to 
 
 
 // also a special case for example used in more relaxed async code,  this does not require thread safe qualification but still requires const qualifier and async safe qualifier, using a  non atomic refrence counter however can allow for mutability, because it only allows a single thread to be scheduled, but the drawback is that the whole structured concurrency tree with this root has its scheduler changed to a single-threaded one, however the mutex and atomic overhead is unnecessary when using this method.
-`for co_await (auto [`inout` a, in b, out c,pass d ]: asynchronous-single-threaded-iteration-primitive){`
+`co_for (auto [`inout` a, in b, out c,pass d ]: asynchronous-single-threaded-iteration-primitive){`
 ...
 `}`
 
