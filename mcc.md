@@ -1072,6 +1072,10 @@ synth analyzes the function body and does the purity qualification automatically
 the explicit synth is more appropriate for formal proof engines or similar things,
 there can be a compiler flag to also info dump on implicit synth and that hits at missed static optimizations opportunities.
 
+- `unpredictable`:
+ disables the  default `weak_predictable` guarantee,
+ needed to achieve  cxx compatible call behavior. 
+
 - `weak_predictable`( default): 
 a weak predictable call must not do a longjump or setjump ( including a dynamic goto) , 
 an `weak_predictable` expression must be composed of only other `weak_predictable` expressions OR must be casted via `unsafe(as-weak_predictable)` .
