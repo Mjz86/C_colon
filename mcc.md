@@ -915,7 +915,11 @@ a pointer to mayelide region of memory may have flag bits inside, its layout is 
 conversion from a elidable pointer to a non elidable pointer loses information and is considered a pointer use ( the conversion back produces an elided flag of true), 
 using the function `std::get_elided(p),std::set_elided(p,flag)`
 
-
+ 
+`co_value`: 
+a value qualifier indicitive of a value that needs a coroutine destructor.
+if a member of an object needs a  coroutine destructor , the object itself will need a coroutine destructor even if implicitly defined.
+ obviously, the destructor would not be trivial,  however if its not explicitly defined, the object can be destructed in parts , but if defined,  it must be destructed all at once  to obay the one qualifier set per expression rule.
 
 
 
@@ -2129,7 +2133,7 @@ when making the `castation-table` in the compiler we need to generate it via a g
 
 - non-trivial for the purposes of calls: a type is considered non-trivial for the purposes of calls if:
 
-  - it has a non-trivial realloc-constructor `T( xvaluexpr T&);`, or if its realloc constructors are deleted.
+  - it has a non-trivial realloc-constructor (`operator pass`), or if its realloc constructors are deleted.
 
   - this definition, as applied to class types, a type which is trivial for the purposes of the ABI will be passed and returned according to the rules of the base mcc ABI, e.g. in registers; often this has the effect of performing a trivial reallocation of the type.
 
@@ -2256,7 +2260,7 @@ virtual table layout contains:
  - note for virtual base classes : 
  for each virtual base class we have a special implicit function pointer entry corresponding to that base,
  the function pointer entry is more of a flag than a code path, its either ~((~0)>>1) ( member pointer null value) or the base offset to the current( to avoid loading the base offset to most derived),
- if non null we know that we need to call the virtual base class constructor on the base offset, 
+ if non null we know that we need to call the virtual base class constructor on the base offset ( and subsequently call the destructor if we are destroyed), 
  if null value we know that the virtual base class is already constructed,
  only one non null entry can correspond to a specific virtual base.
  if the construction is inlined and does not call virtual functions the constructor virtual tables can be elided.
@@ -4664,11 +4668,55 @@ maybe even cppfront syntax.
  
  in c colon,  unlike c++, the struct and class keywords are very different, 
  a class is a type with a closed set of content, it can be used in a class inheritance graph and in general its a complete type with a closed set of member functions and implementation. 
- however, struct is similar to rust, it does not support inheritance, however it can use traits( a subset of concept that is similar to rust ) and implementation that is outside the struct definition.
- the only exceptions to this implementation freedom is that the struct construction, destruction and assignment operators must be declared in the struct, ( this is because the abi hash depends on triviality, and must be calculated when the struct definition is processed).
+ however, struct is similar to rust, it does not support dynamic inheritance, it does not make a virtual table, only supports static inheritance , however it can use traits( a subset of concept that is similar to rust ) and implementation that is outside the struct definition.
+ the only exceptions to this implementation freedom is that the struct fundemental construction, destruction must be declared in the struct, ( this is because the abi hash depends on triviality, and must be calculated when the struct definition is processed).
  
  union, and enum struct are similar to rust union and enum respectively.
  enum class and enum are similar to the c++ counterparts. 
+ 
+ 
+ 
+ - fundemental  construction and destruction operators:
+ 
+ - operator  out( ... ) context-type :
+represent construction , by default the out   constructor  is implicitly  `operator  out=default;`
+ a default one   constructs all elements that were not explicitly constructed ( uninitialized) in order of declaration ( similar  to the initilization of modules,  the user provided ones have higher priority of initilization,  while the implicit ones have lower priority).
+ 
+ - operator  pass( ... ) context-type :
+ represent reallocation , by default the  pass   constructor  is implicitly  `operator   pass=default;`
+ a default one  rellocates all elements in order of declaration.
+ 
+  -operator  clone (...)context-type :
+ represent copy, by default  the   clone   constructor  is implicitly  `operator    clone=default;`
+ a default one copies all elements in order of declaration.
+ 
+ -operator   move (...)context-type :
+ represent  move, by default  the    move   constructor  is implicitly  `operator   move=default;`
+ a default one  moves all elements in order of declaration.
+ 
+ in contrast to relocation, a moved from object can  be destroyed , but the values are erroneous, if an implementation defines a move constructor  it is encouraged to  have use of a moved from object be a violation of contract.
+ 
+ - operator  ~pass( ... ) context-type :
+represent destruction, by default the destructor is implicitly `operator   ~pass=default;`
+ a trivial destructor does nothing. 
+ a non trivial  destructor  destroys  every initilized or erroneous member in reverse order of declaration , if a member  is uninitialized  it does nothing, if  the member is an intermediate   type  with a default destructor , it destroys the member subobjects as if they were  members (the member  is expanded and those  subobjects themselves are qualified with initilized ect..),
+ if an intermediate member  has a non default destructor the program is ill-formed.
+ if the destructor is a coroutine,  the type must be `co_value` qualified.
+ 
+ 
+ 
+ 
+ * note :
+ defining or deleting the operator  without  explicitly defaulting it will result in a non default  destructor.
+ and will remove the triviality of that  operator. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
  
 ---
@@ -4693,6 +4741,9 @@ request of the abi hash of a given incomplete type T is ill-formed (unless `abi=
 1. `abi+(t/abi_t)`:
 
 adds the hash as a salt to the ABI hash of the apllied expression.
+ for example  a type Apple  may be edible  in one version by calling eat but in a different  version by calling consume ,
+ its well defined behavior  for eat to do different things in different dlls to the same Apple,  the apple layout is compatible so the abi is the same , but logically it may not hold the same meaning, 
+ to fix this we add a slat to the abi by using `abi+` , saying  that eating an apple cannot be compatible with consuming it, reflecting that apple no longer  can do both of these.
 
 2. `abi=(t/abi_t)/abi=()`:
 
@@ -4711,7 +4762,7 @@ anything that can result in an abi brake must be in the hash.
 0. the ABI version number ( any changes to the ABI scheme in the standard will alter this number) 
 1. architecture dependent version/hash ( for example, based on the amout and register priorities, the generic x86-64 win or generic arm v7 ect....), this can be specified using the target qualifier 
 1. the  name, including template prams, and the the parent namespace or type , including template prams ( basically the itanium style mangle) 
-3. abi+(...) es ABI hash and dclaration order
+3. abi+(...) es ABI hash and dclaration order 
 
 
 
@@ -4732,7 +4783,7 @@ anything that can result in an abi brake must be in the hash.
 6. virtual bases ABI hash and declaration order
 7. bases ABI hash and dclaration order
 8. qualifiers of a type, but order independent
-12. different trivially properties of a type.
+12. different trivially properties of a type and defualt-ness of certain functions ( the `out,pass,~pass,clone, move` operators ) .
 13. lifetimes and their dependancies ( the tokens and their hash in the definition of templates, lifetimes, contracts and requirements)
  14. if an enum, its entry values.
 * note:
@@ -4976,7 +5027,7 @@ by banning unsafe, all the complaints of complexity only fall on c colon. While 
 
   or your just trying to implement a tree, graph or linked list, which you can do via reference counted variables, but your notified of its potential for a self reference when you used `abi=` to make it compile again. 
 
-  however, an extreme measure against all cycles is making the use of `abi=` as unsafe(abi=), this makes any E colon code unable to make any liked list, graph or tree like structure and etc, and severly limits many forms of inheritance, but it grantees that all reference counters will be freed .
+  however, an extreme measure against all cycles is making the use of `abi=` as unsafe(abi=), this makes any E colon code unable to make any liked list, graph or tree like structure and etc, and severly limits many forms of  dynamic inheritance, but it grantees that all reference counters will be freed .
 
   any use of `abi=` is unsafe and so E colon programs cannot have memory leaks and need to drop to c colon for creating such structures,  the reason fot this is, lets assume T has a storage mechanism to a tree, this tree either does not have T ( which means no cycles to T) or it does, if it does, T's ABI hash would become dependent on the graph that is itself dependent on T, and because we cannot type erase T to not depend on itself, and we cannot cause a brake in the ABI chain via `abi=`, then we really cant form a cycle ( assuming c colon libraries do not provide any type erasure primitives, but only sum types ( like rust `enum` or CPP std variant) ) ( because the virtual table ABI is dependent on the type of the class argument,and the class is dependent on the virtual table), ( and std::any like types are not provided to E colon because its too low level for it) 
 
@@ -5272,9 +5323,11 @@ however E colon still recognizes these C colon constructs, allowing custom types
 
 
 12. value and data oriented code :
-having rust-like `enum` types with pattern matching are still very performant and value oriented alternatives to inheritance.
+having rust-like `enum` types with pattern matching are still very performant and value oriented alternatives to dynamic inheritance.
 
- and object oriented ( without inheritance) would still be whidly used,
+an important consideration is the distinction between static and dynamic inheritance,  dynamic inheritance involves open set type erasure, but static inheritance is allowed (  never  using a base class reference to  the parent , using deduction of this pattern to  use the most drived type directly in a base class function,  not having any virtual functions ).
+
+ and object oriented ( without dynamic inheritance) would still be whidly used,
 
  for example constructors would output the self object to out parameters,
 
