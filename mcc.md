@@ -3735,6 +3735,14 @@ in the  constexpr runtime, this thunk is more restricted for security purposes,
  if the pointer to a type has the possibility of aliasing a pointer, the dereference of that pointers will check for that in compile time.
  if the pointer to a type has no possibility of aliasing a pointer,  and the cast from a pointers that has that possibility shows that it is has a pointer inside, the program is ill-formed. 
  
+ for grantee of dynamic call safety, the execution  permissions are very granular, for each executable region of memory there are only known valid entries and for those entries the calling convention must be of a specific signature,  a function pointer in  constexpr code must match the function signature,
+ this can be achieved by the constexpr function pointer pointing to the backend hash of the function signature and a hash of its location in memory  ect ,
+ but this is only necessary in compile time context because  the execution of code must remain safe in the jit engine, if any operation outside the permissions is preformed,  the program is ill-formed. 
+ 
+ 
+ 
+ 
+ 
 * note : range, or reference also are similar to pointers but they have a known bound.
 
 - trunks for dynamic calls with specific calling conventions:
