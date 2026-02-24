@@ -5557,6 +5557,10 @@ Quantum-Secure Encryption is Here. And it is WILD ( hash verification) :
 [link](https://youtube.com/watch?v=T9fCCGzwHJc&si=BzDNoo-vLqmsSJ7g)
 
 
+heuristically picking the best point too break a cycle in a type  graph(Why Do Determinants Count Trees？ ):
+
+[link](https://youtu.be/6_wDiBVttTM?si=BHOJfM-1Qz_zD7GD)
+
 
 Itanium ABI :
 
