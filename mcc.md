@@ -4708,6 +4708,12 @@ represent construction , by default the out   constructor  is implicitly  `opera
  represent  move, by default  the    move   constructor  is implicitly  `operator   move=default;`
  a default one  moves all elements in order of declaration.
  
+ -operator   in (...)context-type :
+ represent  the creation of a  non  owned immutable value, by default  the    in   constructor  is implicitly  `operator     in=default;`
+ a default one in'es all elements in order of declaration,
+ usually this is just a trivial memcpy or just deleted, otherwise its unsafe(in).
+ 
+ 
  in contrast to relocation, a moved from object can  be destroyed , but the values are erroneous, if an implementation defines a move constructor  it is encouraged to  have use of a moved from object be a violation of contract.
  
  - operator  ~pass( ... ) context-type :
@@ -4798,7 +4804,7 @@ anything that can result in an abi brake must be in the hash.
 6. virtual bases ABI hash and declaration order
 7. bases ABI hash and dclaration order
 8. qualifiers of a type, but order independent
-12. different trivially properties of a type and defualt-ness of certain functions ( the `out,pass,~pass,clone, move` operators  ) .
+12. different trivially properties of a type and defualt-ness of certain functions ( the `in,out,pass,~pass,clone, move` operators  ) .
 13. lifetimes and their dependancies ( the tokens and their hash in the definition of templates, lifetimes, contracts and requirements)
  14. if an enum, its entry values.
 * note:
