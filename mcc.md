@@ -4412,6 +4412,8 @@ type of a nullptr, its size is similar to a byte pointer.
 the special bit type with special pointers and references, `sizeof(bit_t)` and any types with fractional alignments ( and therefore sizes) are ill-formed, instead, `bit_sizeof(T)`,`bit_alignof(T)`can be used, also, the bit can alias all types with any alignment.
 note that a bit *pointer* ( i mean an `std::atomic<std::bit_t>` of a bit is be padded but the std atomic reference of T is ill-formed because it cant insert padding)  cannot have atomic semantics ( load to register, modify register, write to memory)
 unsafe(obscure-math).
+also ,  the use of a fractional pointer ( or even a  fractional reference ) (   with alignment less than `alignof(cxx_char_t)`) is  unsafe(fractional-pointer-use) , 
+and for the reason that even a restricted fractional pointer can make a data race ,   to ensure all use of  such pointers is correct  and  the  unsafe user must know that the bytes themselves dont have data races.
  
 
 
