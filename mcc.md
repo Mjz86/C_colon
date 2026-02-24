@@ -3739,6 +3739,8 @@ in the  constexpr runtime, this thunk is more restricted for security purposes,
  this can be achieved by the constexpr function pointer pointing to the backend hash of the function signature and a hash of its location in memory  ect ,
  but this is only necessary in compile time context because  the execution of code must remain safe in the jit engine, if any operation outside the permissions is preformed,  the program is ill-formed. 
  
+ similarly a read or write  to a memory region without such permission makes the program  ill-formed. 
+ 
  
  
  
