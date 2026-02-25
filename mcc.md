@@ -4955,7 +4955,7 @@ writing  mcc ir directly with inline assembly in unsafe(asm).
    a compiler that compiles rust into mcc-ir.
 
 
- 3. functional colon ( F colon) ( complete the ABCDEFG eco system):
+ 3. functional colon ( F colon) ( complete the ABCDEFGH eco system):
    a functional language that compiles into c colon or mcc-ir which most functions are implicitly dyn purely functional in the c colon code.
 
  4.  express colon :
