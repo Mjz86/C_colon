@@ -4733,7 +4733,12 @@ represent destruction, by default the destructor is implicitly `operator   ~pass
  
  
  
- 
+ ---
+ unsafe(unsafe) :
+  to write any code that is outside the Express colon language,  the scope must be inside unsafe(unsafe) , this enables the declaration of other unsafe blocks , the declaration of C colon only  types  and refrences, the use of open set type erasure and all other jucy rights that one can imagine, 
+  but the developer  now has the duty to ensure all other unsafe blocks or complex code outside the value world that uses refrences remains compatible with E colon, 
+  the duty is made that all APIs to E colon must remain valid ,  easy to use right, imformitive if used wrong ,and safe for all code paths, the dclaration of any non default qualifier outside the ones allowed in E colon( such as mut and const , noexcept and throws , async and lang , debug,optimize,lang, enumret, which have use for API building), is also allowed. 
+  
  
  
  
