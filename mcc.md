@@ -4714,7 +4714,7 @@ represent construction , by default the out   constructor  is implicitly  `opera
  usually this is just a trivial memcpy or just deleted, otherwise its unsafe(in).
  
  
- in contrast to relocation, a moved from object can  be destroyed , but the values are erroneous, if an implementation defines a move constructor  it is encouraged to  have use of a moved from object be a violation of contract.
+ in contrast to relocation( which  makes the storage only available after a follow-up constructor call ) , a moved from object can  be destroyed and assigned to  , useful in specific algorithms,  but generally both constructors should stay as their default, and e colon cannot override them ( can only override out ( for construction), ~pass( for destruction) and clone ( for copy construction) ) , but the values are erroneous, if an implementation defines a move constructor  it is encouraged to  have use of a moved from object be a violation of contract.
  
  - operator  ~pass( ... ) context-type :
 represent destruction, by default the destructor is implicitly `operator   ~pass=default;`
@@ -4730,7 +4730,6 @@ represent destruction, by default the destructor is implicitly `operator   ~pass
  defining or deleting the operator  without  explicitly defaulting it will result in a non default  destructor.
  and will remove the triviality of that  operator.
  any default operator that executes a  a non trivial operator is itself non trivial. 
- 
  
  
  ---
