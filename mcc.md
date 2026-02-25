@@ -4100,6 +4100,9 @@ the lower the level the more debugging friendly is it.
 
 
 
+
+
+
 ---
 
  contracts :
@@ -4940,7 +4943,8 @@ the mcc toolchain and ABI outside of c colon:
 
  for example :
 
- 
+ 0.  assembly  colon: 
+writing  mcc ir directly with inline assembly in unsafe(asm).
 
  1. the mcc-CPP transpiler: 
 
@@ -4950,14 +4954,23 @@ the mcc toolchain and ABI outside of c colon:
 
    a compiler that compiles rust into mcc-ir.
 
- 3. functional colon ( F colon) ( complete the CDEF eco system):
+
+ 3. functional colon ( F colon) ( complete the ABCDEFG eco system):
    a functional language that compiles into c colon or mcc-ir which most functions are implicitly dyn purely functional in the c colon code.
 
  4.  express colon :
  a simple language, a subset of c colon,where only safe c colon code is valid,most qualifiers are invisible-implicit and inaccessibile.
  this is a more begginners friendly language that has the same ABI and type system as c colon, but without many of its complexities, so the unsafe parts can be written in libraries in c colon.  
-
-   
+ 
+ 5. binary colon : 
+   we need a b colon  for repressing the binary like op codes executed  by colon D .
+ 
+ 6. graphic colon :
+ a shader rendering language for the sole purpose of writing shaders
+ 
+ 7.    colon high :
+ a high level language   similar to colon D but with types .
+ colon D  but with explicit typing ( similar to type script but the types are checked  by the interpreter)
 
 ---
 
