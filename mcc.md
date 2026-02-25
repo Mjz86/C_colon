@@ -1951,7 +1951,7 @@ in my view, using some bits in the pointer is superior to addling a capacity fei
 there also might be ways to have a call to new or renew produce a flag, and delete to consume it.
 
 this optimization is extremely important for E colon ( c colon can use spans so its not as messy  as  e colon IR , but e colon must copy its vectors  and make temporary buffers ect.) , because creating a subvector is almost always elidable  and the original vector can be used instead of the sub vector ( by vector i mean array with dynamic size ) , also because  a common compiler error suggestion is copying stuff to make things work , the allocation merger would need to help reduce its memory  copy mess .
-however,  the good thing  is that  e colon  data is `not_offset_dependant` , so even if a copy occurs,  the compiler has absolute freedom to put it anywhere and vectorize it.
+however,  the good thing  is that  e colon  data is `not_offset_dependant`(shatter to AoS)  and `valexpr`( overlap what was shattered), so even if a copy occurs,  the compiler has absolute freedom to put it anywhere and vectorize it.
  
  
 
