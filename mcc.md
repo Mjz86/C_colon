@@ -5450,7 +5450,12 @@ if a function qualifier is lang(stdd::lang), the reflection functions make sure 
 the D garbage collector is executed in the implicit context-type operator code.
 its similar to java script, however with less explicit type conversion.
 colon D scripting can be easily used in E colon and E colon functions can be easily injected into colon D. 
-this language can be used in the web, similar to E colon,via wasm
+this language can be used in the web, similar to E colon,via wasm.
+ the use of lang(stdd::lang) can change the calling convention (c colon  via reflection changes the target qualifier ) to reserve interpreter specific registers or general resources that the garbage collector needs,
+ or alternatively the interpreter context can hold those resources (  such as the colon D  call stack pointers, the asynchronous call stack pointers, the JIT state pointer , and the  interpreter state pointers) as members of its context, to allow the calling convention to stay the same ,
+ either way, these implementation defined details ( such as the availability  of stdd JIT  in the JIT engine because  the constexpr  engine  security restrictions on RW xor Execute  hinder the ability to  run JIT asm from colon D  , or the  state management )  are irrelevant to the way the code is written and must act as if they all do the same.
+ this doesn't effect the calling convention of the code in pure E colon , but if E colon desires to run in the interpreter context and manage the injected code from the  inside it can do so.
+ 
 
 
 
