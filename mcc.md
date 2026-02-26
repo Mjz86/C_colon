@@ -4944,7 +4944,16 @@ the mcc toolchain and ABI outside of c colon:
  for example :
 
  0.  assembly  colon: 
-writing  mcc ir directly with inline assembly in unsafe(asm).
+writing  mcc ir ,
+an extremely verbose intermediate representation.
+a  Static single assignment , similar to llvm ir ,
+but with  more memory layout qualifiers for the pointers,
+and the braching call site that returns into N=normal+catching different returns for the dual return  calling convention ,
+and indicators of code sections that do certain things ( for example the allocators and context and Invariants and hashing optimizations ), 
+and  lifetime tokens ect.
+also constexpr  sections for managing the qualifier changes and double entry book keeping. 
+and Invariant asserting contracts that need to analyzed for optimizations,
+used directly with inline assembly in unsafe(asm).
 
  1. the mcc-CPP transpiler: 
 
