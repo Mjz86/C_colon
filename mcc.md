@@ -4947,10 +4947,19 @@ the mcc toolchain and ABI outside of c colon:
 writing  mcc ir ,
 an extremely verbose intermediate representation.
 a  Static single assignment , similar to llvm ir ,
-but with  more memory layout qualifiers for the pointers,
+registers in A colon can have dynamic sizes (  to support dyn structs, simd,  and have memcmp  and memcpy like  IR operations,  for example a loop that adds numbers can be simplified down to a single dynamic simd addition, and the unroll count can be optimized  later based on the architecture to  have less  architecture dependent  ir ) but  generally registers have   a static  size.
+ the size however must be tied to a known size  register that is  known or assigned at the static assignments.
+ small registers can split into larger ones , larger ones can split into smaller ones,
+ the abstract  operation of integers with N bits , and the abstract fractional register are handy because they can be split up and combined.
+ the endian switching  is also  not immediately concerning unless we load or store into memory or split or merge based on layout.
+ the posix or  float and other formats are  only relevant for their precision and round  modes,  unless we bitcast them, the  math axioms are type agnostic.
+for example a lets say we passed a trivially relocatable  `valexpr stable not_offset_dependant` dyn object to a function , what is the calling convention , it it pointer passed ?  we dont care , does it allocte ? maybe ,but currently its  an abstract register in the infinite register  world,  is it on the stack,heap , zmm,GPR, ect? maybe , we dont care , 
+you get my point,  the register assigner has the duty of splitting up our trivial memory , wr only give it the abtract calculation.
+ its basically llvm ir but with  more memory layout qualifiers for the pointers,
 and the braching call site that returns into N=normal+catching different returns for the dual return  calling convention ,
 and indicators of code sections that do certain things ( for example the allocators and context and Invariants and hashing optimizations ), 
 and  lifetime tokens ect.
+the  function purity , predictability,  transactional ect is a helpful guide to optimization.
 also constexpr  sections for managing the qualifier changes and double entry book keeping. 
 and Invariant asserting contracts that need to analyzed for optimizations,
 used directly with inline assembly in unsafe(asm).
