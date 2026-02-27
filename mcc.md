@@ -1442,6 +1442,7 @@ for example the   xor  of two integers `((~a)^b)==~(a^b)==~((~a)^(~b))==(a^(~b))
 we can do this by having  std::identity as one function and operator bit not as another and so on.
 
 
+
 - (l/r)identity=( (values,g).../values...) :
 can be applied to operator@ ( for example `+`), or a function f that has exactly two arguments.
 in the case of r( right side identity ), for any pair of value V and optional( if the function is not specified, the function g is defined as the function that returns its parameter),function g (where the function g takes exactly one parameter ) in the identify list, the evaluation of `f(a,v)` must be equivalent to evaluation of `g(a)`,otherwise the behavior is undefined.
@@ -1496,8 +1497,12 @@ the substitution of `a` instead of `v` is valid if and only if the function conf
 also, having certain things count as contract violation and defined behavior( for example an overflow) would make these math axioms hard to use as optimization,
 so, do not expect a code section without `unsafe(contract-UB)` to allow these.
 
-
-
+* note: 
+  not all axioms need to be supported by the compiler,  however future versions may add set theory style axioms if the optimization potential was deemed effective by synthesis.
+  maybe range algorithms can use them? either way , most math  is not counting sets of sets of sets of.... an empty set.
+  similarly,  graphic design in graphic colon may benefit from geometric axioms such as Euclidean geometry, both if standardized need  synthesizable ways of transformation of operations into faster ones, 
+  however the theoretical knowledge of knowing that a structure is a point or a plain and the theoretical possibility of optimization across range filters , transformations, unions , intersections  and other things ( outside entangled pointers , i mean am array of types as a set) seem tempting.
+  
 ---
 
 exact mechanism of return pointers:
