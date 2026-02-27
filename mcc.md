@@ -1422,19 +1422,28 @@ contract's code...
 * special qualifier for operators:
 
 -  commutative: 
- can be applied to operator@ ( for example `+`), or a function that has exactly two operators. 
+ can be applied to operator@ ( for example `+`), or a function that has exactly two  arguments. 
  the evaluation of f(a,b) must be equivalent to evaluation of f(b,a), otherwise the behavior is undefined.
   other than known fundamental math functions known by the synthesizer, its unsafe(commutative) to declare .
 - associative:
-can be applied to operator@ ( for example `+`), or a function f that has exactly two operators. 
+can be applied to operator@ ( for example `+`), or a function f that has exactly two arguments. 
  the evaluation of `f(c,f(a,b))` must be equivalent to evaluation of `f(f(c,a),b)`,otherwise the behavior is undefined.
  other than known fundamental math functions known by the synthesizer, its unsafe(associative) to declare .
 
+- hoistitive=((g,lambdaargs...)....):
+can be applied to operator@ ( for example `^`), or a function f that has exactly the count of lambda args , arguments.
+the evaluation of `f(lambdaargs(args),....)` must be equivalent to evaluation of `g(args...)`, otherwise the behavior is undefined.
+  other than known fundamental math functions known by the synthesizer, its unsafe(hoistitive) to declare .
+  
 
+ * note :
+ De Morgan's laws, and other properties are this way.
+for example the   xor  of two integers `((~a)^b)==~(a^b)==~((~a)^(~b))==(a^(~b))`.
+we can do this by having  std::identity as one function and operator bit not as another and so on.
 
 
 - (l/r)identity=( (values,g).../values...) :
-can be applied to operator@ ( for example `+`), or a function f that has exactly two operators.
+can be applied to operator@ ( for example `+`), or a function f that has exactly two arguments.
 in the case of r( right side identity ), for any pair of value V and optional( if the function is not specified, the function g is defined as the function that returns its parameter),function g (where the function g takes exactly one parameter ) in the identify list, the evaluation of `f(a,v)` must be equivalent to evaluation of `g(a)`,otherwise the behavior is undefined.
  in the case of l( left side identity), the left side is the one that has v inside it, for example the math function `f(a,b)=a/b` has  right side identity of 1, and `f(b,a)=a/b` has  left side identity of 1, both having g as `g(a)=a`.
 other than known fundamental math functions known by the synthesizer, its unsafe(Identity) to declare .
@@ -1442,7 +1451,7 @@ other than known fundamental math functions known by the synthesizer, its unsafe
  
 
 - (l/r)distributive=(g....): 
-can be applied to operator@ ( for example `+`), or a function f that has exactly two operators.
+can be applied to operator@ ( for example `+`), or a function f that has exactly two arguments.
 ,in the case of l( left side distributive), for any function g in the distributive list, the evaluation of `f(g(a,b),g(a,c))` must be equivalent to evaluation of `g(a,f(b,c))`,otherwise the behavior is undefined.
 the right side is similar (`f(g(a,c),g(b,c))` and `g(f(a,b),c)`). 
 other than known fundamental math functions like `(a*(b+c)=a*b+a*c)` known by the synthesizer, its unsafe(distributive) to declare .
@@ -1454,18 +1463,18 @@ the spaceship operator `<=>` result (an standard ordering) and idempotent can be
 
 
 - ordered: 
-can be applied to operator@ ( for example `<=>`), or a function f that has exactly two operators and returns either a boolean or a standard ordering.
+can be applied to operator@ ( for example `<=>`), or a function f that has exactly two arguments and returns either a boolean or a standard ordering.
 if the evaluation of `f(a,b)` and `f(b,c)`  results in a strict order between a, b and c, the evaluation of `f(a,c)` must follow that order, otherwise the behavior is undefined. 
 other than known fundamental math functions known by the synthesizer, its unsafe(ordered) to declare .
 
 - (l/r)transitive=((g,v)....):
-can be applied to operator@ ( for example `<=>`), or a function f that has exactly two operators and returns either a boolean or a standard ordering.
+can be applied to operator@ ( for example `<=>`), or a function f that has exactly two arguments and returns either a boolean or a standard ordering.
 in the case of l ( left side equational), for any pair of function g and value v, if the evaluation of `f(v,a)` and `f(v,b)`  follow a specific ordering , the evaluation of `f(v,g(a,b))` must also follow that ordering, otherwise the behavior is undefined. 
 the right side is similar.
 other than known fundamental math functions known by the synthesizer, its unsafe(transitive) to declare .
 
 - (l/r)equational=((g,v)....):
-can be applied to operator@ ( for example `<=>`), or a function f that has exactly two operators .
+can be applied to operator@ ( for example `<=>`), or a function f that has exactly two arguments .
 in the case of l ( left side equational), for any pair of function g and value v,  the evaluation  of `f(v,g(a,b))` is equivalent to `f(a,b)`, otherwise the behavior is undefined. 
 the right side is similar.
 other than known fundamental math functions known by the synthesizer ( for example `a==b` to `0==b-a`), its unsafe(equational) to declare .
@@ -1473,7 +1482,7 @@ other than known fundamental math functions known by the synthesizer ( for examp
 
 
 - equivalent:
-can be applied to operator@ ( for example `==`), or a function f that has exactly two operators and returns a boolean or a standard ordering. 
+can be applied to operator@ ( for example `==`), or a function f that has exactly two arguments and returns a boolean or a standard ordering. 
 in the above definitions, the equivalence of two sub expressions `a` and the`v` in the signature is determined by having the equality operator tagged with equivalent say that they are the same.
 the substitution of `a` instead of `v` is valid if and only if the function confirms equivalence, otherwise, the behaviour is undefined. 
 
