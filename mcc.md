@@ -442,17 +442,21 @@ for a pointer p declared within its lifetime L,  to an stable const region of me
 
 
 
-`thread_safe` / `thread_unsafe`:
+`thread_safe(give/take/gather/scatter)` / `thread_unsafe`:
 `thread_safe` is a recursive qualifier, we can think of it as a weak version of the stabilized qualifier. 
  these qualifiers are typically used as indicators of whether or not something is safe to pass and use between threads, the default is, 
 any stabilized variable is thread safe and otherwise unsafe, the stable mut is exclusively owned, and so safe to pass around, however, if it is not stabilized its not thread safe, so in any async boundaries the c colon libraries can notice via reflection that a mutable thread unsafe variable is used, so they can disallow it.
  also, if a member is thread unsafe in E: ( not C:), because of the qualifier visibility ban and the unsafe ban, that qualifier cannot be overridden by using a thread safe type with an `aliasset`.
 `unsafe(thread_safe-cast)` can also be used to cast the qualifier back ( for example the std mutex internals are not safe, but yhe mutex itself is)
  note that, unlike the stronger `stabilized` grantee, `thread_safe` is not a compiler truth, its a developer promise.
+ the act of giving (  relocation ) an object to a thread  needs give safety .
+ the act of taking (  relocation ) an object  from  a thread needs take safety. 
+ the act of   scattering ( giving references of ) an object to a thread  needs scatter safety .
+ the act of  gathering (  getting  references of ) an object  from  a thread needs  gather safety. 
  
 
-`async_safe` / `async_unsafe`:
- similar to `thread_safe` but more relaxed , for async-smi-threads.
+`async_safe(bound/give/take/gather/scatter)` / `async_unsafe`:
+ similar to `thread_safe` in its semantics, but more relaxed , for async-smi-threads.
  an `async_unsafe` qualifier means that even a single threaded concurrent loop can not capture it,
  realistically most data is `async_safe`, however some may not be.
 
@@ -779,11 +783,11 @@ we can do rust-like reorder optimization if this enabled
 
 a `not_offset_dependant` type is a type whose inner structs can be scattered in memory when accessed,
 
- specifically,a pointer to a sub object cannot be used to reliably get to the main object by a subtraction of the offset (other than a base class to derived class cast).
+ specifically,a pointer to a sub object cannot be used to reliably get to the main object by a subtraction of the offset .
 
  but `offset_dependant` objects can use the offset to gain a pointer to the main object.
 
-`member_offset_dependant` objects are the ones that specifically can be used for casts by offset, base classes are `member_offset_dependant` by default.
+`member_offset_dependant` objects are the ones that specifically can be used for casts by offset, base classes of types  in the castation-table  are `member_offset_dependant` by default (a base class to derived class cast), however other base classes are `member_not_offset_dependant` by default.
  
  `(bit_)offsetof` is ill-formed if a type is `not_offset_dependant/member_not_offset_dependant`, 
   a member pointer `T::*` is also ill-formed.
