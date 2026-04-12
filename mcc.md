@@ -4845,13 +4845,27 @@ represent construction , by default the out   constructor  is implicitly  `opera
  represent reallocation , by default the  pass   constructor  is implicitly  `operator   pass=default;`
  a default one  rellocates all elements in order of declaration.
  
-  -operator  clone (...)context-type :
+  - operator  pass=( ... ) context-type :
+ represent reallocation  assignment , by default the  pass    assignment   is implicitly  `operator   pass= =default;`
+ a default one  rellocate assigns all elements in order of declaration.
+ 
+ 
+  -operator  clone(...)context-type :
  represent copy, by default  the   clone   constructor  is implicitly  `operator    clone=default;`
  a default one copies all elements in order of declaration.
+  
+ -operator  clone=(...)context-type :
+ represent copy assignment , by default  the   clone   assignment  is implicitly  `operator    clone= =default;`
+ a default one copy assigns  all elements in order of declaration.
  
- -operator   move (...)context-type :
+ 
+ - operator   move (...)context-type :
  represent  move, by default  the    move   constructor  is implicitly  `operator   move=default;`
  a default one  moves all elements in order of declaration.
+
+ - operator   move=(...)context-type :
+ represent  move assignment , by default  the    move   assignment  is implicitly  `operator   move= =default;`
+ a default one  move assigns  all elements in order of declaration.
  
  -operator   in (...)context-type :
  represent  the creation of a  non  owned immutable value, by default  the    in   constructor  is implicitly  `operator     in=default;`
@@ -5055,15 +5069,15 @@ the objective of a full ABI is to allow arbitrary mixing of object files produce
 
 - there are 8 main steps( might ):
 
- 1. determine the dependency graph of the mcc files, irs and modules ( to help realize parallelization opportunities, and determine if some steps are not necessary if the result is cached and valid).
+ 1.  lex then parse the module to the contextless AST object.
 
- 2. compile to the AST object/modules.
+ 2. compile the contextless AST to mcc ir-0 ,( "high level IR" ).
 
- 3. compile the asts to mcc ir-0 .
+ 3. determine the dependency graph of the mcc files, irs and modules ( to help realize parallelization opportunities, and determine if some steps are not necessary if the result is cached and valid).  
 
- 4. for every `constexpr` ir-0 path, evaluate all `constexpr` code and generate mcc ir-1 files.
+ 4. for every `constexpr` ir-0 path, evaluate all `constexpr` code and generate mcc ir-1 files ( " mid level ir").
 
- 5. for every ir-1 file, optimize the code to ir-2 files.
+ 5. for every ir-1 file,  evaluate  qualification verification and run the  synth engine, optimize the code to ir-2 files.
 
  6. using all of the summary and dependency graph information, we make an ir-3 file for each partially-independent unit of execution in the graph to be optimized, we do the processing of these files then we, link all ir-3 files in the mcc linker to an ir-4 file, this is ThinLTO style .
 
@@ -5072,7 +5086,12 @@ the objective of a full ABI is to allow arbitrary mixing of object files produce
  8. link the object files to an executable.
 
 
-
+* note :
+the  code of the constexpr evaluation can not see beyond  mid level IR in its reflection  stage,
+for example the max instruction step of a `purely_predictable` function given by std::meta is the count before the main optimization.
+the steps 1 ,2,3,4 and 5 may execute  out of order or the results may be cached, 
+this behavior is assumed to not  effect the compile time code being evaluated in a major way.
+the steps noted afterward (6,7,8) can be changed by the implementation,  however the final  executable must conform to the ABi rules and must contain the required information.
 
 
 
