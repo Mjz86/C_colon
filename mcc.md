@@ -5118,13 +5118,18 @@ its about having the highest quality information for the optimizer,
 in the form of  static single assignment , similar to llvm ir ,
 registers in A colon can have dynamic sizes (  to support dyn structs, simd,  and have memcmp  and memcpy like  IR operations,  for example a loop that adds numbers can be simplified down to a single dynamic simd addition, and the unroll count can be optimized  later based on the architecture to  have less  architecture dependent  ir ) but  generally registers have   a static  size.
  the size however must be tied to a known size  register that is  known or assigned at the static assignments.
+ similarly there are tuple registers ( a register that is a tuple of sub registers), array registers( a register that is an array of many sub registers), enum registers ( a register that is one of many register variants), the null register ( size of 0) , and generally  register types  ,
+ there are no register pointers( or references, and no self referential register types ),  and there are no uninitialized registers, and all register state must be known at assignment.
+ generally  most E colon objects ( because of abi rules and implicit qualification and trivial relocation) can be treated as registers.
  small registers can split into larger ones , larger ones can split into smaller ones,
+ for example simd  shuffle operations  is just  reorganizing a tuple register into the next.
+ or an optional of int is just an enum register of null and int.
  the abstract  operation of integers with N bits , and the abstract fractional register are handy because they can be split up and combined.
- the endian switching  is also  not immediately concerning unless we load or store into memory or split or merge based on layout.
+ the endian switching  is also  not immediately concerning unless we load or store into memory or split or merge based on layout or preform a bitcast.
  the posix or  float and other formats are  only relevant for their precision and round  modes,  unless we bitcast them, the  math axioms are type agnostic.
 for example a lets say we passed a trivially relocatable  `valexpr stable not_offset_dependant` dyn object to a function , what is the calling convention , it it pointer passed ?  we dont care , does it allocte ? maybe ,but currently its  an abstract register in the infinite register  world,  is it on the stack,heap , zmm,GPR, ect? maybe , we dont care , 
-you get my point,  the register assigner has the duty of splitting up our trivial memory , wr only give it the abtract calculation.
- its basically llvm ir but with  more memory layout qualifiers for the pointers,
+you get my point,  the register assigner has the duty of splitting up our trivial memory ,  we only give it the abtract calculation.
+ its basically llvm ir but with  more memory layout qualifiers , lifetimes, instructions ,pointers,and registers.
 and the braching call site that returns into N=normal+catching different returns for the dual return  calling convention ,
 and indicators of code sections that do certain things ( for example the allocators and context and Invariants and hashing optimizations ), 
 and  lifetime tokens ect.
