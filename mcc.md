@@ -5071,19 +5071,21 @@ the objective of a full ABI is to allow arbitrary mixing of object files produce
 
  1.  lex then parse the module to the contextless AST object.
 
- 2. compile the contextless AST to mcc ir-0 ,( "high level IR" ).
+ 2. compile the contextless AST to desugared mcc ir-0 ,( "high level IR" ).
 
  3. determine the dependency graph of the mcc files, irs and modules ( to help realize parallelization opportunities, and determine if some steps are not necessary if the result is cached and valid).  
 
  4. for every `constexpr` ir-0 path, evaluate all `constexpr` code and generate mcc ir-1 files ( " mid level ir").
 
- 5. for every ir-1 file,  evaluate  qualification verification and run the  synth engine, optimize the code to ir-2 files.
+ 5. for every ir-1 file,  evaluate  qualification verification and by extension safety proof and formal verification and  the  synth engine, optimize the code to ir-2 files , ir2  is  for canonicolization and information preserving optimization and summary  creation .
 
- 6. using all of the summary and dependency graph information, we make an ir-3 file for each partially-independent unit of execution in the graph to be optimized, we do the processing of these files then we, link all ir-3 files in the mcc linker to an ir-4 file, this is ThinLTO style .
+ 6. using all of the summary and dependency graph information, we make an ir-3 file for each partially-independent unit of execution in the graph to be optimized , heavy and or information non preserving optimization , we do the processing of these files then we generate ir-4  files.
 
- 7. map ir-4 the code to the target assembly, while optimizing unnececery register usage, for example by register allocation optimizations and generate an object file( also happens with the previous step).
+7. the ir-4  files are for register allocation and reassignment optimization, and architecture specific optimizations,  it also allocates the abstract registers in memory or registers and grounds  it in finite hardware, memory layouts become more rigid  and  instructions  reduce their abstractions.
 
- 8. link the object files to an executable.
+  8. link all ir-4 files in the mcc linker to an ir-5 file , this is ThinLTO style , map ir-5 the code to the target assembly,  the final optimization  passes are here, and generate an object file( also happens with the previous step).
+
+9. link the object files to an executable.
 
 
 * note :
@@ -5092,6 +5094,9 @@ for example the max instruction step of a `purely_predictable` function given by
 the steps 1 ,2,3,4 and 5 may execute  out of order or the results may be cached, 
 this behavior is assumed to not  effect the compile time code being evaluated in a major way.
 the steps noted afterward (6,7,8) can be changed by the implementation,  however the final  executable must conform to the ABi rules and must contain the required information.
+
+
+ 
 
 
 
