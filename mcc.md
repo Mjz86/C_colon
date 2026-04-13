@@ -4380,8 +4380,10 @@ simd used here
 - conclusion:
 writing exception safe code with small simple functions is faster than writing complex code with less invariant grantees. 
 because the invariant is either true on initialized or not true on uninitialized, we really can optimize based on the invariant and stay within as if rules.
-
-
+ another philosophy is that safety checks are redundant code in a 100% safe app,
+ but redundant code is also redundant information , and information is exactly what drives optimization,
+ if we can prove that safety and eliminate the check , the only thing left is optimization via information,
+ the knowledge of violation behavior being executed can be as valuable as  the knowledge of undefined behavior  being unreachable.
 
 
 ---
@@ -4430,7 +4432,10 @@ these might be useful to help the compiler in optimizations of math, and maybe l
 4. s:
  a signed integral, any overflow is well-defined to saturate to the min( least negative) or max value( most positive), only devision by 0 is a contract violation,is signed saturate arethmatic type ( maybe for audio processing, or just a signed integer that does not overflow).
 
-
+* note :
+ the overflow bounds ( the minimum and maximum values ) can be altered via qualiexpr tricks or just pre/post conditions, for example a saturating integer for percentage could have bounds of 0 to 100,
+ this is an extermly valuable safety and ergonomic tool and it also helps in optimization,
+ (e.g   an index outside 0 to 70 it is violation , int is a rating and cant be more than 5  ).
 
 - `std::(l/b/L/E) ((z/(z/d/u/a/o)n/d/u)s)(B/eEmM)(u)(r/n)floatN_t`:
 
