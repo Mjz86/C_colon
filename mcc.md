@@ -795,7 +795,8 @@ a `not_offset_dependant` type is a type whose inner structs can be scattered in 
   however a null member pointer is same as  ( assuming non `represent_cxx`)  `~((~0)>>1)` ( the sign bit only being set, other bits being 0)
   note that offsets can be negative in a virtual base class, 
   a dyn member pointer ` T dyn(...)::*` layout is implementation defined.
-
+  while a `not_offset_dependant`  array/slice can be scliced and indexed ( it satisfies random access range) , its elements cannot be assumed as continuous in memory‌.
+ 
 
 
 
@@ -1056,11 +1057,13 @@ function qualifiers
 
 
 - async(...),debug(...),optimize(...),lang(...): 
+a customizable qualifier, 
 these do not really mean anything to the compiler, the are not relevant to ODR ( the declaration is allowed to not include these while the definition may) in c colon,( not even used in the ABI hash), however E colon can put these, to allow the context-type to be implicitly changed via reflection to reflect that functions intent 
  for example debug(std::debug::obfuscated) to do debugging in release or debug(std::debug::unwind), to debug during unwind. 
  or lang(std::python) to make bindings.
 
 -target(default)/target(...):
+a customizable qualifier, 
 the target qualifier is a qualifier that allows a function to have implementation defined calling conventions, 
 this qualifier's parameter must satisfy the constexpr architecture concept, however the default is the architecture dependent ( based on compiler flag) conversion of `std::targets::current`.
 the object specified in the target can do reflection on the function caller site and or callee site, make a thunk, insert asm directives, ect. to achieve the specified convention.
@@ -1100,14 +1103,77 @@ however, for forcing an abrupt exit we can call std abort.
 - `critically_predictable`:
 is `predictable` and, after analyzing its call graph, it must not call itself in any point in the graph( no recursive graph).
 otherwise the program is ill-formed. 
-similar to other qualifiers it can be casted by  `unsafe(critically_predictable)`
+similar to other qualifiers it can be casted by  `unsafe(critically_predictable)` and is recursive by composition.
 ( note that this is only possible because function pointers do not interfere with static analysis because of the `predictable` requirements).
+
+* note: 
+a requirement for supporting the `critically_predictable` qualifier is  mandatory ThinLTO, 
+because the call graph of  such functions must always be imported for analysis,
+
+
 
 - `purely_predictable`:
  is  `critically_predictable`, and cannot have a goto statement or a loop with unbounded execution, after analyzing its code  it must belong to the  family of the polynomial time complexity algorithms ( having a known bound on how many instructions it will execute) ,  if the proof is not reached within a max limit ( this is exactly a halting problem ) , the program is ill-formed, 
  otherwise the program is ill-formed. 
- similar to other qualifiers it can be casted by  `unsafe(purely_predictable)`
+ similar to other qualifiers it can be casted by  `unsafe(purely_predictable)`and is recursive by composition.
  a critical system might require all functions to be `purely_predictable` ( an interrupt handle is probably required to be a  purely predictable function pointer) .
+
+-`loopless_predictable`:
+is `purely_predictable`, and all loops must have a known( at compile time) and fixed execution count, meaning that all for loops must be `constexpr for`,
+meaning  it  must be unrollable by just doing it exactly  for that many times.
+it cannot use `break` or `continue`.
+this function belongs in the family of constant time complexity algorithms.
+similar to other qualifiers it can be casted by  `unsafe(loopless_predictable)`and is recursive by composition.
+
+- `transaction_predictable`:
+is `loopless_predictable`, 
+all dynamic branches must be  `transaction_safe`, this is because the execution of one or the other can occur but get canceled(rolled back) automatically if the branch is not taken,
+also , the execution of all branches must be valid on entry or on roll back of a branch with  the same starting point,
+similar to other qualifiers it can be casted by  `unsafe(transaction_predictable)`and is recursive by composition.
+
+- `instruction_predictable`:
+is `transaction_predictable`, 
+all dynamic branches must be  `purely_functional`, this is because the execution of all branches can occur even if the branch is not taken,
+this means that only the data output is branched on , but not the instruction,
+, for example  `if(condition){f(...)}else{g(...)}` can do both f and g  then pick the data output  based on the condition similar to a conditional move instruction ,
+similar to other qualifiers it can be casted by  `unsafe(instruction_predictable)`and is recursive by composition.
+
+* note: 
+`instruction_predictable` is effectively the same expressiblity as `branchless_predictable`, however it allows syntactic sugar for branches without the hassle, 
+for example   `if(a){b}else{c}` is more readable and correct than `(b&-a)|(c&~-a)` for the same instruction of conditional move and for pattern matching  its much more comfortable,
+but while the `branchless_predictable` one is almost certainly a stream of uninterrupted instructions, 
+`instruction_predictable` is allowed to have actually branches in the output program.
+
+- `branchless_predictable`: 
+is `instruction_predictable`and `noexcept`, and all if  must  be `if constexpr`, all switch or match expressions  are also  constexpr,  as a result  `enumret` cant really  be used in the runtime section of this function,
+writing  this kind function feels like wiring silicon without having a clock pulse because the execution of one part grantees the execution of other parts.
+similar to other qualifiers it can be casted by  `unsafe(branchless_predictable)`and is recursive by composition.
+
+
+* note:
+ all functions  that satisfy  `instruction_predictable independent` can be represented as simd element operations  in A colon.
+ note that the fundamental operations ( assuming were working with values and not references)  that may result in a violation of contract  may not always satisfy this unless using `unsafe(contract-ub)` or after a  contract violation based invariant optimization  transformation.
+ 
+
+- `untrivialcastless`:
+this function only preforms casts on data that has no pointers and  trivial destruction and relocation .
+similar to other qualifiers it can be casted by  `unsafe(untrivialcastless)`and is recursive by composition.
+
+
+-`syscall(...constraints...)` :
+a customizable qualifier, 
+this function only does certain kinds of system calls 
+similar to other qualifiers it can be casted by  `unsafe(syscall)`and is recursive by composition.
+
+- `safe(...constraints...)`:
+a customizable qualifier, 
+this function is constrained  from performing certain operations.
+similar to other qualifiers it can be casted by  `unsafe(safe)`and is recursive by composition.
+
+
+
+
+
 
 - `effectless`:
 
@@ -1425,6 +1491,7 @@ contract's code...
 
 * special qualifier for operators:
 
+
 -  commutative: 
  can be applied to operator@ ( for example `+`), or a function that has exactly two  arguments. 
  the evaluation of f(a,b) must be equivalent to evaluation of f(b,a), otherwise the behavior is undefined.
@@ -1492,6 +1559,9 @@ in the above definitions, the equivalence of two sub expressions `a` and the`v` 
 the substitution of `a` instead of `v` is valid if and only if the function confirms equivalence, otherwise, the behaviour is undefined. 
 
 
+-inverse=(g):
+can be applied to functions f with an input argument , g must be the inverse function for f , 
+meaning  that `g(f(x))`is equivalent to `x` .
 
 
 
@@ -2196,7 +2266,9 @@ the target function.
  overriding a symbol in one binary fron another. 
 
 
-
+ - zero page: 
+ has the symbol name `__mccabiv1::the_zero_page` ,exported  in the dynamic  loader ,
+ a global stable constant page( architecture dependent length ) of zero initialized memory,  it is useful for when loading zeroes and or having an always valid pointer for unconditional loading of some memory.
 
 
 
@@ -2650,11 +2722,54 @@ after sorting, remove all duplicates.
  
 
 
+---
+ constexpr  JIT and its restrictions:
+ 
+-   differences with runtime:
+ has max memory of `(1<<(sizeof( void *)*8))/sizeof(void*)`   words with each word  having size of `sizeof(void*)`,
+ for each word in a read write page theres 1 flag bits  that indicates if its a pointer or something else.
+ an execute page is consistent of 256bit backend hashes of the function  calling  convention, each of them also has a pointer to that function.
+ theres an implementation defined page size , each page has 1 flag of readwrite  vs execute,
+ if the page isnt allocated  its access is  ill-formed.
+ if pointer is casted to non pointer ( or back) its ill-formed.
+ if an active pointer in memory is unaligned(  the pointer value itself being unaligned,  not the pointed to location ) its ill-formed.
+  read or write to an execute section or execute from read or write section is ill-formed 
+ execution of function pointer with non matching calling convention is ill-formed.
+ having  memory/file/resources allocated with a system call not be freed is ill-formed.
 
 
+
+* note:
+some of the top mentions undefined behaviour or defined behavior being ill-formed with required diagnostic,
+the reason  is security of code execution, 
+and the ability to translate pointers  and regions of memory even when ASLR makes it hard.
+some well formed programs ( unaligned pointer value in memory) are not acceptable because of the ability to use JIT with native like level performance.
+
+
+ -  constexpr syscalls :
+in the  constexpr runtime, this thunk is more restricted for security purposes,
+ it also  is the only place that compile time pointer can change its permissions ( read write ) so it does not allow execution permissions for non function pointers and it does not allow read write permissions to function pointers. 
+ if the permissions are violated the program is ill-formed.
+ if the pointers are casted to non pinters, or non pointers are casted to pointers, the program is ill-formed.
+  the way we handle pointers in compiler is explained in the pointer section. 
+ also, cast of pointers to other pointers or types is an especial IR instruction ( no op in runtime assembly, JIT syscall in compile time assembly),
+ if the pointer to a type has the possibility of aliasing a pointer, the dereference of that pointers will check for that in compile time.
+ if the pointer to a type has no possibility of aliasing a pointer,  and the cast from a pointers that has that possibility shows that it is has a pointer inside, the program is ill-formed. 
+ 
+ for grantee of dynamic call safety, the execution  permissions are very granular, for each executable region of memory there are only known valid entries and for those entries the calling convention must be of a specific signature,  a function pointer in  constexpr code must match the function signature,
+ this can be achieved by the constexpr function pointer pointing to the backend hash of the function signature and a hash of its location in memory  ect ,
+ but this is only necessary in compile time context because  the execution of code must remain safe in the jit engine, if any operation outside the permissions is preformed,  the program is ill-formed. 
+ 
+ similarly a read or write  to a memory region without such permission makes the program  ill-formed. 
  
  
- 
+ - an example  of the layout of a pointer in an implementation:
+   for a  pointer P in the compiler  JIT ,
+   if P is null its bits are null ,
+   if P is not null then P is  a unique pointer to the  generic pointer object, 
+   it shows the bit location of the pointer,  and the span of bit memory that can be compared  to this pointer ( its bounds).
+   if its a function pointer,  system allocated pointer ,  bit pointer ,  elidable pointer  ect.
+   if the pointer is  out of bounds or used with mismatched qualifiers the program is ill-formed.
  
 
 ---
@@ -2717,7 +2832,16 @@ stack pointer is like itanum, the caller can assume its value is the same after 
  the stack pointer must be aligned to the size of the biggest register on the hardware .
  for example on x86 its 64 bytes ( zmm ).
  the reason for this is to be able to push and pop multiple registers at a time .
- 
+
+
+
+
+  note about caller saved base pointer:
+ the reason for base pointer not being saved is because usually we know the offset between the base pointer and the stack pointer ( the function stack size is known at compile time unless `unsafe(alloca)` or some optimization disturbs it),
+ and  the  `SP=BP`    can be optimized  via  add of that offset , ( `Sp+=off`, `off=BP-SP` ), this saves one stack slot    or one register  in optimized builds  in the case of not using `alloca`( which most dont),
+ however it has the caveat that a tail call needs stackless function to execute,
+ maybe  this may change to callee saved base pointer and no save stack pointer if the benefits weren't good, as always , we must measure.
+  
 
 
 2. the instruction pointer (caller passed, no save):
@@ -3747,23 +3871,7 @@ requirements afterwards include having the OS loader step, and OS symbol manglin
 - runtime syscalls :
  theres an unsafe low level syscall trunk to allow talking to the OS .
  
- -  constexpr syscalls :
-in the  constexpr runtime, this thunk is more restricted for security purposes,
- it also  is the only place that compile time pointer can change its permissions ( read write ) so it does not allow execution permissions for non function pointers and it does not allow read write permissions to function pointers. 
- if the permissions are violated the program is ill-formed.
- if the pointers are casted to non pinters, or non pointers are casted to pointers, the program is ill-formed.
-  the way we handle pointers in compiler is explained in the pointer section. 
- also, cast of pointers to other pointers or types is an especial IR instruction ( no op in runtime assembly, JIT syscall in compile time assembly),
- if the pointer to a type has the possibility of aliasing a pointer, the dereference of that pointers will check for that in compile time.
- if the pointer to a type has no possibility of aliasing a pointer,  and the cast from a pointers that has that possibility shows that it is has a pointer inside, the program is ill-formed. 
- 
- for grantee of dynamic call safety, the execution  permissions are very granular, for each executable region of memory there are only known valid entries and for those entries the calling convention must be of a specific signature,  a function pointer in  constexpr code must match the function signature,
- this can be achieved by the constexpr function pointer pointing to the backend hash of the function signature and a hash of its location in memory  ect ,
- but this is only necessary in compile time context because  the execution of code must remain safe in the jit engine, if any operation outside the permissions is preformed,  the program is ill-formed. 
- 
- similarly a read or write  to a memory region without such permission makes the program  ill-formed. 
- 
- 
+
  
  
  
@@ -4041,6 +4149,14 @@ used in an implicit for each loops lambda,depending on the iteration primitive, 
 note that in a for each loop using goto to an outer loop is ill-formed, for that, one needs to use the for loop with explicit iterator or indexies and also unsafe(goto)/unsafe(dyn-goto).
 but, we can label the for loops using `for break(label)`, and by using `break label;` in an inner loop, the operator ~break will compare the equality of those labels ( the labels are given at runtime via adding offsets of the instruction pointer of the loop end) and if not equal, perform a break, but if equal, perform a last break of the loop and stop unwinding.
  `continue lable;` can also be used similarly,  it breaks all non  equal lables and when reaching an equal lable will preform a continue  on that loop .
+
+- note:  
+each statement is an expression, similar to rust ,
+for example `if(a){b}else {c}` is an expression with the value of either b or c ,
+this is useful for match expressions,  for loop chains in pipeline chains and other constructs.  
+
+
+
 
 -`operator co_yeild/ co_await/ co_return /co_break / co_continue/co_for/ ~co_break / ~co_continue/~co_for(...)context-type ...`:
 used similarly to operator break and continue, however they also return awaitables, to allow for suspension and resumption of the coroutine.
@@ -4631,7 +4747,13 @@ using fractional types in some contexts adds padding to the end of them to align
  
  * note on constexpr pointers:
   the bit representation of this pointer is implementation defined and must effect the program behavior, otherwise ( in a bad cast) the program is ill-formed.
-
+  
+ * note :
+ the comparison or checks of equality of two pointers is unsafe(pointer-cmp),
+ if two printers  P1 and  P2 within memory  regions  M1 and M2 are compared,
+ if M1 and M2 are offset dependent reletive to each other ,   P1 and  P2 have ordering as if they were offsets  in the union of M2 and M1,
+ else if its a  check of (in)equality and  M1 and M2 do not have offset dependacny relative to  each other( and not overlap)   and both are  `refexpr` qualified and have non zero size,the check will say non equality,
+ otherwise the behavior is undefined.
  
 
  ---
@@ -4754,6 +4876,10 @@ represent destruction, by default the destructor is implicitly `operator   ~pass
  and will remove the triviality of that  operator.
  any default operator that executes a  a non trivial operator is itself non trivial. 
  
+ 
+ * note :
+  an  `inout` parameter is a combination of `pass`&`out`, at the prameter entry its relocation to the callee is preformed and at callee exit its put back into that  parameter  in reverse  order.
+  
  
  ---
  unsafe(unsafe) :
@@ -4964,7 +5090,8 @@ the mcc toolchain and ABI outside of c colon:
  0.  assembly  colon: 
 writing  mcc ir ,
 an extremely verbose intermediate representation.
-a  Static single assignment , similar to llvm ir ,
+its about having the highest quality information for the optimizer,
+in the form of  static single assignment , similar to llvm ir ,
 registers in A colon can have dynamic sizes (  to support dyn structs, simd,  and have memcmp  and memcpy like  IR operations,  for example a loop that adds numbers can be simplified down to a single dynamic simd addition, and the unroll count can be optimized  later based on the architecture to  have less  architecture dependent  ir ) but  generally registers have   a static  size.
  the size however must be tied to a known size  register that is  known or assigned at the static assignments.
  small registers can split into larger ones , larger ones can split into smaller ones,
