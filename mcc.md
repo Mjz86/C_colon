@@ -519,7 +519,7 @@ if the above is not the case the behavior is undefined.
 
 * note :
  addressless storage can be safely optimized to registers or totally removed (e.g a function body with this qualifier can be trivially removed/deduplicated   ),
- unaddressable values can be  safely optimized to registers ( the memory usage might not be fully optimized out  but the values can ),
+ unaddressable values can be  safely optimized to registers ( the memory usage might not be fully optimized out without heap elision  but the access can ),
  unaddressed can help with knowing aliasing constraints.
  these go hand in hand with non offset dependance and valexpr.
 
