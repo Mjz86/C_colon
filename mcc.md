@@ -2966,7 +2966,7 @@ the conceptual call site( note that its implementation defined for each function
  
  `CRA= catchlabel-label;`// constant offset
  
-// is implicitly assigned in the call, the call instruction is discouraged if call does big shadow stores 
+// is implicitly assigned in the call, the call instruction is discouraged if call does big shadow stores  or  RSB mis pridiction ( especially when errors are common)
  
 `call func;`// NRA=IP,IP=func, after call
 
@@ -2987,7 +2987,7 @@ the conceptual call site( note that its implementation defined for each function
  
  // stuff ... thats sad....
  
- `NRA+=CRA;`// if the NRA is in the stack for example some calling conventions the call instructions does stack push, this then becomes an override of the return pointer in the stack
+ `NRA+=CRA;`// if the NRA is in the stack for example some calling conventions the call instructions does stack push, this then becomes an override of the return pointer in the stack,  the architecture must choose  if its worth it to have a RSB(  return stack buffer) mispridiction on the  catching path , 
 
  `ret;`
  
