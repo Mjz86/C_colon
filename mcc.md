@@ -1175,6 +1175,10 @@ similar to other qualifiers it can be casted by  `unsafe(branchless_predictable)
  note that the fundamental operations ( assuming were working with values and not references)  that may result in a violation of contract  may not always satisfy this unless using `unsafe(contract-ub)` or after a  contract violation based invariant optimization  transformation.
  
 
+
+
+
+
 - `untrivialcastless`:
 this function only preforms casts on data that has no pointers and  trivial destruction and relocation .
 similar to other qualifiers it can be casted by  `unsafe(untrivialcastless)`and is recursive by composition.
