@@ -1171,7 +1171,8 @@ similar to other qualifiers it can be casted by  `unsafe(branchless_predictable)
 
 
 * note:
- all functions  that satisfy  `instruction_predictable independent` can be represented as simd element operations  in A colon.
+ all functions  that satisfy  `instruction_predictable independent` can be represented as simd element operations  in A colon,
+ however  if they are still not `purely_fundamental ` and they cannot be an instruction.
  note that the fundamental operations ( assuming were working with values and not references)  that may result in a violation of contract  may not always satisfy this unless using `unsafe(contract-ub)` or after a  contract violation based invariant optimization  transformation.
  
 
@@ -1291,6 +1292,20 @@ an `reproducible` expression must be composed of only other `reproducible` expre
   a `purely_functional` expression must be composed of only other `purely_functional` expressions OR must be casted via `unsafe(as-purely_functional)` .
 
  ( basically gnu::const if no `inout` is used) 
+
+
+
+- `purely_registral`:
+a function f is purely registral if its `purely_functional` and if all variables inside it are non pointer non reference types ,
+and if the ABI hash of all types inside has not been altered by `abi=`.
+a `purely_registral` expression must be composed of only other `purely_registral` expressions OR must be casted via `unsafe(as-purely_registral)` .
+
+
+
+- `purely_fundamental ` :
+ a function is purely fundamental  if its both `instruction_predictable`  and `purely_registral` , 
+ all purely fundamental  function functions can act as A colon instructions on register parameters.
+
 
 
 -`dyn (Q)`:
@@ -4866,14 +4881,14 @@ maybe even cppfront syntax.
  in c colon,  unlike c++, the struct and class keywords are very different, 
  a class is a type with a closed set of content, it can be used in a class inheritance graph and in general its a complete type with a closed set of member functions and implementation. 
  however, struct is similar to rust, it does not support dynamic inheritance, it does not make a virtual table, only supports static inheritance , however it can use traits( a subset of concept that is similar to rust ) and implementation that is outside the struct definition.
- the only exceptions to this implementation freedom is that the struct fundemental construction, destruction must be declared in the struct, ( this is because the abi hash depends on triviality, and must be calculated when the struct definition is processed).
+ the only exceptions to this implementation freedom is that the struct fundamental  construction, destruction must be declared in the struct, ( this is because the abi hash depends on triviality, and must be calculated when the struct definition is processed).
  
  union, and enum struct are similar to rust union and enum respectively.
  enum class and enum are similar to the c++ counterparts. 
  
  
  
- - fundemental  construction and destruction operators:
+ - fundamental   construction and destruction operators:
  
  - operator  out( ... ) context-type :
 represent construction , by default the out   constructor  is implicitly  `operator  out=default;`
