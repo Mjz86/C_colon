@@ -3544,21 +3544,21 @@ read only dynamic symbol table layout:
 
 `size_t dll_count;`
 
-`uint256_t sorted_symbols(*)[total_symbol_count];`
+`uint256_t (*sorted_symbols)[total_symbol_count];`
 
 // `symbol_ptr` is just like `symbol_ptr_offset_and_mask`, but it has absolute addresses calculated from those offsets.
 
-`uintptr_t  symbol_ptr(*)[total_symbol_count];`
+`uintptr_t  (*symbol_ptr)[total_symbol_count];`
 
 // the 4 low bits are for the viability mask, the high bits are more than enough to indicate dll info index.
 
-`uint32_t dll_info_index_and_mask(*)[total_symbol_count];`
+`uint32_t (*dll_info_index_and_mask)[total_symbol_count];`
  
  
-`uint32_t dll_prioritis(*)[dll_count];`
+`uint32_t (*dll_prioritis)[dll_count];`
 // sorted infos based on dll info's dll-identifier-abi256-hash 
 
-`dll_info dll_infoes(*)[dll_count];`
+`dll_info (*dll_infoes)[dll_count];`
 
 
 
