@@ -3706,12 +3706,12 @@ read only dynamic symbol table layout:
 
 `uintptr_t offset_and_mask[symbol_count];`
 
-`uintptr_t dll_info_index[symbol_count];`
+`uint32_t dll_info_index[symbol_count];`
 
+`uint32_t dll_prioritis[dll_count];`
 
 // sorted infos based on dll info's dll-identifier-abi256-hash, this is because the loader may rearrange the given dll map paths if they are path independent( if path dependent, meaning that the dllmap has the relative path of the dll it needs to load compared to its own path, it does not even need the dll arguments at all, in most cases a path dependent dll loader is enough for application installation.), also a mix of these can be used if the dynamic loader implementation supports it.
 `dll_info dll_infoes[dll_count];`
-`uint32_t dll_prioritis[dll_count];`
 
 
  
@@ -4842,7 +4842,7 @@ note that in architectures where `sizeof(cxx_char_t)!=1`, the `represent_cxx` is
 
 and for any cxx pointer `(memcast<uintmax_t>(byte_ptr)&~(sizeof(cxx_char_t)-1))==sizeof(cxx_char_t)*memcast<uintmax_t>(cxx_ptr)`, note that the lower bits in the c colon pointers in these architectures indicate shifts.
 
-
+and the dll number count be representible in a 32 bit unsigned integer.
 
 - hash sizes:
 any implementation may choose hashes with size smaller or bigger than 256 or 128,
