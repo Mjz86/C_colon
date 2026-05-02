@@ -568,7 +568,15 @@ a value declared `constexpr` is known at compile time.
 
 
 
+`drop_after_last_use`(default)/`drop_after_scope_end`:
+a drop after last use object is an object that is destroyed after the last time its owner referred to it,
+such objects are better for the optimizer as it reduces the duration of object modification
+however the drop after scope end is C++ RAII style and is useful in some  data types (e.g scoped lock, scoped timer,scoped allocator ).
+e.g:
+ if a is used before g is called by f then a is not used again the memory of a is still making register overhead till the end of f, the register allocator must optimize this but cant in a C++ style raii setting.
 
+
+ 
 `no_dll_comparable_address`/`dll_comparable_address`(default)(dynamic loader used Function and variable ( any symbol) qualifier):
  this qualifier is not a contributor to the ABI hash or the name mangle,
  a function, variable or storage space, used in the dynamic shared library, may have a different address to the static function, a `dll_comparable_address` mandates that the storage address is unique,
@@ -2820,12 +2828,12 @@ in the  constexpr runtime, this thunk is more restricted for security purposes,
    if the pointer is  out of bounds or used with mismatched qualifiers the program is ill-formed.
  
 
+
+
+
+
+
 ---
-
-
-
-
-
 
 
 
