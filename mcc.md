@@ -3550,15 +3550,16 @@ read only dynamic symbol table layout:
 
 `uintptr_t  symbol_ptr(*)[total_symbol_count];`
 
-// the 3 low bits are for the viability mask, the high bits are more than enough to indicate dll info index.
+// the 4 low bits are for the viability mask, the high bits are more than enough to indicate dll info index.
 
-`uintptr_t dll_info_index_and_mask(*)[total_symbol_count];`
+`uint32_t dll_info_index_and_mask(*)[total_symbol_count];`
  
+ 
+`uint32_t dll_prioritis(*)[dll_count];`
 // sorted infos based on dll info's dll-identifier-abi256-hash 
 
 `dll_info dll_infoes(*)[dll_count];`
 
-`uint32_t dll_prioritis(*)[dll_count];`
 
 
 // note that for security a sanity check for sorted ness van b done in `O(total_symbol_count)` time complexity 
@@ -4842,7 +4843,9 @@ note that in architectures where `sizeof(cxx_char_t)!=1`, the `represent_cxx` is
 
 and for any cxx pointer `(memcast<uintmax_t>(byte_ptr)&~(sizeof(cxx_char_t)-1))==sizeof(cxx_char_t)*memcast<uintmax_t>(cxx_ptr)`, note that the lower bits in the c colon pointers in these architectures indicate shifts.
 
-and the dll number count be representible in a 32 bit unsigned integer.
+and the dll number count be representable in a 28 bit unsigned integer(
+  268435455 dlls max
+  ) , increasing this requires the 32 bit dll indexies to be 64 bit , but practically its a good limit.
 
 - hash sizes:
 any implementation may choose hashes with size smaller or bigger than 256 or 128,
