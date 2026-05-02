@@ -3434,6 +3434,8 @@ read only dynamic symbol table layout:
 
 // at offset 0 
 // this is used in dllmap, not really useful otherwise.
+
+  //  is aligned to 64 bytes
 `needed-linker-abi256-hash;`
 
 
@@ -3685,6 +3687,7 @@ read only dynamic symbol table layout:
 // constant read only global section.
 // at offset 0 
 
+  //  is aligned to 64 bytes
 `needed-linker-abi256-hash;`
 
 `dll-identifier-abi256-hash;`
@@ -3751,6 +3754,7 @@ read only dynamic symbol table layout:
 
 ```
 struct dll_info {
+  // in 64 bit mode is aligned to 64 bytes and is 64 bytes , in 32 bit mode is aligned to 8 bytes and is 48 bytes.
   uint256_t dll_abi_hash;
   size_t path_len;
   size_t dll_size;
