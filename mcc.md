@@ -3439,9 +3439,7 @@ read only dynamic symbol table layout:
 
 `dll-identifier-abi256-hash;`
 
-// this is the initialization function, the bool it returns says the status of initialization ( true meaning success), but on deinitialization, if it returns true then that means that it was the last one to be uninitialized ( to free the memory if its the last)
- 
-` bool (*mayde_initialization_fn_offset)( bool init);`
+ `loader_init_offset`
 
 `global_loader_syscall_ptr_offset;`
 
@@ -3495,11 +3493,15 @@ read only dynamic symbol table layout:
  
  
  // write only once in initialization, then make readonly section: 
+//(loader_init_offset is the offset of here)
 
+// this is the initialization function, the bool it returns says the status of initialization ( true meaning success), but on deinitialization, if it returns true then that means that it was the last one to be uninitialized ( to free the memory if its the last)
+` bool (*mayde_initialization_fn_offset)( bool init);`
 `global_loader_t*const global_loader;`
-
-
 `uint32_t dll_priority;`
+`uint32_t dll_id;`
+
+//....
 
 // the pointers to the interpositioned function pointers.
 
@@ -3686,7 +3688,7 @@ read only dynamic symbol table layout:
 
 `dll-identifier-abi256-hash;`
 
-`void (*mayde_initialization_fn_offset)( bool init);`
+ `loader_init_offset`
 
  `global_loader_syscall_ptr_offset;`
  
@@ -3727,8 +3729,11 @@ read only dynamic symbol table layout:
 
 
 
-
-
+ 
+` bool (*mayde_initialization_fn_offset)( bool init);`
+`global_loader_t*const global_loader;`
+`uint32_t dll_priority;`
+`uint32_t dll_id;`
 
 
 
