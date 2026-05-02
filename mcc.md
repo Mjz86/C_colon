@@ -3560,7 +3560,7 @@ read only dynamic symbol table layout:
 
 `dll_info (*dll_infoes)[dll_count];`
 
-
+// and other implementation defined loader properties.
 
 // note that for security a sanity check for sorted ness van b done in `O(total_symbol_count)` time complexity 
 
@@ -3748,6 +3748,31 @@ read only dynamic symbol table layout:
 
 
  
+
+```
+struct dll_info {
+  uint256_t dll_abi_hash;
+  size_t path_len;
+  size_t dll_size;
+  struct offset_t {
+    // relative to the dllmap's offset zero
+    uintptr_t path_offset;
+    // if its 0 then we know that the dll is not inlined, if not the inner dll is in the dllmap file itself
+    uintptr_t offset_zero;
+  };
+  struct ptr_t {
+    const char *path_ptr;
+    // if its null then we know that the dll is not loaded
+    void *offset_zero;
+  };
+  union U {
+    // used in dllmap
+    offset_t offset;
+    // used in loader
+    ptr_t ptr;
+  } data;
+};
+```
 
 
 
