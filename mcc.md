@@ -3752,16 +3752,19 @@ read only dynamic symbol table layout:
 
  
 
-```
+// how dll maps can form trees of dlls inline or out of line ( the leaf is a dll , the nodes are dllmaps):
+`
 struct dll_info {
   // in 64 bit mode is aligned to 64 bytes and is 64 bytes , in 32 bit mode is aligned to 8 bytes and is 48 bytes.
   uint256_t dll_abi_hash;
+  
+    // if its 0 then we know that the dll is not inlined, if not the inner dll is in the dllmap file itself
   size_t path_len;
   size_t dll_size;
   struct offset_t {
-    // relative to the dllmap's offset zero
+    // relative to the parent dll's offset zero
     uintptr_t path_offset;
-    // if its 0 then we know that the dll is not inlined, if not the inner dll is in the dllmap file itself
+    // if dll is inlined this is the offset of the inner dll relative to  the parent dll's offset zero, if it has a path its the offset  from that files beginning
     uintptr_t offset_zero;
   };
   struct ptr_t {
@@ -3776,7 +3779,7 @@ struct dll_info {
     ptr_t ptr;
   } data;
 };
-```
+`
 
 
 
