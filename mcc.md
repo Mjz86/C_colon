@@ -3634,7 +3634,7 @@ read only dynamic symbol table layout:
 
 // we allocate a buffer with 2 ^ 16  stacks
 // we sort the hashes based on their 32 most significant bits, by:
-// 0. put elem in stack with `index = uint16_t( priority)`. pop the stacks according to the order of stable sort. put elem in stack with `index = uint16_t( priority >> 16)`. pop the stacks according to the order of stable sort.
+// 0. put elem in stack with `index = uint16_t( priority>>4)`. pop the stacks according to the order of stable sort. put elem in stack with `index = uint16_t( priority >> 20)`. pop the stacks according to the order of stable sort.
 // 1. put elem in stack with `index = uint16_t(elem>> ( 256-  64))`. pop the stacks according to the order of stable sort.
 // 2. put elem in stack with `index = uint16_t(elem>> ( 256-  48))`.pop the stacks according to the order of stable sort.
 // 3. put elem in stack with `index = uint16_t(elem>> ( 256-  32))`. same
@@ -3713,6 +3713,7 @@ read only dynamic symbol table layout:
 
 `uint32_t dll_info_index[symbol_count];`
 
+// 4 lower bits are used for bit flags
 `uint32_t dll_prioritis[dll_count];`
 
 // sorted infos based on dll info's dll-identifier-abi256-hash, this is because the loader may rearrange the given dll map paths if they are path independent( if path dependent, meaning that the dllmap has the relative path of the dll it needs to load compared to its own path, it does not even need the dll arguments at all, in most cases a path dependent dll loader is enough for application installation.), also a mix of these can be used if the dynamic loader implementation supports it.
