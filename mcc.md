@@ -3692,6 +3692,7 @@ read only dynamic symbol table layout:
 
 `dll-identifier-abi256-hash;`
 
+// is 0 in dllmap mode
  `loader_init_offset`
 
  `global_loader_syscall_ptr_offset;`
@@ -3733,11 +3734,6 @@ read only dynamic symbol table layout:
 
 
 
- 
-` bool (*mayde_initialization_fn_offset)( bool init);`
-`global_loader_t*const global_loader;`
-`uint32_t dll_priority;`
-`uint32_t dll_id;`
 
 
 
