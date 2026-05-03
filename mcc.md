@@ -3501,7 +3501,7 @@ read only dynamic symbol table layout:
 ` bool (*mayde_initialization_fn_offset)( bool init);`
 `global_loader_t*const global_loader;`
 `uint32_t dll_priority;`
-`uint32_t dll_id;`
+// padding
 
 //....
 
