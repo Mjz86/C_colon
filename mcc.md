@@ -1141,11 +1141,11 @@ because the call graph of  such functions must always be imported for analysis,
 
 
 - `purely_predictable`:
- is  `critically_predictable`, and cannot have a goto statement or a loop with unbounded execution, after analyzing its code  it must belong to the  family of the polynomial time complexity algorithms ( having a known bound on how many instructions it will execute) ,  if the proof is not reached within a max limit ( this is exactly a halting problem ) , the program is ill-formed, 
+ is  `critically_predictable`&`willhalt`, and cannot have a goto statement or a loop with unbounded execution, after analyzing its code  it must belong to the  family of the polynomial time complexity algorithms ( having a known bound on how many instructions it will execute) ,  if the proof is not reached within a max limit ( this is exactly a halting problem but because recursion is  and raw goto/longjump is banned the only remaining way to not move forward the instruction pointer is a loop   ) , the program is ill-formed, 
  otherwise the program is ill-formed. 
  similar to other qualifiers it can be casted by  `unsafe(purely_predictable)`and is recursive by composition.
  a critical system might require all functions to be `purely_predictable` ( an interrupt handle is probably required to be a  purely predictable function pointer) .
-
+ 
 -`loopless_predictable`:
 is `purely_predictable`, and all loops must have a known( at compile time) and fixed execution count, meaning that all for loops must be `constexpr for`,
 meaning  it  must be unrollable by just doing it exactly  for that many times.
@@ -1228,16 +1228,21 @@ an evaluation e is idempotent if a second evaluation of e can be sequenced immed
 an `idempotent` expression must be composed of only other `idempotent` expressions OR must be casted via unsafe(as-idempotent) ( because some code that looks like it modifies really dose not, for example an i++ in an internal for loop) OR in the case of paring synth(idempotent) via compiler proof that it is IR block was idempotent, if none were true, the program is ill-formed
 
 
+- `invisiblestate`:
+
+a function f is `invisiblestate` if any definition of an object of static or thread storage duration in f or in a function that is called by f is stabilized qualified, 
+no  read from these values are allowed. 
+an `invisiblestate` expression must be composed of only other `invisiblestate` expressions OR must be casted via `unsafe(as-invisiblestate)` ..
 
 - `viewstate`:
 
-a function f is stateless if any definition of an object of static or thread storage duration in f or in a function that is called by f is stabilized but not volatile qualified, 
-no modifications to these values are allowed. 
+a function f is `viewstate` if any definition of an object of static or thread storage duration in f or in a function that is called by f is stabilized qualified, 
+no write to these values are allowed. 
 an `viewstate` expression must be composed of only other `viewstate` expressions OR must be casted via `unsafe(as-viewstate)` ..
 
 - stateless:
 
-a function f is stateless if any definition of an object of static or thread storage duration in f or in a function that is called by f is const+stabilized but not volatile qualified, and is `viewstate`.
+a function f is stateless if any definition of an object of static or thread storage duration in f or in a function that is called by f is const+stabilized qualified, and is `viewstate`&`invisiblestate`.
 
 an `stateless` expression must be composed of only other `stateless` expressions OR must be casted via `unsafe(as-stateless)` ..
 
@@ -1368,12 +1373,13 @@ this is because throw is not unwind based and does not use globals at all, and c
 
 `noexcept` means the behavior is undefined if the function returns to the caller using the catching return register.
 
-- `noreturn/mayreturn(default)`:
+- `noreturn/mayreturn(default)` and `nohalt/mayhalt(default)/willhalt` and `noprogress/mayprogress(default)/progress` :
 
-`noreturn` means the behavior is undefined if the function returns to the caller using the normal return register.
-
-
-
+`noreturn` means the behavior is undefined if the function/expression returns to the caller using the normal return register.
+`willhalt` means that the expression must halt , and if  not halt the behavior is undefined .
+`nohalt` means that the expression  not halt , and if not the behavior is undefined .
+`progress` means that the expression must either halt or have an operation on  volatile state , and if  not halt the behavior is undefined .
+`noprogress` means that the expression  must either not halt or have an operation on  volatile state  , and if not the behavior is undefined .
 
 
 - transactional memory:
