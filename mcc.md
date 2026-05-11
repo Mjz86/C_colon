@@ -3433,10 +3433,8 @@ program code:
 
 
 --- 
-read only dynamic symbol table layout:
 
-
-// constant read only global section.
+ // write only once in initialization, then make readonly section: 
 
 // at offset 0 
 // this is used in dllmap, not really useful otherwise.
@@ -3463,7 +3461,8 @@ read only dynamic symbol table layout:
 ` uint256_t symbol_fragment[symbol_count];`
 
 // this is the corresponding symbol data to the symbol mangle.
-
+// it first ( at copy/load to ram ) contains `(offset|mask)` but after load it  contains the  the symbol pointer (absolute address) however in the interposition case it  contains the symbol's atomic-pointer's pointer(absolute address) .
+//(the pointers to the interpositioned function pointers `const void**const imported_interposition_fnptr_ptrs`) or (the pointer to the imported function `const void* const imported_non_interposition_fnptrs`) or (the pointer to the imported function, first having the offset to the current pointer  `const void**const exported_interposition_dll_comp_address_fnptrs`)
 ` uintptr_t symbol_ptr_offset_and_mask[symbol_count]`
 
  ...
@@ -3500,7 +3499,6 @@ read only dynamic symbol table layout:
 // if its a module table symbol, its a special kind of symbol, more of this is discussed in the module section.
  
  
- // write only once in initialization, then make readonly section: 
 //(loader_init_offset is the offset of here)
 
 // this is the initialization function, the bool it returns says the status of initialization ( true meaning success), but on deinitialization, if it returns true then that means that it was the last one to be uninitialized ( to free the memory if its the last)
@@ -3509,20 +3507,6 @@ read only dynamic symbol table layout:
 `uint32_t dll_priority;`
 // padding
 
-//....
-
-// the pointers to the interpositioned function pointers.
-
-`const void**const imported_interposition_fnptr_ptrs[....];`
-
- 
-// the pointer to the imported function.
-
-`const void* const imported_non_interposition_fnptrs[....];`
-
-// the pointer to the imported function, first having the offset to the current pointer .
-
-`const void**const exported_interposition_dll_comp_address_fnptrs[....];`
 
 ...
  
@@ -3786,7 +3770,7 @@ struct dll_info {
 
 
 
-
+ 
 
 
 
