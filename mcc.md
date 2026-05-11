@@ -3689,17 +3689,14 @@ program code:
  
 `size_t symbol_count;`
 
-`size_t dll_count;`
-
-// padding
+`size_t dll_count;` 
 // this is the sorted 256bit hash back-end mangle :
-
  `uint256_t symbol_fragment[symbol_count];`
  
 // this is the corresponding symbol data to the symbol mangle.
 
 
-`uintptr_t offset_and_mask[symbol_count];`
+`uintptr_t symbol_ptr_offset_and_mask[symbol_count];`
 
 `uint32_t dll_info_index[symbol_count];`
 
