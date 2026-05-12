@@ -3765,9 +3765,23 @@ struct dll_info {
 };
 `
 
-
-
+* note :
+ if the architecture  wants to use minimal bits for the mask and cant even store them outside oe inside the pointer , then :
+ 0. module table symbol  bit is not needed but the main module's symbol has to be known and reserved.
  
+ 1. `dll_comparable_address`  bit is not needed but the safety of `dll_comparable_address` is lost.
+
+2.  interpositioned  bit is  not needed but the safety of checking the unload is lowered.
+
+3.  dllimport vs dllexport bit is not needed , (offset==0) is equivalent to import.
+ 
+
+* note: 
+this can be probably reduced in the final dynamic loader version. 
+
+
+ * note:
+ if mask is there a symbol not aligned to a pointer will need to use the pointer that is shifted to align.
 
 
 
