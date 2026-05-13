@@ -1825,7 +1825,7 @@ many clabels:....
 
 retoffset= least value in return enum.
 
-catchoffset= least value in catc enum. 
+catchoffset= least value in catch enum. 
 
 the values are calculated as constants to offset the table.
 
