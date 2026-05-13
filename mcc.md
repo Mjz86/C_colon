@@ -4157,9 +4157,9 @@ if returns nullopt then the memory may or may not be theirs, implementations how
 returns the id of the async-semi-thread of execution .
  
 * note :
-for a structured cuncurency tree, one of the childern has the same id as the parent.
+for a structured cuncurency tree,at least one of the childern has the same id as the parent.
 
-- `operator async_local(type_info var_id,void(*init_fn)(T*))context-type-> std::async_local_t<T>`:
+- `operator async_local(type_info var_id,function-like-type init_fn)context-type-> std::async_local_t<T>`:
  a `weak_idempotent` function ( that is, if many of it appear in a single async-semi-thread of execution, the first one's return will be used instead of calling it multiple times ), `var_id` is representitive of the unique id of the `async_local` variable,
 an async_local variable can be used safely by using the `std::async_local_t` refrence like primitive , similar in API to a non-atomic refrence counted vaiable, however not refrence counted, but managed by the scheduler,
  two  `async_local` variables are the same if and only if their `var_id` is equal and their async-semi-thread of execution's `async_id` is the same.
