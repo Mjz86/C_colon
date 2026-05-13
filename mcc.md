@@ -53,7 +53,7 @@ a language inspired by c++ and rust, and some functional principles.
 
 this language aims to be in the "c++ successor" language categories, 
 
-having c++ like syntax but with memory safety,
+having c++ like power but with memory safety,
 
 aiming to be able to express c++'s full power while freeing the language from the ABI stability nightmare that the wg21 standard committee made and the stack consuming windows calling convention ABI.
 
@@ -1935,7 +1935,7 @@ the symbol table and dynamic loader:
 
 
  ---
-  types, qualifiers,  shadowing, overloading.
+  types, qualifiers,  shadowing, overloading,templates.
 
  - there are two types of qualifiers:
   0. mutable qualifiers:
@@ -1948,9 +1948,17 @@ the symbol table and dynamic loader:
   
 
   - shadowing:
-   shaddowing is 
+   shadowing is when an identifier changes its identity,
+   instead of ':' in the declaring of the shadow ':=' must be used.
+  
+  - overloading:
+  overloading is when a  identifier has a set of candidate functions more than 1 that have different identities,
+  indicating a function is in an overload set can be  done via the `overloaded` keyword.
 
-
+  - template :
+  a templated entity is an entity that can be instantiated with different prameters,
+  unlike c++  specialization is not  allowed , however with a combination of reflection and function overloading it can be achived,
+  a template definition is recognized by the `template` keyword .
 
  --- 
 
@@ -4907,6 +4915,10 @@ and also they cannot for example change the program signal handler, and may not 
  
 ---
 syntax?
+
+*note :
+the syntax is being experimented on as im writing the compiler. 
+
 
 im not certain on syntax, it may not be good, im not an expert on syntax and this specification isnt mostly about syntax, however i think this might be good? anyway, im open to other syntax choices, for example trailing await, exceptions, or a qualifier rename, ect.
 maybe even cppfront syntax. 
