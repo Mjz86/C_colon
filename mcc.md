@@ -1830,9 +1830,9 @@ catchoffset= least value in catc enum.
 the values are calculated as constants to offset the table.
 
 
-`IP+(rets-IP);` becomes `IP+(rets-IP-retoffset);`, which is no different because both are a single add to a constant. 
+`IP+(rets-IP)` becomes `IP+(rets-IP-retoffset)`, which is no different because both are a single add to a constant. 
 
-`~throwval` becomes `(retoffset-catchoffset-1)-throwval;` , a bit different, instead of a single not instruction we have a single subtraction instruction, although both are relatively cheap in x86.
+`~throwval` becomes `(retoffset-catchoffset-1)-throwval` , a bit different, instead of a single not instruction we have a single subtraction instruction, although both are relatively cheap in x86.
 
 
 
