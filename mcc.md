@@ -698,7 +698,7 @@ because the overhead is more, and it is also not immediately availabel after loa
   
 - `moinline`:
   a definition is processed with the root module in the tree in mind, meaning that until a static declaration uses it, it is not evaluated.
-  for example, a template specialization in the root can be used.
+  for example, a template instanciation in the root can be used.
   this is deferred evaluation of the code graph.
  
  
@@ -1917,7 +1917,7 @@ the symbol table and dynamic loader:
 
  because of the language safety rules, we have both thread unsafe string types for single-threaded like strings and we also have thread safe strings, 
 
-  however, constant strings are different from mutable strings, so, these are specializations on the common standard basic string type,
+  however, constant strings are different from mutable strings, so, these are variations on the common standard basic string type,
 
   the format includes `std::(m)(z)(u)string`, for the:
 
@@ -1933,7 +1933,24 @@ the symbol table and dynamic loader:
 
   the string can be thread unsafe in the way it is reference counted  
 
+
+ ---
+  types, qualifiers,  shadowing, overloading.
+
+ - there are two types of qualifiers:
+  0. mutable qualifiers:
+  an identifier x can have its qualifier changed without altering its identity.
+  (e.g `qualiexpr`)
   
+  1. immutable qualifiers:
+  an identifier x cannot have its qualifier, however it can be shadowed.
+  (e.g `drop_after_last_use`)
+  
+
+  - shadowing:
+   shaddowing is 
+
+
 
  --- 
 
@@ -2305,7 +2322,7 @@ when making the `castation-table` in the compiler we need to generate it via a g
 
   - an entity that is defined or created within a template, such as:
 
-    1. an instantiation of a class, function, or variable template, including from a partial specialization, but not including an explicit specialization;
+    1. an instantiation of a class, function, or variable template.
 
     2. a member or friend function definition of a templated class;
 
@@ -3891,22 +3908,9 @@ in general, API objects defined as part of this ABI are assumed to be extern "c:
   these are straightforward to make a graph of.
 
 
+ 
 
-  
-
-  1. full template specialization:
-
-  these are similar to that of a non template in the graph contributions. 
-
-  
-
-  2. partial template specializations:
-
-  these are similar to that of an overload set.
-
-  
-
-  3. template overload set ( set of templates and non templates with this name):
+  1. template overload set ( set of templates and non templates with this name):
 
    because templates in c++ and similarly C colon are turning complete , we cannot determine if the template graphes will end their cycles or not,
 
@@ -5608,7 +5612,7 @@ i pridict that the worst common error is an easy "must initialized an out parame
 
 or at most a " the catch block cannot capture a variable that might be dropped in the try block, try copying that variable before the try block to ensure it will not be an output of a throwing function"( the `inout` or out function arguments will have an uninitialized state or qualifier on that functios throw path in the caller, when used, the same qualifier set per expression rule will make that expression ill-formed).
 
-in contrast to C colon ( which allows all of these c++ style things), Express colon does not have operator overloadding,and also function overloadding, and template specializations, and only allows simple template declarations ( like the c++ auto concept constraint parameters),
+in contrast to C colon ( which allows all of these c++ style things), Express colon does not have operator overloadding,and also function overloadding, and only allows simple template declarations ( like the c++ auto concept constraint parameters),
 
 this is not really a safety problem, but an error massage problem, 
 
