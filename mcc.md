@@ -976,7 +976,7 @@ an owned object can use and must drop after use.
 
  `drop_on_throw/presist_on_throw,drop_on_ret/presist_on_ret,xvaluexpr, rvaluexpr/lvaluexpr, (i)(o)valuexpr`(function arguments qualifiers): 
  drop on X makes it so that the object is when X, (`xvaluexpr` is unconditional drop),`rvaluexpr` promotes move semantics.
- `(i)(o)valuexpr` does the automatic `in(i)/out(o)/inout(io)/inval(none)` dropping semantic to the current reference or if trivial, via register 
+ `(i)(o)valuexpr` does the automatic `in(i)/out(o)/inout(io)/pass(none)` dropping semantic to the current reference or if trivial, via register 
  
 
 determines the general usage and call convention in a function argument.
@@ -1675,7 +1675,7 @@ only the stack pointer and the instruction pointer are special registers,
 the used set is irrelevant because the caller cannot continue its execution.
 a tail call is guaranteed.
 having any out or inout parameters in the function signature is ill-formed, 
-the context-type is an inval argument in such function signatures, and the callee is responsible for its destruction,
+the context-type is a pass argument in such function signatures, and the callee is responsible for its destruction,
 although, these types of functions are unsafe(longjump) to call because, well, its a terminated program and no RAII unwind code was executed.
 
 
@@ -1683,11 +1683,11 @@ although, these types of functions are unsafe(longjump) to call because, well, i
 
 
 
-0. no tables( `enum` ret) :
+0. no tables( no `enum` ret) :
 
  `return_ptr`= the absolute pointer to the return path, calculated via instruction pointer in caller.
 
- `catching_return_ptr`=  the relative offset of the absolute path to the return pointer.
+ `catching_return_ptr`=  the relative offset of the absolute path of the catch path (relative to the return pointer).
 
  
 
