@@ -2568,7 +2568,7 @@ MJZ_NCX_FN const std::byte *mcc_dynamic_cast(const std::byte *This,
  }
  const uintptr_t tatal_base_cnt_and_trk_cnt =
    ref.castation_ptr->tatal_base_cnt_and_trk_cnt;
- const uintptr_t truncated_hash_byte_count = tatal_base_cnt_and_trk_cnt & 31;
+ const uintptr_t truncated_hash_byte_count = (tatal_base_cnt_and_trk_cnt & 31)+1;
  const uintptr_t tatal_base_count_v = tatal_base_cnt_and_trk_cnt >> 5;
  const uint8_t *const search_matrix_ptr =
    reinterpret_cast<const uint8_t *>(ref.castation_ptr + 1);
