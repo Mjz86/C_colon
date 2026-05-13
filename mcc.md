@@ -3105,7 +3105,7 @@ and must be written to at some point in callee.
 
 free to read or write,
 
-once the callee throws, this value is considered dropped by the caller.
+once the callee throws, this value is considered dropped by the caller if its `drop_on_throw`.
 
 
 
