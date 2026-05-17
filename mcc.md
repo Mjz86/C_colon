@@ -3563,9 +3563,9 @@ program code:
 
 `uint256_t (*sorted_symbols)[total_symbol_count];`
 
-// `symbol_ptr` is just like `symbol_ptr_offset_and_mask`, but it has absolute addresses calculated from those offsets.
+// `symbol_ptr_offset[i]` is  the offset of  `&symbol_ptr[i]` in the dll it originated from.
 
-`uintptr_t  (*symbol_ptr)[total_symbol_count];`
+`uintptr_t  (*symbol_ptr_offset)[total_symbol_count];`
 
 // the 4 low bits are for the viability mask, the high bits are more than enough to indicate dll info index.
 
