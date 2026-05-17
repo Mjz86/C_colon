@@ -3409,8 +3409,11 @@ or an `uninitialized ivaluexpr  ` if the caller needs an extra callee saved regi
 
 
  * note:
- if a tail call is required (e.g : using the `retail` keyword ), then the context type must be elidable, and in the calling convention the set of output registers and their ABI semantics on all paths( including the out half of inout and the exception out part  etc.) of the tail callee must match the caller,
- also the return semantics (the way it returns using the return register(s)) must match the caller
+ if a tail call is required (e.g : using the `retail` keyword ), then the context type must be elidable, and in the calling convention the set of output registers and their ABI semantics on all paths( including the out half of inout and the exception out part  etc.) of the tail callee must match the caller,or if a certain code path has output  register semantics be very similar ( function f tail calls g , f returns a,b,c in registers 0,1,2  and g returns that a,b,c,d  in 0,1,2,3   ), meaning that the output position is filled with the corresponding result.
+ also the return semantics (the way it returns using the return register(s)) must match the caller,
+ also the used set of caller is always a superset (or equal) of the tail callee, otherwise tail call is not allowed.
+ the implementation defined register mapper of  is encouraged to increase the probability of tail call allowance. 
+ 
 
 
 --- 
