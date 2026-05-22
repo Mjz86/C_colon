@@ -5016,6 +5016,77 @@ represent destruction, by default the destructor is implicitly `operator   ~pass
  * note :
   an  `inout` parameter is a combination of `pass`&`out`, at the prameter entry its relocation to the callee is preformed and at callee exit its put back into that  parameter  in reverse  order.
   
+
+  --------- current name lookup implementation plan ------------
+
+
+- overloading:
+a non shadowed  name set is either specified "overloadable" in every  definition or has only one definition for any given binary,
+only functions can be overloaded, operators are always implicitly overloaded.
+
+
+- shadowing:
+shadowing can only happen when using ":=",
+when using ":" no shadowing is allowed ( the name must be unique , that is , scope not having such name when we do a lookup, otherwise it must be an overloaded name , if not the program is ill-formed),
+shadowing an old named entity using a new one makes  unqualified lookup only consider the new entity.
+
+- deleting:
+ using both ":= delete;" will shadow that name and make lookup of it fail. 
+
+- unqualified name lookup:
+for a given scope S that uses names from tables( e.g via `using`  or inheritance ), and is in outer scope Outer  all names  that are looked up in S must only get one definition or an  overload set of definitions meaning that names looked up who are reachable from S and tables don't conflict , if a name is shadowed by a new entity then from that point to the end of S the new entity is only considered when working with that name.
+
+in a given scope using ":" will make the name visible to all the scope(unless shadowed afterwards),
+however if ":="  is used before the lookup then the last ":=" before the lookup is the one that is visible.
+
+//example:
+let a:i16 = -1; 
+{
+    
+  assert(a==-1);
+    let a:=i32 = 0;
+    {
+  assert(a==0);
+    };
+     let a:=i64 = 1;
+  assert(a==1);
+     let a:=i8 = 2;
+    {
+  assert(a==2);
+    };
+ 
+    // let a:i32 = 3; error unintended shadow : a at line ... shadows a at line ... 
+    // but does not use the shadow capable ':=' 
+
+};
+
+
+
+
+- qualified name lookup:
+when looking in a scope S,that uses names from tables, and is in outer scope Outer, Outer is ignoed,
+and the search is only from S and tables, in a similar way to unqualified name lookup.
+  
+
+
+
+  * reason for this name lookup strategy:
+   1. less shadowing errors:
+    you can't accedentaly combine  type A and name A and namespace A to make unreadable code.
+
+   2. clarity:
+   an overloadable function should not be the common case to avoid confusion,
+   using multiple functions with the same name is very unintuitive ( e.g in c++ `std::move` is both a range algo and an r-value casting function ) and can lead to awful errors. 
+   
+   3. efficiency:
+   if names are easy for humans they are easy for compilers too,
+   lets say we have  a scope ( assuming all definitions in the scope are known ) that uses  name `a` multiple times and `a` is not `:=`ed,
+   if the first lookup told us "`a` is not overloaded" then the second lookup of a is equvivlent to the first,
+   if `a` is ":="ed we  dont need to look at other scopes at all,
+   the overhead of overload resolotion and name lookup decreases.
+
+
+   
  
  ---
  unsafe(unsafe) :
