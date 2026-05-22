@@ -5040,6 +5040,13 @@ in a given scope using ":" will make the name visible to all the scope(unless sh
 however if "=:"  is used before the lookup then the last "=:" before the lookup is the one that is visible.
 
 //example:
+// v is visible in all the scope
+ let v:*void = &v;    
+//error: "u is not defined until the evaluation of =: at ... in line ... "
+// let u=:*void = &u;   
+// ok v is shadowed after its pointer is taken
+let v=:*void = &v;    
+
 let a:i16 = -1; 
 // := is deducing a type
 let b:= a; 
