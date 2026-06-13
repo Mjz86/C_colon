@@ -1638,211 +1638,12 @@ so, do not expect a code section without `unsafe(contract-UB)` to allow these.
   maybe range algorithms can use them? either way , most math  is not counting sets of sets of sets of.... an empty set.
   similarly,  graphic design in graphic colon may benefit from geometric axioms such as Euclidean geometry, both if standardized need  synthesizable ways of transformation of operations into faster ones, 
   however the theoretical knowledge of knowing that a structure is a point or a plain and the theoretical possibility of optimization across range filters , transformations, unions , intersections  and other things ( outside entangled pointers , i mean am array of types as a set) seem tempting.
-  
----
 
-exact mechanism of return pointers:
-
-
-
- conceptually, we have 2 return pointers, 
-
- and or potentially table pointers,
-
- however, most of these are offsets, 
-
- the real way we store them is in 4 cases( 2 and 0 being the most common) :
-
- - special cases:
-
-0. noexcept: 
- enumcatch is irrelevant, and the caller does not generate a sad path.
-
-1. noreturn:
-enumret is irrelevant,and the caller does not generate a happy path.
-the end of the callee scope in the control flow ( return) is ill-formed, it must be unreachable ( at most by calling std::unreachable and using unsafe(unreachable) ).
-
-2. only 1 path is expected by the caller (ie: only return, only throw, only one jump table entry ):
-the path's adress is given to `return_ptr`, and the `catching_return_ptr`register is treated as if it was not an special register.
-
-3. only two paths expected by the caller (ie: only 2 return entry, only 2 throw entry, only 2 jump table entry ):
-one path's address is given in the `return_ptr`,
-and the other pathes offset from the `return_ptr` is stored in the `catching_return_ptr`.
-
-4. noexcept and noreturn combined:
-mostly used in terminate like functions, no return pointer is provided and the base pointer is also not provided. 
-only the stack pointer and the instruction pointer are special registers, 
-the used set is irrelevant because the caller cannot continue its execution.
-a tail call is guaranteed.
-having any out or inout parameters in the function signature is ill-formed, 
-the context-type is a pass argument in such function signatures, and the callee is responsible for its destruction,
-although, these types of functions are unsafe(longjump) to call because, well, its a terminated program and no RAII unwind code was executed.
-
-
-
-
-
-
-0. no tables( no `enum` ret) :
-
- `return_ptr`= the absolute pointer to the return path, calculated via instruction pointer in caller.
-
- `catching_return_ptr`=  the relative offset of the absolute path of the catch path (relative to the return pointer).
-
- 
-
- 
-
-1. `enum` normal return table, catching return:
-
-`return_ptr`= the absolute pointer to the first return path. 
-
- `catching_return_ptr`=`table_pointer`= absolute address of the table.
-
- - table: 
-
-  contains relative offsets to the paths, the pointer points to the first return offset( guaranteed as zero)
-
- `{catching_return_offset, nth_return_path_offset....}`.
-
-   
-
-2. `enum` catching table, normal return:
-
-`return_ptr`= the absolute pointer to the return path.
-
- `catching_return_ptr`=`table_pointer`= absolute address of the table.
-
- - table: 
-
-  contains relative offsets to the paths,the pointer points to the first catching return offset, the catching offsets are accessible via positive indexes to the table.
-
- `{ nth_catching_return_offset....}`.
-
- 
-
-3. `enum` catching table, `enum` normal return table:
-
-`return_ptr`= the absolute pointer to the first return path.
-
- `catching_return_ptr`=`table_pointer`= absolute address of the table.
-
- - table: 
-
-  contains relative offsets to the paths, the pointer points to the first return offset( guaranteed as zero), the catching offsets are accessible via negative indexes to the table.
-
- `{...(-n)th_catching_return_offset, nth_return_path_offset....}`.
-
-
-- example:
- assuming that the return enum indexes are non negative and start at 0,
- if not, we add an offset of the negative of the least enum index to make it start at 0 and be non negative.
- 
-
-  
-  //call site
-  
-  `{catchs={clabels.....}, rets={labels.....}};`
-  
-  
- `CRA= IP+(rets-IP);`// constant offset from IP to support ASLR
- 
-`NRA= IP+label;`
- 
-` jump func;`// IP=func
-
-many labels:....
-
- .....happy...
- 
-many clabels:....
-
- ....sad.....
- 
- 
- 
- func:
-
- `BP=SP;` // preserve CRA, NRA,BP throughout the call
- 
-// stuff....
-
- // stuff...  of first enum entry ret
-
-`SP=BP;`
-
-// return of the first enumret entry is not a table lookup 
- 
-`jump NRA;`// IP=NRA
- 
- // stuff...  of other enum rets
- 
-`SP=BP;`
-
-// return of the happy path is positive indexes, index being the same as the return value's enum numeric ( or if the enum is a sum type, the type tag)
-
-`NRA+=*(CRA+sizeof(void*)*retval);`
-
- `jump NRA;`// IP=NRA
- 
- 
- // stuff...  of enum throws
- 
-`SP=BP;`
-
-// return of the sad path is negative indexes( with -1 being the first), index being the same as the throw value's enum numeric ( or if the enum is a sum type, the type tag)
-
-// the bit not is the way we use two's compliment to map the negative indexes ( the reason for using this is the following both path)
-
-
-`NRA+=*(CRA+ sizeof(void*)*(~throwval) );`
-
- `jump NRA;`// IP=NRA
- 
- 
- 
- 
-// branchless both path multi dispatch:
-....
-`SP=BP;`
-
-`val=~throwval;`
-
- `val = throws?val:retval;`// cmove
- 
-`NRA+=*(CRA+ sizeof(void*)*val );` 
-
- `jump NRA;// IP=NRA`
-
-  
-  
-// did you notice? only 2 jumps, both being necessary ( one as call, one as ret)
-  
-  
-  
-- example  of non zero offsets for enum:
-
-
-retoffset= least value in return enum.
-
-catchoffset= least value in catch enum. 
-
-the values are calculated as constants to offset the table.
-
-
-`IP+(rets-IP)` becomes `IP+(rets-IP-retoffset)`, which is no different because both are a single add to a constant. 
-
-`~throwval` becomes `(retoffset-catchoffset-1)-throwval` , a bit different, instead of a single not instruction we have a single subtraction instruction, although both are relatively cheap in x86.
-
-
-
-  
- 
-  
-  
 
 
 --- 
+
+
 
 the symbol table and dynamic loader:
 
@@ -3414,6 +3215,209 @@ or an `uninitialized ivaluexpr  ` if the caller needs an extra callee saved regi
  also the used set of caller is always a superset (or equal) of the tail callee, otherwise tail call is not allowed.
  the implementation defined register mapper of  is encouraged to increase the probability of tail call allowance. 
  
+
+
+---
+
+exact mechanism of return pointers:
+
+
+
+ conceptually, we have 2 return pointers, 
+
+ and or potentially table pointers,
+
+ however, most of these are offsets, 
+
+ the real way we store them is in 4 cases( 2 and 0 being the most common) :
+
+ - special cases:
+
+0. noexcept: 
+ enumcatch is irrelevant, and the caller does not generate a sad path.
+
+1. noreturn:
+enumret is irrelevant,and the caller does not generate a happy path.
+the end of the callee scope in the control flow ( return) is ill-formed, it must be unreachable ( at most by calling std::unreachable and using unsafe(unreachable) ).
+
+2. only 1 path is expected by the caller (ie: only return, only throw, only one jump table entry ):
+the path's adress is given to `return_ptr`, and the `catching_return_ptr`register is treated as if it was not an special register.
+
+3. only two paths expected by the caller (ie: only 2 return entry, only 2 throw entry, only 2 jump table entry ):
+one path's address is given in the `return_ptr`,
+and the other pathes offset from the `return_ptr` is stored in the `catching_return_ptr`.
+
+4. noexcept and noreturn combined:
+mostly used in terminate like functions, no return pointer is provided and the base pointer is also not provided. 
+only the stack pointer and the instruction pointer are special registers, 
+the used set is irrelevant because the caller cannot continue its execution.
+a tail call is guaranteed.
+having any out or inout parameters in the function signature is ill-formed, 
+the context-type is a pass argument in such function signatures, and the callee is responsible for its destruction,
+although, these types of functions are unsafe(longjump) to call because, well, its a terminated program and no RAII unwind code was executed.
+
+
+
+
+
+
+0. no tables( no `enum` ret) :
+
+ `return_ptr`= the absolute pointer to the return path, calculated via instruction pointer in caller.
+
+ `catching_return_ptr`=  the relative offset of the absolute path of the catch path (relative to the return pointer).
+
+ 
+
+ 
+
+1. `enum` normal return table, catching return:
+
+`return_ptr`= the absolute pointer to the first return path. 
+
+ `catching_return_ptr`=`table_pointer`= absolute address of the table.
+
+ - table: 
+
+  contains relative offsets to the paths, the pointer points to the first return offset( guaranteed as zero)
+
+ `{catching_return_offset, nth_return_path_offset....}`.
+
+   
+
+2. `enum` catching table, normal return:
+
+`return_ptr`= the absolute pointer to the return path.
+
+ `catching_return_ptr`=`table_pointer`= absolute address of the table.
+
+ - table: 
+
+  contains relative offsets to the paths,the pointer points to the first catching return offset, the catching offsets are accessible via positive indexes to the table.
+
+ `{ nth_catching_return_offset....}`.
+
+ 
+
+3. `enum` catching table, `enum` normal return table:
+
+`return_ptr`= the absolute pointer to the first return path.
+
+ `catching_return_ptr`=`table_pointer`= absolute address of the table.
+
+ - table: 
+
+  contains relative offsets to the paths, the pointer points to the first return offset( guaranteed as zero), the catching offsets are accessible via negative indexes to the table.
+
+ `{...(-n)th_catching_return_offset, nth_return_path_offset....}`.
+
+
+- example:
+ assuming that the return enum indexes are non negative and start at 0,
+ if not, we add an offset of the negative of the least enum index to make it start at 0 and be non negative.
+ 
+
+  
+  //call site
+  
+  `{catchs={clabels.....}, rets={labels.....}};`
+  
+  
+ `CRA= IP+(rets-IP);`// constant offset from IP to support ASLR
+ 
+`NRA= IP+label;`
+ 
+` jump func;`// IP=func
+
+many labels:....
+
+ .....happy...
+ 
+many clabels:....
+
+ ....sad.....
+ 
+ 
+ 
+ func:
+
+ `BP=SP;` // preserve CRA, NRA,BP throughout the call
+ 
+// stuff....
+
+ // stuff...  of first enum entry ret
+
+`SP=BP;`
+
+// return of the first enumret entry is not a table lookup 
+ 
+`jump NRA;`// IP=NRA
+ 
+ // stuff...  of other enum rets
+ 
+`SP=BP;`
+
+// return of the happy path is positive indexes, index being the same as the return value's enum numeric ( or if the enum is a sum type, the type tag)
+
+`NRA+=*(CRA+sizeof(void*)*retval);`
+
+ `jump NRA;`// IP=NRA
+ 
+ 
+ // stuff...  of enum throws
+ 
+`SP=BP;`
+
+// return of the sad path is negative indexes( with -1 being the first), index being the same as the throw value's enum numeric ( or if the enum is a sum type, the type tag)
+
+// the bit not is the way we use two's compliment to map the negative indexes ( the reason for using this is the following both path)
+
+
+`NRA+=*(CRA+ sizeof(void*)*(~throwval) );`
+
+ `jump NRA;`// IP=NRA
+ 
+ 
+ 
+ 
+// branchless both path multi dispatch:
+....
+`SP=BP;`
+
+`val=~throwval;`
+
+ `val = throws?val:retval;`// cmove
+ 
+`NRA+=*(CRA+ sizeof(void*)*val );` 
+
+ `jump NRA;// IP=NRA`
+
+  
+  
+// did you notice? only 2 jumps, both being necessary ( one as call, one as ret)
+  
+  
+  
+- example  of non zero offsets for enum:
+
+
+retoffset= least value in return enum.
+
+catchoffset= least value in catch enum. 
+
+the values are calculated as constants to offset the table.
+
+
+`IP+(rets-IP)` becomes `IP+(rets-IP-retoffset)`, which is no different because both are a single add to a constant. 
+
+`~throwval` becomes `(retoffset-catchoffset-1)-throwval` , a bit different, instead of a single not instruction we have a single subtraction instruction, although both are relatively cheap in x86.
+
+
+
+  
+ 
+  
+  
 
 
 --- 
