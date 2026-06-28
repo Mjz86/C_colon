@@ -4883,7 +4883,7 @@ using fractional types in some contexts adds padding to the end of them to align
   the bit representation of this pointer is unspecified.
   for ptr1 and ptr2 ( ptr1 and ptr2 are not  `refexpr` objects , in `valexpr` alignment bits are overlapable)  with ordering O in ` ptr1 <=> ptr2 `  ,
   their bits as unsigned integers  must also have ordering O in ` uptr1 <=> uptr2 ` ,
-  if ` ptr1 <= ptr2 ` then `uptr2 - uptr1` is equivalent to  `ptr2 - ptr1`.
+  if ` ptr1 <= ptr2 ` then `uptr2 - uptr1` is equivalent to  `ptr2 - ptr1`, otherwise the behaviour is unspecified.
   
  
   
