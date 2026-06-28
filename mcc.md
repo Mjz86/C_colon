@@ -4866,7 +4866,7 @@ using fractional types in some contexts adds padding to the end of them to align
  
  
  * note on constexpr pointers:
-  the bit representation of this pointer is implementation defined and must effect the program behavior, otherwise ( in a bad cast) the program is ill-formed.
+  the bit representation of this pointer is implementation defined and must not effect the program behavior, otherwise ( in a bad cast) the program is ill-formed.
   
  * note :
  the comparison or checks of equality of two pointers is unsafe(pointer-cmp),
@@ -4874,6 +4874,20 @@ using fractional types in some contexts adds padding to the end of them to align
  if M1 and M2 are offset dependent reletive to each other ,   P1 and  P2 have ordering as if they were offsets  in the union of M2 and M1,
  else if its a  check of (in)equality and  M1 and M2 do not have offset dependacny relative to  each other( and not overlap)   and both are  `refexpr` qualified and have non zero size,the check will say non equality,
  otherwise the behavior is undefined.
+
+* note:
+ if ptr1 and ptr2 have an exact defined compare result,
+ the function `memoverlaps(ptr1,sz1,ptr2,sz2)` returning a bool  must return true if the pointer ranges overlap, and false if they dont , otherwise the behaviour is unspecified.
+
+ * note on runtime pointers:
+  the bit representation of this pointer is unspecified.
+  for ptr1 and ptr2  with ordering O in ` ptr1 <=> ptr2 `  ,
+  their bits as unsigned integers  must also have ordering O in ` uptr1 <=> uptr2 ` ,
+  if ` ptr1 <= ptr2 ` then `uptr2 - uptr1` is equivalent to  `ptr2 - ptr1`  if ptr1 is not a `refexpr` object( alignment bits are overlapable).
+  
+ 
+  
+
  
 
  ---
