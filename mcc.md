@@ -4873,7 +4873,7 @@ using fractional types in some contexts adds padding to the end of them to align
  if two printers  P1 and  P2 within memory  regions  M1 and M2 are compared,
  if M1 and M2 are offset dependent reletive to each other ,   P1 and  P2 have ordering as if they were offsets  in the union of M2 and M1,
  else if its a  check of (in)equality and  M1 and M2 do not have offset dependacny relative to  each other( and not overlap)   and both are  `refexpr` qualified and have non zero size,the check will say non equality,
- otherwise the behavior is undefined.
+ otherwise the behavior is unspecified.
 
 * note:
  if ptr1 and ptr2 have an exact defined compare result,
