@@ -21,7 +21,7 @@ this languages goals include:
 3. safety as the default, with unsafe as escape hatch
 4. compile time code.
 5. multi paradigm language.
-6. abi stability with ever changing libraries: the recursive hash abi , ( similar  to the dependancy hashing in caching systems) and its cycle braking operators aim to solve the abi stability nightmare,   see the details in the mcc document.
+6. abi stability with ever changing libraries: the recursive hash abi , ( similar  to the dependency hashing in caching systems) and its cycle braking operators aim to solve the abi stability nightmare,   see the details in the mcc document.
 7. type qualifier deriven optimizations
 8. reflection the verbosity away.
 9. JIT constexpr code execution.

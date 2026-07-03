@@ -3905,7 +3905,7 @@ in general, API objects defined as part of this ABI are assumed to be extern "c:
 
  7. import and export ajason:
  an ajason module is a module that is defined in a different translation unit,
- however we have a dependancy on this unit is executable, but we do not import its content, 
+ however we have a dependency on this unit is executable, but we do not import its content, 
  note that we can define ajason units in a module just by making the  definition, and saying exactly what needs to export, and what part needs no symbol imported.
  
  note that scopes can either only depend on the dependancies or the wholw translation unit.
@@ -5114,7 +5114,7 @@ and the search is only from S and tables, in a similar way to unqualified name l
    lets say we have  a scope ( assuming all definitions in the scope are known ) that uses  name `a` multiple times and `a` is not `=:`ed,
    if the first lookup told us "`a` is not overloaded" then the second lookup of a is equvivlent to the first,
    if `a` is "=:"ed we  dont need to look at other scopes at all,
-   the overhead of overload resolotion and name lookup decreases.
+   the overhead of overload resolution and name lookup decreases.
 
 
    
