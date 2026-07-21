@@ -1225,8 +1225,6 @@ similar to other qualifiers it can be casted by  `unsafe(seq_cst_barrier)`and is
 
 *note : consume is deprecated in c++26 so i wont mention it.
 
-*note:
-these are one of the things that the compiler can rely on to change the order of operations, typically without inlinging/synth we cant assume these.
 
 
 
