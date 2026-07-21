@@ -1185,16 +1185,19 @@ similar to other qualifiers it can be casted by  `unsafe(branchless_predictable)
  
 
 
-- atomic and barrier qualifiers:
+- atomic and barrier qualifiers.
+
 0. `no_barrier`:
  for the evaluation of an expression E, no atomic operation occurred during the execution of E,and no barrier was made with any memory ordering,otherwise the behavior is undefined  . 
 similar to other qualifiers it can be casted by  `unsafe(no_barrier)`and is recursive by composition.
+for functions with this qualifier , they can only call functions with `no_barrier`, otherwise the program is ill formed.
 
 1. `relaxed_barrier` : 
  for the evaluation of an expression E, 
  if any operation during E had a memory ordering , the memory order that was specified must be the relaxed memory order,
  otherwise the behavior is undefined.
 similar to other qualifiers it can be casted by  `unsafe(relaxed_barrier)`and is recursive by composition.
+for functions with this qualifier , they can only call functions with `no_barrier` or `relaxed_barrier` , otherwise the program is ill formed.
 
 2. `acquire_barrier`:
  for the evaluation of an expression E, 
@@ -1202,11 +1205,15 @@ similar to other qualifiers it can be casted by  `unsafe(relaxed_barrier)`and is
  otherwise the behavior is undefined.
 similar to other qualifiers it can be casted by  `unsafe(acquire_barrier)`and is recursive by composition.
 
+for functions with this qualifier , they can only call functions with `no_barrier`,`acquire_barrier`, or `relaxed_barrier` , otherwise the program is ill formed.
+
 3.  `release_barrier`:
  for the evaluation of an expression E, 
  if any operation during E had a memory ordering , the memory order that was specified must be the one of the `relaxed,release` memory order,
  otherwise the behavior is undefined.
 similar to other qualifiers it can be casted by  `unsafe(release_barrier)`and is recursive by composition.
+
+for functions with this qualifier , they can only call functions with `no_barrier`, `release_barrier`, or `relaxed_barrier` , otherwise the program is ill formed.
 
 4.`acq_rel_barrier`  :
  for the evaluation of an expression E, 
@@ -1214,12 +1221,16 @@ similar to other qualifiers it can be casted by  `unsafe(release_barrier)`and is
  otherwise the behavior is undefined.
 similar to other qualifiers it can be casted by  `unsafe(acq_rel_barrier)`and is recursive by composition.
 
+for functions with this qualifier , they can only call functions with `no_barrier`,`acquire_barrier`, `release_barrier`,`acq_rel_barrier`, or `relaxed_barrier` , otherwise the program is ill formed.
+
+
 5.  `seq_cst_barrier`( default):
  for the evaluation of an expression E, 
  if any operation during E had a memory ordering , the memory order that was specified must be the one of the `relaxed,acquire,release,acq_rel,seq_cst` memory order,
  meaning any barrier is ok.
   this is one of the qualifiers one typically wants to not have on its function, tho its the safest default .
 similar to other qualifiers it can be casted by  `unsafe(seq_cst_barrier)`and is recursive by composition.
+for functions with this qualifier , they can only call funcions with any barrier. 
 
 
 
