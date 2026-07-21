@@ -1185,7 +1185,42 @@ similar to other qualifiers it can be casted by  `unsafe(branchless_predictable)
  
 
 
+- atomic and barrier qualifiers:
+0. `no_barrier`:
+ for the evaluation of an expression E, no atomic operation occurred during the execution of E,and no barrier was made with any memory ordering,otherwise the behavior is undefined  . 
+similar to other qualifiers it can be casted by  `unsafe(no_barrier)`and is recursive by composition.
 
+1. `relaxed_barrier` : 
+ for the evaluation of an expression E, 
+ if any operation during E had a memory ordering , the memory order that was specified must be the relaxed memory order,
+ otherwise the behavior is undefined.
+similar to other qualifiers it can be casted by  `unsafe(relaxed_barrier)`and is recursive by composition.
+
+2. `acquire_barrier`:
+ for the evaluation of an expression E, 
+ if any operation during E had a memory ordering , the memory order that was specified must be the one of the `relaxed,acquire` memory order,
+ otherwise the behavior is undefined.
+similar to other qualifiers it can be casted by  `unsafe(acquire_barrier)`and is recursive by composition.
+
+3.  `release_barrier`:
+ for the evaluation of an expression E, 
+ if any operation during E had a memory ordering , the memory order that was specified must be the one of the `relaxed,release` memory order,
+ otherwise the behavior is undefined.
+similar to other qualifiers it can be casted by  `unsafe(release_barrier)`and is recursive by composition.
+
+4.`acq_rel_barrier`  :
+ for the evaluation of an expression E, 
+ if any operation during E had a memory ordering , the memory order that was specified must be the one of the `relaxed,acquire,release,acq_rel` memory order,
+ otherwise the behavior is undefined.
+similar to other qualifiers it can be casted by  `unsafe(acq_rel_barrier)`and is recursive by composition.
+
+5.  `seq_cst_barrier`( default):
+ for the evaluation of an expression E, 
+ if any operation during E had a memory ordering , the memory order that was specified must be the one of the `relaxed,acquire,release,acq_rel,seq_cst` memory order,
+ otherwise the behavior is undefined.
+similar to other qualifiers it can be casted by  `unsafe(seq_cst_barrier)`and is recursive by composition.
+
+*note : consume is deprecated in c++26 so i wont mention it.
 
 
 - `untrivialcastless`:
@@ -2188,6 +2223,7 @@ but a bit pointer does not use atomic operations so its a race condition, howeve
 
 no changes were really made from [the c++26 definitions](https://en.cppreference.com/w/cpp/atomic/memory_order.html), as its a great well-defined memory model that c colon stands on.
 
+*note : consume is deprecated in c++26 so i wont mention it.
 
 
 
