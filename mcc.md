@@ -1217,14 +1217,17 @@ similar to other qualifiers it can be casted by  `unsafe(acq_rel_barrier)`and is
 5.  `seq_cst_barrier`( default):
  for the evaluation of an expression E, 
  if any operation during E had a memory ordering , the memory order that was specified must be the one of the `relaxed,acquire,release,acq_rel,seq_cst` memory order,
- , this is one of the qualifiers one typically wants to not have on its function .
+ meaning any barrier is ok.
+  this is one of the qualifiers one typically wants to not have on its function, tho its the safest default .
 similar to other qualifiers it can be casted by  `unsafe(seq_cst_barrier)`and is recursive by composition.
 
 
 
 *note : consume is deprecated in c++26 so i wont mention it.
 
-*note: these are one of the things that the compiler can rely on to change the order of operations, typically without inlinging/synth we cant assume 
+*note:
+these are one of the things that the compiler can rely on to change the order of operations, typically without inlinging/synth we cant assume these.
+
 
 
 - `untrivialcastless`:
