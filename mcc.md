@@ -1223,8 +1223,11 @@ similar to other qualifiers it can be casted by  `unsafe(seq_cst_barrier)`and is
 
 
 
-*note : consume is deprecated in c++26 so i wont mention it.
-
+*note : 
+consume is deprecated in c++26 so i wont mention it.
+stuff like `std::atomic_thread_fence(std::memory_order_acquire)` also count as barriers, typically functions taking `std::memory_order` are the one who is introducing them, also , if someone intracts in any way with `volatile` memory ,
+that is implicitly an `seq_cst_barrier` qualified expression, so to reduce it one can cast it away,
+`volatile` is suppoed to be expensive, this is one of them.
 
 
 
