@@ -2236,6 +2236,11 @@ The default behavior of all atomic operations in the library provides for sequen
  however std atomic of T can but must be padded .
 the `std::atomic<std::flag_t>` is the only atomic that is guaranteed to be lock-free, however it has implementation defined layout and alignment ( as required by the compare exchange instruction support in the hardware, which is virtually all multi-core hardware, or if not supported, an interrupt disable critical section in embedded single core architectures)
 
+- note:
+ the enforcment of these ordering is for observable memory locations, for example , a local atomic varible with no pointer to it doing aquire or relese has no effect on anybody , or resterict/stable memory can usually be only observed in pridictable ways across threads ( constant , or hidden ), tl;dr the as-if rule applies.
+ however for the cases where a thread might be able to observe the modification of a variable , then the `X_barrier` set of qualifiers dictate how and when the reordering can or cannot occur.
+
+
 
 * why bit pointers never use atomic operations;
 this is because an atomic load or store to a bit requires the byte to be synchronized accordingly, 
