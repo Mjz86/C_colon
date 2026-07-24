@@ -2223,13 +2223,18 @@ The default behavior of all atomic operations in the library provides for sequen
 
 1. Relaxed : there are no synchronization or ordering constraints imposed on other reads or writes, only this operation's atomicity is guaranteed (see Relaxed ordering below). 
 
-2. Acquire: A load operation with this memory order performs the acquire operation on the affected memory location: no reads or writes in the current thread can be reordered before this load. All writes in other threads that release the same atomic variable are visible in the current thread (see Release-Acquire ordering below).
+2. Acquire: An operation O with this memory order performs the acquire operation on the affected memory location: no reads or writes in the current thread can be reordered before O. All writes in other threads that release the same atomic variable are visible in the current thread (see Release-Acquire ordering below).
 
-3. Release :A store operation with this memory order performs the release operation: no reads or writes in the current thread can be reordered after this store. All writes in the current thread are visible in other threads that acquire the same atomic variable (see Release-Acquire ordering below) .
+3. Release :An operation O with this memory order performs the release operation: no reads or writes in the current thread can be reordered after O. All writes in the current thread are visible in other threads that acquire the same atomic variable (see Release-Acquire ordering below) .
 
-4. acquire release :A read-modify-write operation with this memory order is both an acquire operation and a release operation. No memory reads or writes in the current thread can be reordered before the load, nor after the store. All writes in other threads that release the same atomic variable are visible before the modification and the modification is visible in other threads that acquire the same atomic variable.
+4. acquire release :An operation O with this memory order is both an acquire operation and a release operation. No memory reads or writes in the current thread can be reordered before O. All writes in other threads that release the same atomic variable are visible before the modification and the modification is visible in other threads that acquire the same atomic variable.
 
-5. sequencal consistency :A load operation with this memory order performs an acquire operation, a store performs a release operation, and read-modify-write performs both an acquire operation and a release operation, plus a single total order exists in which all threads observe all modifications in the same order (see Sequentially-consistent ordering below).
+5. sequencal consistency : An operation O with this memory order is an  acquire release operation.  plus a single total order exists in which all threads observe all modifications in the same order (see Sequentially-consistent ordering below).
+
+- note:
+while the c++ standard specifies these in terms of load/store, instead of "operation O" , i think saying "X is UB" just beacuse its a store with aquire is used is not right,
+`std::atomic<T>::store ...... If order is one of std::memory_order_consume, std::memory_order_acquire and std::memory_order_acq_rel, the behavior is undefined.` [atomic store cpp](https://en.cppreference.com/cpp/atomic/atomic/store),
+the behavior should be at most implementation defined, not undefined.
 
 - note: 
  std atomic refrence of T cannot refrence fractional alignment types,
