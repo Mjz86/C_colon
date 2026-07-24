@@ -447,19 +447,21 @@ for a pointer p declared within its lifetime L,  to an stable const region of me
  these qualifiers are typically used as indicators of whether or not something is safe to pass and use between threads, the default is, 
 any stabilized variable is thread safe and otherwise unsafe, the stable mut is exclusively owned, and so safe to pass around, however, if it is not stabilized its not thread safe, so in any async boundaries the c colon libraries can notice via reflection that a mutable thread unsafe variable is used, so they can disallow it.
  also, if a member is thread unsafe in E: ( not C:), because of the qualifier visibility ban and the unsafe ban, that qualifier cannot be overridden by using a thread safe type with an `aliasset`.
-`unsafe(thread_safe-cast)` can also be used to cast the qualifier back ( for example the std mutex internals are not safe, but yhe mutex itself is)
- note that, unlike the stronger `stabilized` grantee, `thread_safe` is not a compiler truth, its a developer promise.
+`unsafe(thread_safe-cast)` can also be used to cast the qualifier back ( for example the std mutex internals are not safe, but yhe mutex itself is).
  the act of giving (  relocation ) an object to a thread  needs give safety .
  the act of taking (  relocation ) an object  from  a thread needs take safety. 
  the act of   scattering ( giving references of ) an object to a thread  needs scatter safety .
  the act of  gathering (  getting  references of ) an object  from  a thread needs  gather safety. 
+
+- note :
+`thread_unsafe` variables that can be proven to be only visible for the current thread can also be optimized under the as-if rule regarding their position relative to memory barriers. 
  
 
 `async_safe(bound/give/take/gather/scatter)` / `async_unsafe`:
  similar to `thread_safe` in its semantics, but more relaxed , for async-smi-threads.
  an `async_unsafe` qualifier means that even a single threaded concurrent loop can not capture it,
  realistically most data is `async_safe`, however some may not be.
-
+ note that, unlike the stronger `thread_safe` grantee, `async_safe` is not a compiler truth, its a developer promise.
 
 
 uninitialized /initialized/ intermediate/ erroneous
