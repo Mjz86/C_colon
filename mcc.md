@@ -1469,7 +1469,7 @@ the synchronized block has a separate context-type that is created for the block
 
 
 4. `transaction_safe`:
-a transaction safe expression is a `weak_predictable` expression that can only use stabilized trivially relocatable objects, 
+a transaction safe expression is a `weak_predictable` `no_barrier` expression that can only use stabilized trivially relocatable objects, 
 or if not stabilized, the value must be transactional nonvolatile qualified and be trivially relocatable .
  a `transaction_safe` expression must be composed of only other `transaction_safe` expressions OR must be casted via `unsafe(as-transaction_safe)` .
 if a transaction safe function is idempotent, it has better optimization capabilities.
