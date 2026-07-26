@@ -6056,7 +6056,7 @@ Mjz C colon summary:
 
 
 
-Mjz colon compiler design and details:
+Mjz colony compiler design and details:
 [link](https://github.com/Mjz86/c_colon/blob/main/mcc.md))
 
 
