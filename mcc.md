@@ -1238,7 +1238,7 @@ for functions with this qualifier , they can only call funcions with any barrier
 
 *note : 
 consume is deprecated in c++26 so i wont mention it.
-stuff like `std::atomic_thread_fence(std::memory_order_acquire)` also count as barriers,
+stuff like `std::atomic_thread_fence(std::memory_order_acquire)` or `std::atomic_signal_fence` also count as barriers,
 typically functions taking `std::memory_order` are the one who is introducing them, also ,
 if someone intracts in any way with `volatile` memory ,
 that is implicitly an `seq_cst_barrier` qualified expression, so to reduce it one can cast it away,
