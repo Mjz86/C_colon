@@ -6056,8 +6056,11 @@ Mjz C colon summary:
 
 
 
-Mjz colony compiler design and details:
+Mjz colony compiler (aka MCC) design and details:
 [link](https://github.com/Mjz86/c_colon/blob/main/mcc.md))
+
+MCC scheduler desine :
+https://github.com/Mjz86/String/blob/main/mjz_lib/graph/scheduler.md
 
 
 
