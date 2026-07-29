@@ -1980,7 +1980,7 @@ the compiler is allowed to provide the region M with other means than new and is
 for example a size typed capacity field behind the allocation region,
 or a high bit in a pointer reference to such region.
 or simply having a flag next to the reference that indicates elision.
-in my view, using some bits in the pointer is superior to addling a capacity feild.
+in my view, using some bits in the pointer is superior to addling a capacity field.
 
 there also might be ways to have a call to new or renew produce a flag, and delete to consume it.
 
@@ -4582,11 +4582,11 @@ fundamental types
 
 - `std::(l/b/L/E) (m/u/s)intN_t`:
  two's compliment integral type.
- N goes from 1 ( fractional alignment, with math similar to c bit feilds), 2, 4, 8 ( byte aligned), 16,....up to at least 1024 ( the 11 power of 2 starting feom the 0th power) , while unnecessary, its better to have reliable defaults, especially because modorn cpus have massive registers.
+ N goes from 1 ( fractional alignment, with math similar to c bit fields), 2, 4, 8 ( byte aligned), 16,....up to at least 1024 ( the 11 power of 2 starting feom the 0th power) , while unnecessary, its better to have reliable defaults, especially because modorn cpus have massive registers.
 
  however if N is not a power of two, N must be between 1 and 64 
  with its bit alignment being the prime factor of powers of 2.
- and its unsafe(obscure-math),obviously no one expects a 1 bit int to only have 0 and -1 ( except if they saw c bit feild ...).
+ and its unsafe(obscure-math),obviously no one expects a 1 bit int to only have 0 and -1 ( except if they saw c bit field ...).
 
 note that by using qualiexpr tricks and the std bounded integral types, one can have a fundamental type that the compiler known its a violation if it goes outside of its range.
 these might be useful to help the compiler in optimizations of math, and maybe layout .
@@ -4922,7 +4922,7 @@ using fractional types in some contexts adds padding to the end of them to align
 
  2.  c colon fractional pointers: 
 
- these point to types with fractional alignments, the reason is to make common bit feilds and flag vectors easy.
+ these point to types with fractional alignments, the reason is to make common bit fields and flag vectors easy.
 
  these are cxx pointer sized in many cases ( 64 bit ptrs are big enough, however 32 bit ones, are a fat pointer with 64 bits).
  
