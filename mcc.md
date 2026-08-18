@@ -1904,7 +1904,7 @@ the promise cache is an object only visible in the promise, with lifetime betwee
 
 
 ` dyn struct frame{`
-
+  `private:`
  `context-type-coro-return (* resume_function ) ( frame* ptr, context-type-coro-input) context-type;`// fastdyncaller, and dyncontract by default 
 
  `intptr_t program_switch_counter;`// positive indexes show normal control flow, negative indexes show the same suspension's catching/cancelation control flow, 0 shows that the function and all of its variables will be destroyed on next resume ( final suspend) .
