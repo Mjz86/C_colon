@@ -1079,6 +1079,14 @@ the cow qualification can be used on this object, creating any mutable reference
 the reason for this being a language construct instead of a library one is that the dyn(Q) purity qualification would be able to support trees with cow, this would help in making functional colon a viable pure language.
 note that the byte value, or size of the dyn pointer is implemented defined, implementations are encouraged to use a bit in the pointer to indicate if the allocation is elided, similar to what the coroutine handle does.
 
+
+- undyn (default) :
+ to use a dyn object via an indirection , as if a fat pointer was used to reference it, 
+ undyn'ing a dyn object will make us able to store it as a member without being a dyn object.
+ undyn'ing a normal object does nothing special to it.
+ the storage used by undyn is elidable.
+
+
 ---
 
 
@@ -1895,7 +1903,7 @@ the promise cache is an object only visible in the promise, with lifetime betwee
 
 
 
-` struct frame{`
+` dyn struct frame{`
 
  `context-type-coro-return (* resume_function ) ( frame* ptr, context-type-coro-input) context-type;`// fastdyncaller, and dyncontract by default 
 
@@ -1917,6 +1925,9 @@ the promise cache is an object only visible in the promise, with lifetime betwee
 
  ` };`
  
+
+  the corotinue frame can be used like any other dyn object.
+
  
  `__raw_handle{` // pack.
 `frame* ptr;`// the alignment bits are used for the flags.
