@@ -4247,7 +4247,8 @@ if returns nullopt then the memory may or may not be theirs, implementations how
 
 
 
-
+* note : 
+the new operator in the context-type has 2 variants , one is thread safe( safe to call concurrently) , the other is not.
 
 
 
@@ -4285,7 +4286,8 @@ if returns nullopt then the memory may or may not be theirs, implementations how
  they often use a stack of geometrically growing memory regions , and a single stack pointer and region counter ,
  they push till the region is full , then go to the next,
  they pop  till the region is empty, then go to previous.
-
+ the operator push/pop is not safe to call concurrently,
+ a second thread safe variant could be provided , but often its unneccecary .
 
 
 
