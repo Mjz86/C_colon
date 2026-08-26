@@ -4248,7 +4248,10 @@ if returns nullopt then the memory may or may not be theirs, implementations how
 
 
 * note : 
-the new operator in the context-type has 2 variants , one is thread safe( safe to call concurrently) , the other is not.
+the new operator in the context-type has 4 variants ( yes/no async safe , yes/no thread safe ) , one is thread safe( safe to call concurrently) , the other is not.
+the thread unsafe one has a memory region per thread,
+the async unsafe one has a memory region per acync-smi-thread,
+
 
 
 
@@ -4287,7 +4290,7 @@ if returns nullopt then the memory may or may not be theirs, implementations how
  they push till the region is full , then go to the next,
  they pop  till the region is empty, then go to previous.
  the operator push/pop is not safe to call concurrently,
- a second thread safe variant could be provided , but often its unneccecary .
+ a thread/async safe variant could be provided , but often its unnecessary .
 
 
 
