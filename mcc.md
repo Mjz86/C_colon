@@ -4219,6 +4219,7 @@ in a debugging environment, this can have conditional trap instructions.
 
 
 
+
 - `operator new( in(out) size,in(out) alignment, out uninitialized/intermediate byte*)context-type`:
  allocation of a memory region with given size, if size is inout, it can be specified to minimum of the given size, 
  the alignment of the output region must be correct.
@@ -4240,9 +4241,55 @@ this operator must be noexcept.
  note that a failure of expanding or shrinking the memory does not invalidate the previous region of memory, a success will end the lifetime of previous region and begins the new one's lifetime.
 in a debugging environment, this can have conditional trap instructions. 
 
-- `operator whonew(in size, in alignment, inout intermediate const byte*)context-type-> optional<bool>/bool`:
+- `operator who_new(in size, in alignment, inout intermediate const byte*)context-type-> optional<bool>/bool`:
 asks the allocator if the memory is their own, usefull for allocator chains,
 if returns nullopt then the memory may or may not be theirs, implementations however are encouraged to implement this function such that it never reterns nullopt .
+
+
+
+
+
+
+
+-`context-type::push_align_v`:
+ a constant expression static member of the context type , specifies the minimum alignment of memory given by `operator push`.
+
+- `operator push( in(out) size, out uninitialized/intermediate byte* ptr)context-type`:
+ if not a multiple of `push_align_v`,  sets the size to be the next multiple of `push_align_v`,
+ allocates size many bytes of memory(the pointer may or may not be the end of the previous given region, as stack regions can be added , preferably with geometric sizes )
+ in a debugging environment, this can have conditional trap instructions. 
+
+
+
+
+ - `operator pop( in size, in uninitialized/intermediate byte* ptr)context-type`:
+the  `ptr,size`  must be this context's `operator push`es stack pop, 
+ends the lifetime of the region of memory.
+
+
+ in a debugging environment, an stack may be created that stores the ptr and size pairs , that terminates if the poped pair does not match the pop arguments,also can have conditional trap instructions. 
+
+
+
+- `operator who_push(in size,inout intermediate const byte*)context-type-> optional<bool>/bool`:
+asks the allocator if the memory is their own ( in this stack alloc), usefull for allocator chains,
+if returns nullopt then the memory may or may not be theirs, implementations however are encouraged to implement this function such that it never reterns nullopt .
+
+
+
+
+* note:
+ in heap allocation ellion, if the region of memory is too large for the program's call stack , this heap allocated stack is used instead ,
+ becuse if the memory had the ability to be premoted to the stack , it also has the ability to be premoted to this stack,
+ typical implementations of  `push` are much less heavy than `new` ,
+ they often use a stack of geometrically growing memory regions , and a single stack pointer and region counter ,
+ they push till the region is full , then go to the next,
+ they pop  till the region is empty, then go to previous.
+
+
+
+
+
 
 - `operator async_id()context-type->type_info/uintN_t`:
 returns the id of the async-semi-thread of execution .
@@ -6126,7 +6173,7 @@ shared libraries and loader in cxx windows and Linux:
 
 
 
-Teresa Johnson “ThinLTO： Scalabel and Incremental Link-Time Optimization” :
+Teresa Johnson "ThinLTO： Scalabel and Incremental Link-Time Optimization" :
 
 [link](https://www.youtube.com/watch?v=p9nH2vZ2mNo)
 
@@ -6134,7 +6181,7 @@ Teresa Johnson “ThinLTO： Scalabel and Incremental Link-Time Optimization” 
 
 
 
-CppCon 2017： Michael Spencer “My Little Object File： How Linkers Implement C++” :
+CppCon 2017： Michael Spencer "My Little Object File： How Linkers Implement C++" :
 
 [link](https://www.youtube.com/watch?v=a5L66zguFe4)
 
@@ -6146,7 +6193,7 @@ Understanding Compiler Optimization - Chandler Carruth - Opening Keynote Meeting
 [link](https://www.youtube.com/watch?v=FnGCDLhaxKU) 
 
 
-CppCon 2018： Matt Godbolt “The Bits Between the Bits： How We Get to main()” :
+CppCon 2018： Matt Godbolt "The Bits Between the Bits： How We Get to main()" :
 
 [link](https://www.youtube.com/watch?v=dOfucXtyEsU)
 
