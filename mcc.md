@@ -4248,7 +4248,8 @@ if returns nullopt then the memory may or may not be theirs, implementations how
 
 
 * note : 
-the new operator in the context-type has 4 variants ( yes/no async safe , yes/no thread safe ) , one is thread safe( safe to call concurrently) , the other is not.
+the new operator in the context-type has 4 variants ( yes/no async safe , yes/no thread safe ) ,
+one is thread safe( safe to call concurrently) , the other is not, ect.
 the thread unsafe one has a memory region per thread,
 the async unsafe one has a memory region per acync-smi-thread,
 
