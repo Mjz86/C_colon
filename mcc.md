@@ -4254,6 +4254,8 @@ the thread unsafe one has a memory region per thread,
 the async unsafe one has a memory region per acync-smi-thread,
 
 
+* note :
+if the allocation paths were complex but  elidable to the execution record of the function , the compiler may hiddenly use an areana allocation strategy built on top of this push and pop allocator 
 
 
 -`context-type::push_align_v`:
