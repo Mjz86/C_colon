@@ -3059,7 +3059,21 @@ the conceptual call site( note that its implementation defined for each function
  
  
  
+ 5.( the architecture can decide to include this or not ) the virtual register pointer:
+  
+ this is a pointer to an aligned( size of Biggest register)  region of trivially relocatable memory, 
  
+because each dll is  compiled separately,   
+if dll to dll function calls have a virtual register size less than the previous one,  the virtual register region will be expanded  as if it was realloc ed .
+the size is stored in the 0th offset of the region
+ the  dll's functions that call within the dll  are optimized  as if the dll register allocator was unified,
+ each system must specify a minimum virtual register count, preferably   matching the size of the host system's cache size.
+ 
+ the virtual registers have a significant role in eliminating useless stack space , 
+ because many call graphs  have big acyclic components,  
+and many stack slots can be eliminated if the graph coloring allowed it.
+
+also ,  this virtual memory is a great way to put elided arrays of data 
  
 
 
