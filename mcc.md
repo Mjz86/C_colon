@@ -1188,11 +1188,120 @@ writing  this kind function feels like wiring silicon without having a clock pul
 similar to other qualifiers it can be casted by  `unsafe(branchless_predictable)`and is recursive by composition.
 
 
+
+
+- `basic_block`:
+  its similar to the predictability  qualifications,  
+  it means that the function  body or expression qualified by this qualifier is only  composed of a single basic block, 
+  almost always  exceptions and control flow cannot be used within a basic block.
+  the program is ill-formed if  the requirements are not met.
+   the compiler  uses these implicitly  to make a control flow graph.
+ 
+
+
 * note:
  all functions  that satisfy  `instruction_predictable independent` can be represented as simd element operations  in A colon,
  however  if they are still not `purely_fundamental ` and they cannot be an instruction.
  note that the fundamental operations ( assuming were working with values and not references)  that may result in a violation of contract  may not always satisfy this unless using `unsafe(contract-ub)` or after a  contract violation based invariant optimization  transformation.
  
+ - undefined behaviour( UB):
+ any Behavior, in which the duty of the program's truthful correctness was violated in an unsafe block,  for which this document imposes no requirements
+Any other behavior during execution of a program  can be effected by UB.
+All committed observable behavior appears as specified in this document when it happens before an operation with undefined behavior in the execution of the program.
+
+ no safe construct shall cause UB, for those  who cannot  ensure an invariant, it should be unspecified behavior instead,  examples include binary searching on unsorted data.
+
+
+- observation/UB/basic block barrier qualifiers:
+
+in the compiler constructed  control flow graph ,
+if theres an   undefined behaviour in a basic block there are many ways of qualifications that determine the outcome:
+
+- `ub_barrier`( default):
+All observable behavior inside an expression with this qualifier  appears as specified when it happens before an operation with undefined behavior in the execution of the program. 
+- `relax_ub_barrier`( unsafe):
+ for any observable behavior O in the basic block B  ,   where as B does not execute UB , or if it does , the UB is not guaranteed to execute if  O was executed  ( basically  UB is not before O , or something like print then mayabort then UB is not the case )
+ 
+ the observable behavior O with this qualifier  appears as specified when it happens before an operation with undefined behavior in the execution of the program.
+
+`no_ub_barrier`( unsafe):
+ the so called "time travel optimization  " is allowed inside a basic block.
+
+
+-`no_dom_ub`( default):
+   nothing special 
+
+-`no_post_dom_ub`( default):
+   nothing special 
+
+-`relax_dom_ub`( unsafe):
+if the non trivial dominator of a basic block  contains  undefined behaviour, 
+the behavior of this block becomes undefined if the execution of this block guarantees execution of UB.
+
+-`relax_post_dom_ub`( unsafe):
+if the non trivial post dominator of a basic block  contains  undefined behaviour, 
+the behavior of this block becomes undefined if the execution of this block guarantees execution of UB.
+
+-`dom_ub`( unsafe):
+if the non trivial dominator of a basic block  contains  undefined behaviour, 
+the behavior of this block becomes undefined.
+
+-`post_dom_ub`( unsafe):
+if the non trivial post dominator of a basic block  contains  undefined behaviour, 
+the behavior of this block becomes undefined.
+
+
+
+
+0. `no_observable_barrier`:
+ for the evaluation of an expression E, no observable operation occurred during the execution of E,otherwise the behavior is undefined  . 
+similar to other qualifiers it can be casted by  `unsafe(no_observable_barrier)`and is recursive by composition.
+for functions with this qualifier , they can only call functions with `no_observable_barrier`, otherwise the program is ill formed.
+
+1. `relaxed_observable_barrier` : 
+ for the evaluation of an expression E, 
+ if any observable operation during E had an observable memory ordering , the observable memory order that was specified must be the  relaxed observable memory order,
+ otherwise the behavior is undefined.
+similar to other qualifiers it can be casted by  `unsafe(relaxed_observable_barrier)`and is recursive by composition.
+for functions with this qualifier , they can only call functions with `no_observable_barrier` or `relaxed_observable_barrier` , otherwise the program is ill formed.
+
+2. `acquire_observable_barrier`:
+ for the evaluation of an expression E, 
+ if any observable operation during E had an observable memory ordering , the observable memory order that was specified must be the one of the `relaxed,acquire` observable memory orders,
+ otherwise the behavior is undefined.
+similar to other qualifiers it can be casted by  `unsafe(acquire_observable_barrier)`and is recursive by composition.
+
+for functions with this qualifier , they can only call functions with `no_observable_barrier`,`acquire_observable_barrier`, or `relaxed_observable_barrier` , otherwise the program is ill formed.
+
+3.  `release_observable_barrier`:
+ for the evaluation of an expression E, 
+ if any observable operation during E had an observable memory ordering , the observable memory order that was specified must be the one of the `relaxed,release` observable memory orders,
+ otherwise the behavior is undefined.
+similar to other qualifiers it can be casted by  `unsafe(release_observable_barrier)`and is recursive by composition.
+
+for functions with this qualifier , they can only call functions with `no_observable_barrier`, `release_observable_barrier`, or `relaxed_observable_barrier` , otherwise the program is ill formed.
+
+4.`acq_rel_observable_barrier`  :
+ for the evaluation of an expression E, 
+ if any observable operation during E had an observable memory ordering , the observable memory order that was specified must be the one of the  `relaxed,acquire,release,acq_rel` observable memory orders,
+ otherwise the behavior is undefined.
+similar to other qualifiers it can be casted by  `unsafe(acq_rel_observable_barrier)`and is recursive by composition.
+
+for functions with this qualifier , they can only call functions with `no_observable_barrier`,`acquire_observable_barrier`, `release_observable_barrier`,`acq_rel_observable_barrier`, or `relaxed_observable_barrier` , otherwise the program is ill formed.
+
+
+5.  `seq_cst_observable_barrier`( default):
+ for the evaluation of an expression E, 
+ if any observable operation during E had an observable memory ordering , the observable memory order that was specified must be the one of the  `relaxed,acquire,release,acq_rel,seq_cst` observable memory orders,
+ meaning any barrier is ok.
+  this is one of the qualifiers one typically wants to not have on its function, tho its the safest default .
+similar to other qualifiers it can be casted by  `unsafe(seq_cst_observable_barrier)`and is recursive by composition.
+for functions with this qualifier , they can only call funcions with any barrier. 
+
+
+* note:
+an observable memory order is the equivalent of a memory order ,
+but instead of another thread being the recipient,  the other thread is assumed to be a volatile action ( aquire input , release output ).
 
 
 - atomic and barrier qualifiers.
@@ -1243,14 +1352,19 @@ similar to other qualifiers it can be casted by  `unsafe(seq_cst_barrier)`and is
 for functions with this qualifier , they can only call funcions with any barrier. 
 
 
-
-*note : 
+ 
+* note : 
 consume is deprecated in c++26 so i wont mention it.
 stuff like `std::atomic_thread_fence(std::memory_order_acquire)` or `std::atomic_signal_fence` also count as barriers,
 typically functions taking `std::memory_order` are the one who is introducing them, also ,
 if someone intracts in any way with `volatile` memory ,
 that is implicitly an `seq_cst_barrier` qualified expression, so to reduce it one can cast it away,
 `volatile` is suppoed to be expensive, this is one of them.
+
+
+
+
+
 
 
 
