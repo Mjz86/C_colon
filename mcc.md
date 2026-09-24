@@ -1693,8 +1693,7 @@ meaning  that `g(f(x))`is equivalent to `x` .
 
 - `weak_liskov_sub=(g)`:
  the program is semantically valid when calling this function instead  of g.
- other than known fundamental math functions known by the synthesizer, its `unsafe(weak_liskov_sub)` to declare .
-
+ 
 
 - `liskov_sub=(g)`:
 the evaluation of this expression is unchanged in terms of equivalence when calling this function instead  of g ,otherwise the behavior is undefined.
