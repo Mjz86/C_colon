@@ -2726,7 +2726,7 @@ struct conceptual_funcptr_data_t {
 
 //TODO:
 // change the abi to make it a compressed sparse row , 
-// the nodes are ordered by sorting the abi hashes .
+// the nodes are ordered by sorting the abi hashes so the binary search  and other tricks hold 
 // 
 
  
