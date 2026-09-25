@@ -1250,7 +1250,23 @@ the behavior of this block becomes undefined.
 if the non trivial post dominator of a basic block  contains  undefined behaviour, 
 the behavior of this block becomes undefined.
 
+* the definition of observation barriers:
+an observable operation  cannot be reorded if  theres a barrier of that direction in the way ,
+its similar to the atomic memory orders , however,  only the observable behavior is affected.
+note that if there's an atomic memory order , then the observable behavior is also ordered ( observable memory access is a subset of memory access,  so , if memory access cant be reordered somewhere,  then observable memory access also cannot )
 
+if there are two observable  operations like :
+
+io 1 pin read;
+read a;
+observable  release  barrier;
+io 2 pin read;
+read b;
+
+then we cannot reorder the pin 1 read after the barrier,  however if no other restriction is there,  we may reorder pin 2 read before barrier.
+
+note that normal  memory read is not considered observable,  so ,
+we can reorder read a after the observable barrier,  unless there's something  preventing it ( a normap memory barrier like atomic's memory order release )
 
 
 0. `no_observable_barrier`:
@@ -2138,8 +2154,10 @@ however,  the good thing  is that  e colon  data is `not_offset_dependant`(shatt
 
 a value oriented reference-like type,
 
-for function arguments, these do not necessarily mean that T will have the same address, unless T is not trivially relocatable, which will make T relocate into the stack in the caller.
+for function arguments, these do not necessarily mean that T will have the same address, unless T is not trivially relocatable, which will make T a stable restricted reference in the caller.
+trivially relocatable argument   can be paased by reference under the hood  ( we dont want to copy an   inout megabyte of data)
 
+a parameter that is declared inout is addressless.
 
 
  T&:
