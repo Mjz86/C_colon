@@ -2154,10 +2154,12 @@ however,  the good thing  is that  e colon  data is `not_offset_dependant`(shatt
 
 a value oriented reference-like type,
 
-for function arguments, these do not necessarily mean that T will have the same address, unless T is not trivially relocatable, which will make T a stable restricted reference in the caller.
+for function arguments, these do not necessarily mean that T will have the same address, unless T is not trivially relocatable, which will make T a forceref reference( stable and restricted qualified unless the argument cannot be specified that way) in the caller.
 trivially relocatable argument   can be paased by reference under the hood  ( we dont want to copy an   inout megabyte of data)
 
 a parameter that is declared pass/out/in/`inout`  is addressless, unless  its not trivially relocatable,  then in that case the address matches the address of the caller side pram.
+
+
 
 
  T&:
@@ -2327,8 +2329,6 @@ when making the `castation-table` in the compiler we need to generate it via a g
   - it has a non-trivial realloc-constructor (`operator pass`), or if its realloc constructors are deleted.
 
   - this definition, as applied to class types, a type which is trivial for the purposes of the ABI will be passed and returned according to the rules of the base mcc ABI, e.g. in registers; often this has the effect of performing a trivial reallocation of the type.
-
-  - if non trivial, it is passed as if it had a stable `forceref` (i)(o)valuexpr qualifier, as if passed by reference, the relocation is allowed to be optimized out if the passed variable is (i)(o)valuexpr qualified or is a temporary at the call site, note that if the variable has internal mutability as an input, it is ill-formed to pass it by value ( input) and its relocation constructors cannot be trivial.
 
 
 
