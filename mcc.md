@@ -2157,7 +2157,7 @@ a value oriented reference-like type,
 for function arguments, these do not necessarily mean that T will have the same address, unless T is not trivially relocatable, which will make T a stable restricted reference in the caller.
 trivially relocatable argument   can be paased by reference under the hood  ( we dont want to copy an   inout megabyte of data)
 
-a parameter that is declared inout is addressless.
+a parameter that is declared pass/out/in/`inout`  is addressless, unless  its not trivially relocatable,  then in that case the address matches the address of the caller side pram.
 
 
  T&:
