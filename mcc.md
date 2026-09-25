@@ -2155,6 +2155,10 @@ however,  the good thing  is that  e colon  data is `not_offset_dependant`(shatt
 a value oriented reference-like type,
 
 for function arguments, these do not necessarily mean that T will have the same address, unless T is not trivially relocatable, which will make T a forceref reference( stable and restricted qualified unless the argument cannot be specified that way) in the caller.
+if in , its const qualified, 
+if out its initially  mut uninitialized on entrance,  and  initialized ( has been constructed in the function ) on successful exit.
+if pass  its initially  mut initialized on entrance,  and  uninitialized (  has been destroyed in the function )  on every exit.
+if inout, its mut qualified with pass in , pass out semantics at entry  and appropriate exit.
 trivially relocatable argument   can be paased by reference under the hood  ( we dont want to copy an   inout megabyte of data)
 
 a parameter that is declared pass/out/in/`inout`  is addressless, unless  its not trivially relocatable,  then in that case the address matches the address of the caller side pram.
